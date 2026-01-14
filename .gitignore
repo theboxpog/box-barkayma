@@ -14,14 +14,14 @@ node_modules/
 client/build/
 
 # environment files
-.env
+# .env - tracked but changes ignored with skip-worktree
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
 # database
-*.db
+# *.db - tracked but changes ignored with skip-worktree
 
 # misc
 .DS_Store
