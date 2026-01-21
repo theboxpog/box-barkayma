@@ -26,14 +26,14 @@ echo.
 
 echo Step 4: Starting backend server...
 echo    Backend will run on http://localhost:5000
-start "Backend Server" cmd /k "cd /d %~dp0server && npm start"
+start "Backend Server" cmd /k "cd /d %~dp0src\server && npm start"
 timeout /t 3 /nobreak >nul
 echo    [OK] Backend server started
 echo.
 
 echo Step 5: Starting frontend...
 echo    Frontend will run on http://localhost:5001
-start "Frontend" cmd /k "cd /d %~dp0client && npm start"
+start "Frontend" cmd /k "cd /d %~dp0src\client && npm start"
 echo    [OK] Frontend starting...
 echo.
 
