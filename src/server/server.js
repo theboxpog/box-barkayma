@@ -55,12 +55,14 @@ app.get('/api/health', (req, res) => {
 // Serve uploaded images (if you implement file upload later)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Serve React frontend in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/build')));
+// Serve React frontend in production (only if build exists)
+const fs = require('fs');
+const clientBuildPath = path.join(__dirname, '../client/build');
+if (process.env.NODE_ENV === 'production' && fs.existsSync(clientBuildPath)) {
+  app.use(express.static(clientBuildPath));
 
   app.get('/{*path}', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+    res.sendFile(path.join(clientBuildPath, 'index.html'));
   });
 }
 
