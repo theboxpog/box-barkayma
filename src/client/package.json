@@ -2,7 +2,7 @@
   "name": "tool-rental-client",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://the-box.com",
+  "homepage": "https://theboxpog.github.io/box-barkayma",
   "dependencies": {
     "@react-oauth/google": "^0.12.2",
     "@testing-library/dom": "^10.4.1",
