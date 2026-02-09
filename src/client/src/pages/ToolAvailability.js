@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { toolsAPI, settingsAPI } from '../services/api';
 import { Search, Calendar, Package, DollarSign } from 'lucide-react';
 import DatePicker from '../components/DatePicker';
+import { useLanguage } from '../context/LanguageContext';
 
 const ToolAvailability = () => {
   const [startDate, setStartDate] = useState('');
@@ -13,6 +14,7 @@ const ToolAvailability = () => {
   const [searched, setSearched] = useState(false);
   const [allowedDays, setAllowedDays] = useState([0, 1, 2, 3, 4, 5, 6]);
   const [error, setError] = useState('');
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetchAllTools();
@@ -115,9 +117,9 @@ const ToolAvailability = () => {
     <div className="min-h-screen bg-gray-50 py-6 md:py-8">
       <div className="container mx-auto px-4">
         <div className="mb-6 md:mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Check Tool Availability</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">{t('checkToolAvailability')}</h1>
           <p className="text-sm md:text-base text-gray-600">
-            Find which tools are available for your desired rental dates
+            {t('findAvailableTools')}
           </p>
         </div>
 
@@ -125,7 +127,7 @@ const ToolAvailability = () => {
         <div className="bg-white rounded-lg shadow-md p-4 md:p-6 mb-6 md:mb-8">
           <div className="flex items-center gap-2 mb-4">
             <Search size={20} className="text-blue-600 md:w-6 md:h-6" />
-            <h2 className="text-lg md:text-xl font-semibold text-gray-800">Select Rental Period</h2>
+            <h2 className="text-lg md:text-xl font-semibold text-gray-800">{t('selectRentalPeriod')}</h2>
           </div>
 
           {error && (
@@ -136,7 +138,7 @@ const ToolAvailability = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <DatePicker
-              label="Start Date"
+              label={t('startDate')}
               value={startDate}
               onChange={(date) => {
                 setStartDate(date);
@@ -148,7 +150,7 @@ const ToolAvailability = () => {
             />
 
             <DatePicker
-              label="End Date"
+              label={t('endDate')}
               value={endDate}
               onChange={(date) => {
                 setEndDate(date);
@@ -163,7 +165,7 @@ const ToolAvailability = () => {
           {startDate && endDate && (
             <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
               <p className="text-sm text-blue-800">
-                <strong>Rental Period:</strong> {days} day{days !== 1 ? 's' : ''} ({startDate} to {endDate})
+                <strong>{t('rentalPeriod')}:</strong> {days} {days !== 1 ? t('days') : t('day')} ({startDate} - {endDate})
               </p>
             </div>
           )}
@@ -174,7 +176,7 @@ const ToolAvailability = () => {
             className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center justify-center gap-2"
           >
             <Search size={20} />
-            {loading ? 'Searching...' : 'Search Available Tools'}
+            {loading ? t('searching') : t('searchAvailableTools')}
           </button>
         </div>
 
@@ -182,7 +184,7 @@ const ToolAvailability = () => {
         {loading && (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Checking tool availability...</p>
+            <p className="text-gray-600">{t('checkingAvailability')}</p>
           </div>
         )}
 
@@ -190,21 +192,21 @@ const ToolAvailability = () => {
           <div>
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                Available Tools ({availableTools.length})
+                {t('availableToolsCount')} ({availableTools.length})
               </h2>
               <p className="text-gray-600">
                 {availableTools.length === 0
-                  ? 'No tools available for these dates'
-                  : `${availableTools.length} tool${availableTools.length !== 1 ? 's' : ''} available for your selected dates`}
+                  ? t('noToolsForDates')
+                  : `${availableTools.length} ${availableTools.length !== 1 ? t('toolsAvailableForDates') : t('toolAvailableForDates')}`}
               </p>
             </div>
 
             {availableTools.length === 0 ? (
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
                 <Calendar size={48} className="text-yellow-600 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">No Tools Available</h3>
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">{t('noToolsAvailable')}</h3>
                 <p className="text-gray-600">
-                  All tools are fully booked for the selected dates. Try different dates or check back later.
+                  {t('allToolsBooked')}
                 </p>
               </div>
             ) : (
@@ -235,18 +237,18 @@ const ToolAvailability = () => {
                       <div className="flex items-center text-gray-700 mb-2">
                         <DollarSign size={18} className="text-blue-600" />
                         <span className="text-xl font-bold text-blue-600">
-                          ${tool.price_per_day}
-                          <span className="text-sm text-gray-600 font-normal">/day</span>
+                          ₪{tool.price_per_day}
+                          <span className="text-sm text-gray-600 font-normal">/{t('day')}</span>
                         </span>
                       </div>
 
                       {tool.availabilityData && (
                         <div className="mb-3 p-2 bg-green-50 border border-green-200 rounded text-sm">
                           <p className="text-green-700 font-semibold">
-                            ✓ Available: {tool.availabilityData.availableStock} / {tool.availabilityData.totalStock} in stock
+                            ✓ {tool.availabilityData.availableStock > 1 ? t('availableStockPlural') : t('availableStock')}: {tool.availabilityData.availableStock} / {tool.availabilityData.totalStock} {t('inStockLabel')}
                           </p>
                           <p className="text-gray-600 mt-1">
-                            Total: ${(tool.price_per_day * days).toFixed(2)} for {days} day{days !== 1 ? 's' : ''}
+                            {t('total')}: ₪{(tool.price_per_day * days).toFixed(2)} {t('forDays')} {days} {days !== 1 ? t('days') : t('day')}
                           </p>
                         </div>
                       )}
@@ -255,7 +257,7 @@ const ToolAvailability = () => {
                         to={`/tools/${tool.id}`}
                         className="block w-full text-center bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors font-semibold"
                       >
-                        View Details & Book
+                        {t('viewDetailsBook')}
                       </Link>
                     </div>
                   </div>

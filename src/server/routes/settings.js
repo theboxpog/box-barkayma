@@ -39,11 +39,7 @@ router.put('/rental-days', authenticateToken, isAdmin, (req, res) => {
     return res.status(400).json({ error: 'allowedDays must be an array' });
   }
 
-  if (allowedDays.length === 0) {
-    return res.status(400).json({ error: 'At least one day must be allowed' });
-  }
-
-  // Validate that all days are between 0-6
+  // Validate that all days are between 0-6 (empty array is allowed - disables all rentals)
   if (!allowedDays.every(day => Number.isInteger(day) && day >= 0 && day <= 6)) {
     return res.status(400).json({ error: 'All days must be integers between 0 and 6' });
   }

@@ -5,9 +5,11 @@ const db = require('../database');
 const { sendSignupConfirmation } = require('../utils/emailService');
 
 // Google OAuth - Verify ID Token
+// Set createIfNotExists: false to check if user exists without creating (for login page)
+// Set createIfNotExists: true to create user if not exists (for signup page or after privacy acceptance)
 router.post('/google', async (req, res) => {
   try {
-    const { credential } = req.body;
+    const { credential, createIfNotExists = true } = req.body;
 
     if (!credential) {
       return res.status(400).json({ error: 'Google credential is required' });
@@ -35,6 +37,7 @@ router.post('/google', async (req, res) => {
 
         let userId;
         let isAdmin = false;
+        let isNewUser = false;
 
         if (user) {
           // User exists - update their Google ID if not set
@@ -51,8 +54,20 @@ router.post('/google', async (req, res) => {
           }
           userId = user.id;
           isAdmin = user.role === 'admin';
+          isNewUser = false;
         } else {
-          // Create new user
+          // User doesn't exist
+          if (!createIfNotExists) {
+            // Return indication that user needs to accept privacy policy first
+            return res.json({
+              needsPrivacyAcceptance: true,
+              email,
+              name: name || email.split('@')[0],
+              picture
+            });
+          }
+
+          // Create new user (only when createIfNotExists is true)
           const result = await new Promise((resolve, reject) => {
             db.run(
               'INSERT INTO users (email, name, password_hash, google_id, role) VALUES (?, ?, ?, ?, ?)',
@@ -65,6 +80,7 @@ router.post('/google', async (req, res) => {
           });
           userId = result;
           isAdmin = false;
+          isNewUser = true;
 
           // Send signup confirmation email IMMEDIATELY for new Google users
           try {
@@ -95,7 +111,8 @@ router.post('/google', async (req, res) => {
             name: name || email.split('@')[0],
             role: isAdmin ? 'admin' : 'user',
             picture
-          }
+          },
+          isNewUser
         });
       }
     );

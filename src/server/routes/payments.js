@@ -1,11 +1,24 @@
 const express = require('express');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const axios = require('axios');
 const db = require('../database');
 const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Create payment intent
+// Sumit API configuration
+const SUMIT_API_URL = 'https://api.sumit.co.il/billing/payments/charge/';
+const SUMIT_COMPANY_ID = process.env.SUMIT_COMPANY_ID;
+const SUMIT_PRIVATE_KEY = process.env.SUMIT_PRIVATE_KEY;
+
+// Get Sumit configuration for client
+router.get('/sumit-config', (req, res) => {
+  res.json({
+    companyId: process.env.SUMIT_COMPANY_ID,
+    publicKey: process.env.SUMIT_PUBLIC_KEY
+  });
+});
+
+// Create payment intent (for backward compatibility)
 router.post('/create-payment-intent', authenticateToken, async (req, res) => {
   const { reservation_id, amount } = req.body;
   const user_id = req.user.id;
@@ -26,18 +39,89 @@ router.post('/create-payment-intent', authenticateToken, async (req, res) => {
         return res.status(404).json({ error: 'Reservation not found' });
       }
 
-      // DEMO MODE: Skip Stripe and create a mock payment intent
-      const mockPaymentIntentId = `pi_demo_${Date.now()}_${reservation_id}`;
+      // Return a placeholder - actual payment will be done with Sumit token
+      const paymentIntentId = `sumit_pending_${Date.now()}_${reservation_id}`;
 
       res.json({
-        clientSecret: 'demo_client_secret',
-        paymentIntentId: mockPaymentIntentId
+        paymentIntentId: paymentIntentId,
+        requiresSumitToken: true
       });
     }
   );
 });
 
-// Confirm payment (after Stripe confirms on client side)
+// Charge with Sumit token
+router.post('/sumit-charge', authenticateToken, async (req, res) => {
+  const { token, amount, description, reservationIds } = req.body;
+  const user_id = req.user.id;
+
+  if (!token || !amount) {
+    return res.status(400).json({ error: 'Token and amount are required' });
+  }
+
+  try {
+    // Call Sumit API to charge the card
+    const sumitResponse = await axios.post(SUMIT_API_URL, {
+      Credentials: {
+        CompanyID: parseInt(SUMIT_COMPANY_ID),
+        APIKey: SUMIT_PRIVATE_KEY
+      },
+      SingleUseToken: token,
+      Amount: amount,
+      Description: description || 'Tool Rental Payment',
+      ResponseLanguage: 'he'
+    }, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    // Check if Sumit returned success
+    if (sumitResponse.data && sumitResponse.data.Status === 0) {
+      // Payment successful - record in database
+      const sumitPaymentId = sumitResponse.data.Data?.PaymentId || `sumit_${Date.now()}`;
+
+      // Record payment for each reservation
+      if (reservationIds && reservationIds.length > 0) {
+        for (const reservationId of reservationIds) {
+          await new Promise((resolve, reject) => {
+            db.run(
+              'INSERT INTO payments (reservation_id, user_id, amount, success, stripe_payment_id) VALUES (?, ?, ?, ?, ?)',
+              [reservationId, user_id, amount / reservationIds.length, 1, sumitPaymentId],
+              function (err) {
+                if (err) reject(err);
+                else resolve(this.lastID);
+              }
+            );
+          });
+        }
+      }
+
+      res.json({
+        success: true,
+        message: 'Payment successful',
+        paymentId: sumitPaymentId,
+        sumitResponse: sumitResponse.data
+      });
+    } else {
+      // Payment failed
+      const errorMessage = sumitResponse.data?.UserErrorMessage || sumitResponse.data?.TechnicalErrorMessage || 'Payment failed';
+      res.status(400).json({
+        success: false,
+        error: errorMessage,
+        sumitResponse: sumitResponse.data
+      });
+    }
+  } catch (error) {
+    console.error('Sumit payment error:', error.response?.data || error.message);
+    res.status(500).json({
+      success: false,
+      error: error.response?.data?.UserErrorMessage || 'Payment processing failed'
+    });
+  }
+});
+
+// Confirm payment (for backward compatibility - now used after Sumit charge)
 router.post('/confirm', authenticateToken, async (req, res) => {
   const { payment_intent_id, reservation_id } = req.body;
   const user_id = req.user.id;
@@ -46,7 +130,6 @@ router.post('/confirm', authenticateToken, async (req, res) => {
     return res.status(400).json({ error: 'Payment intent ID and reservation ID required' });
   }
 
-  // DEMO MODE: Skip Stripe validation and directly record payment
   // Get reservation to find the amount
   db.get(
     'SELECT total_price FROM reservations WHERE id = ? AND user_id = ?',
@@ -58,65 +141,47 @@ router.post('/confirm', authenticateToken, async (req, res) => {
 
       const amount = reservation.total_price;
 
-      // Record payment in database
-      db.run(
-        'INSERT INTO payments (reservation_id, user_id, amount, success, stripe_payment_id) VALUES (?, ?, ?, ?, ?)',
-        [reservation_id, user_id, amount, 1, payment_intent_id],
-        function (err) {
-          if (err) {
-            return res.status(500).json({ error: 'Failed to record payment' });
+      // Check if payment already recorded
+      db.get(
+        'SELECT id FROM payments WHERE reservation_id = ?',
+        [reservation_id],
+        (err, existingPayment) => {
+          if (existingPayment) {
+            return res.json({
+              message: 'Payment already recorded',
+              payment: {
+                id: existingPayment.id,
+                reservation_id,
+                amount,
+                success: true
+              }
+            });
           }
 
-          res.json({
-            message: 'Payment confirmed successfully',
-            payment: {
-              id: this.lastID,
-              reservation_id,
-              amount,
-              success: true
+          // Record payment in database
+          db.run(
+            'INSERT INTO payments (reservation_id, user_id, amount, success, stripe_payment_id) VALUES (?, ?, ?, ?, ?)',
+            [reservation_id, user_id, amount, 1, payment_intent_id],
+            function (err) {
+              if (err) {
+                return res.status(500).json({ error: 'Failed to record payment' });
+              }
+
+              res.json({
+                message: 'Payment confirmed successfully',
+                payment: {
+                  id: this.lastID,
+                  reservation_id,
+                  amount,
+                  success: true
+                }
+              });
             }
-          });
+          );
         }
       );
     }
   );
-});
-
-// Webhook for Stripe events (for production)
-router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
-  const sig = req.headers['stripe-signature'];
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
-  if (!webhookSecret) {
-    return res.status(400).json({ error: 'Webhook secret not configured' });
-  }
-
-  let event;
-
-  try {
-    event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
-  } catch (err) {
-    return res.status(400).json({ error: `Webhook Error: ${err.message}` });
-  }
-
-  // Handle the event
-  if (event.type === 'payment_intent.succeeded') {
-    const paymentIntent = event.data.object;
-    const { reservation_id, user_id } = paymentIntent.metadata;
-
-    // Record successful payment
-    db.run(
-      'INSERT INTO payments (reservation_id, user_id, amount, success, stripe_payment_id) VALUES (?, ?, ?, ?, ?)',
-      [reservation_id, user_id, paymentIntent.amount / 100, 1, paymentIntent.id],
-      (err) => {
-        if (err) {
-          console.error('Failed to record payment:', err);
-        }
-      }
-    );
-  }
-
-  res.json({ received: true });
 });
 
 // Get user's payment history

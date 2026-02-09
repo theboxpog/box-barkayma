@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { toolsAPI } from '../services/api';
 import { Package, Search, Calendar } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const ToolsCatalog = () => {
   const [tools, setTools] = useState([]);
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetchTools();
@@ -35,7 +37,7 @@ const ToolsCatalog = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">Loading tools...</div>
+        <div className="text-xl">{t('loading')}</div>
       </div>
     );
   }
@@ -44,8 +46,8 @@ const ToolsCatalog = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-blue-600 text-white py-8">
         <div className="container mx-auto px-4">
-          <h1 className="text-4xl font-bold mb-2">Tool Catalog</h1>
-          <p className="text-blue-100">Browse and rent professional tools</p>
+          <h1 className="text-4xl font-bold mb-2">{t('toolCatalog')}</h1>
+          <p className="text-blue-100">{t('browseAndRent')}</p>
         </div>
       </div>
 
@@ -57,7 +59,7 @@ const ToolsCatalog = () => {
               <Search className="absolute left-3 top-3 text-gray-400" size={20} />
               <input
                 type="text"
-                placeholder="Search tools..."
+                placeholder={t('searchTools')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -69,7 +71,7 @@ const ToolsCatalog = () => {
               onChange={(e) => setCategory(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">All Categories</option>
+              <option value="">{t('allCategories')}</option>
               {categories.map(cat => (
                 <option key={cat} value={cat}>{cat}</option>
               ))}
@@ -86,11 +88,11 @@ const ToolsCatalog = () => {
             <div className="flex items-center space-x-2 md:space-x-3 flex-1">
               <Calendar size={28} className="text-white flex-shrink-0 md:w-8 md:h-8" />
               <div className="min-w-0">
-                <h2 className="text-base md:text-xl font-bold leading-tight">Check Tool Availability</h2>
-                <p className="text-blue-100 text-xs md:text-sm mt-1">Search for all tools available on specific dates</p>
+                <h2 className="text-base md:text-xl font-bold leading-tight">{t('checkAvailability')}</h2>
+                <p className="text-blue-100 text-xs md:text-sm mt-1">{t('searchAvailableDates')}</p>
               </div>
             </div>
-            <span className="text-white font-semibold text-sm md:text-base flex-shrink-0">Search →</span>
+            <span className="text-white font-semibold text-sm md:text-base flex-shrink-0">{t('search')} →</span>
           </div>
         </Link>
 
@@ -98,7 +100,7 @@ const ToolsCatalog = () => {
         {filteredTools.length === 0 ? (
           <div className="text-center py-12">
             <Package className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-            <p className="text-xl text-gray-600">No tools found</p>
+            <p className="text-xl text-gray-600">{t('noToolsFound')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -126,21 +128,21 @@ const ToolsCatalog = () => {
                     </span>
                     {!tool.is_available && (
                       <span className="text-xs font-semibold text-red-600 bg-red-100 px-2 py-1 rounded">
-                        Maintenance
+                        {t('maintenance')}
                       </span>
                     )}
                   </div>
                   <h3 className="text-lg font-semibold mb-2">{tool.name}</h3>
                   <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                    {tool.description || 'No description available'}
+                    {tool.description || t('noDescription')}
                   </p>
                   <div className="flex items-center justify-between">
                     <span className="text-2xl font-bold text-blue-600">
-                      ${tool.price_per_day}
-                      <span className="text-sm text-gray-600 font-normal">/day</span>
+                      ₪{tool.price_per_day}
+                      <span className="text-sm text-gray-600 font-normal">/{t('day')}</span>
                     </span>
                     <span className="text-blue-600 font-medium hover:text-blue-800">
-                      View Details →
+                      {t('viewDetails')} →
                     </span>
                   </div>
                 </div>

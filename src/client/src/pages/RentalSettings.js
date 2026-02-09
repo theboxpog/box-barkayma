@@ -17,7 +17,9 @@ const RentalSettings = () => {
     address: '',
     signup_message: '',
     privacy_policy: '',
-    email_important_message: ''
+    email_important_message: '',
+    checkout_success_message: '',
+    checkout_success_message_he: ''
   });
   const [contactError, setContactError] = useState('');
   const [contactSuccess, setContactSuccess] = useState('');
@@ -103,13 +105,7 @@ const RentalSettings = () => {
     setAllowedDays(prev => {
       if (prev.includes(dayValue)) {
         // Remove day
-        const newDays = prev.filter(d => d !== dayValue);
-        // Prevent removing all days
-        if (newDays.length === 0) {
-          setError('At least one day must be allowed');
-          return prev;
-        }
-        return newDays;
+        return prev.filter(d => d !== dayValue);
       } else {
         // Add day
         return [...prev, dayValue].sort((a, b) => a - b);
@@ -119,11 +115,6 @@ const RentalSettings = () => {
   };
 
   const handleSave = async () => {
-    if (allowedDays.length === 0) {
-      setError('At least one day must be allowed');
-      return;
-    }
-
     try {
       setSaving(true);
       await settingsAPI.updateRentalDays(allowedDays);
@@ -210,7 +201,7 @@ const RentalSettings = () => {
             {allowedDays.length === 7 ? (
               <span className="font-semibold">all days of the week</span>
             ) : allowedDays.length === 0 ? (
-              <span className="font-semibold text-red-600">no days (invalid)</span>
+              <span className="font-semibold text-orange-600">no days (rentals disabled)</span>
             ) : (
               <span className="font-semibold">
                 {allowedDays.map(d => daysOfWeek.find(day => day.value === d)?.label).join(', ')}
@@ -221,7 +212,7 @@ const RentalSettings = () => {
 
         <button
           onClick={handleSave}
-          disabled={saving || allowedDays.length === 0}
+          disabled={saving}
           className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold"
         >
           {saving ? 'Saving...' : 'Save Settings'}
@@ -369,6 +360,51 @@ const RentalSettings = () => {
                   <strong>Note:</strong> The contact details (email, phone, address) above will also be included in the confirmation emails automatically.
                 </p>
               </div>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-200 pt-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <Check size={20} className="text-green-500" />
+              Checkout Success Page
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Customize the message displayed on the checkout success page after a successful order.
+            </p>
+
+            <div className="mb-4">
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                Custom Success Message (English)
+              </label>
+              <textarea
+                name="checkout_success_message"
+                value={contactInfo.checkout_success_message || ''}
+                onChange={handleContactChange}
+                rows={3}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Thank you for your order! We look forward to serving you..."
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                Leave empty to use the default message
+              </p>
+            </div>
+
+            <div>
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                Custom Success Message (Hebrew / עברית)
+              </label>
+              <textarea
+                name="checkout_success_message_he"
+                value={contactInfo.checkout_success_message_he || ''}
+                onChange={handleContactChange}
+                rows={3}
+                dir="rtl"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="תודה על הזמנתך! נשמח לשרת אותך..."
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                Leave empty to use the default Hebrew message
+              </p>
             </div>
           </div>
 

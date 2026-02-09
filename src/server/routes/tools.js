@@ -1,8 +1,62 @@
 const express = require('express');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 const db = require('../database');
 const { authenticateToken, isAdmin } = require('../middleware/auth');
 
 const router = express.Router();
+
+// Configure multer for image uploads
+const uploadsDir = path.join(__dirname, '../uploads');
+
+// Ensure uploads directory exists
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadsDir);
+  },
+  filename: function (req, file, cb) {
+    // Generate unique filename with timestamp
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'tool-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  // Accept only image files
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files are allowed'), false);
+  }
+};
+
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  }
+});
+
+// Upload tool image (admin only)
+router.post('/upload-image', authenticateToken, isAdmin, upload.single('image'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No image file provided' });
+  }
+
+  // Return the URL path to access the uploaded image
+  const imageUrl = `/uploads/${req.file.filename}`;
+  res.json({
+    message: 'Image uploaded successfully',
+    imageUrl: imageUrl,
+    filename: req.file.filename
+  });
+});
 
 // Get all tools (public)
 router.get('/', (req, res) => {

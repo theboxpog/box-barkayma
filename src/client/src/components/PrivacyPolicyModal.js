@@ -87,22 +87,25 @@ If you have any questions about this Privacy Policy, please contact us.`;
         {/* Footer */}
         <div className="border-t border-gray-200 p-4 bg-gray-50">
           {/* Checkbox */}
-          <label className="flex items-start gap-3 mb-4 cursor-pointer">
-            <button
-              type="button"
-              onClick={() => setAccepted(!accepted)}
-              className="mt-0.5 flex-shrink-0"
-            >
+          <div
+            className="flex items-start gap-3 mb-4 cursor-pointer select-none"
+            onClick={() => setAccepted(!accepted)}
+            role="checkbox"
+            aria-checked={accepted}
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); setAccepted(!accepted); } }}
+          >
+            <div className="mt-0.5 flex-shrink-0">
               {accepted ? (
                 <CheckSquare size={24} className="text-blue-600" />
               ) : (
                 <Square size={24} className="text-gray-400" />
               )}
-            </button>
+            </div>
             <span className="text-sm text-gray-700">
               I have read and agree to the Privacy Policy. I understand how my personal information will be collected, used, and protected.
             </span>
-          </label>
+          </div>
 
           {/* Buttons */}
           <div className="flex gap-3">

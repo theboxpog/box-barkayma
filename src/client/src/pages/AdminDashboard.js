@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toolsAPI, reservationsAPI, couponsAPI } from '../services/api';
-import { Package, Calendar, Plus, Edit, Trash2, X, List, Tag, Settings } from 'lucide-react';
+import { Package, Calendar, Plus, Edit, Trash2, X, List, Tag, Settings, Upload } from 'lucide-react';
+import axios from 'axios';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -29,6 +30,9 @@ const AdminDashboard = () => {
     stock: 5,
     is_available: true
   });
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [couponForm, setCouponForm] = useState({
     code: '',
     discount_type: 'percentage',
@@ -74,14 +78,59 @@ const AdminDashboard = () => {
     });
   };
 
+  const handleImageFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+      // Clear the URL input when a file is selected
+      setToolForm(prev => ({ ...prev, image_url: '' }));
+    }
+  };
+
+  const clearImageFile = () => {
+    setImageFile(null);
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+    setImagePreview(null);
+  };
+
   const handleSubmitTool = async (e) => {
     e.preventDefault();
     try {
+      let finalImageUrl = toolForm.image_url;
+
+      // If there's a file to upload, upload it first
+      if (imageFile) {
+        setUploadingImage(true);
+        const formData = new FormData();
+        formData.append('image', imageFile);
+
+        const token = localStorage.getItem('token');
+        const uploadResponse = await axios.post(
+          'http://localhost:5000/api/tools/upload-image',
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+        finalImageUrl = `http://localhost:5000${uploadResponse.data.imageUrl}`;
+        setUploadingImage(false);
+      }
+
+      const toolData = { ...toolForm, image_url: finalImageUrl };
+
       if (editingTool) {
-        await toolsAPI.update(editingTool.id, toolForm);
+        await toolsAPI.update(editingTool.id, toolData);
         alert('Tool updated successfully');
       } else {
-        await toolsAPI.create(toolForm);
+        await toolsAPI.create(toolData);
         alert('Tool created successfully');
       }
       setShowToolForm(false);
@@ -95,8 +144,10 @@ const AdminDashboard = () => {
         stock: 5,
         is_available: true
       });
+      clearImageFile();
       fetchData();
     } catch (error) {
+      setUploadingImage(false);
       alert('Failed to save tool');
     }
   };
@@ -112,6 +163,7 @@ const AdminDashboard = () => {
       stock: tool.stock || 5,
       is_available: tool.is_available
     });
+    clearImageFile();
     setShowToolForm(true);
   };
 
@@ -515,6 +567,7 @@ const AdminDashboard = () => {
                     stock: 5,
                     is_available: true
                   });
+                  clearImageFile();
                 }}
                 className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
               >
@@ -531,7 +584,10 @@ const AdminDashboard = () => {
                     <h2 className="text-2xl font-bold">
                       {editingTool ? 'Edit Tool' : 'Add New Tool'}
                     </h2>
-                    <button onClick={() => setShowToolForm(false)}>
+                    <button onClick={() => {
+                      setShowToolForm(false);
+                      clearImageFile();
+                    }}>
                       <X size={24} />
                     </button>
                   </div>
@@ -615,14 +671,72 @@ const AdminDashboard = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Image URL
+                        Tool Image
                       </label>
+
+                      {/* File Upload Option */}
+                      <div className="mb-3">
+                        <label className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
+                          <Upload size={20} className="mr-2 text-gray-500" />
+                          <span className="text-gray-600">
+                            {imageFile ? imageFile.name : 'Click to browse image from device'}
+                          </span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageFileChange}
+                            className="hidden"
+                          />
+                        </label>
+                        {imageFile && (
+                          <div className="mt-2 flex items-center justify-between">
+                            <span className="text-sm text-green-600">File selected: {imageFile.name}</span>
+                            <button
+                              type="button"
+                              onClick={clearImageFile}
+                              className="text-red-600 hover:text-red-800 text-sm"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Image Preview */}
+                      {(imagePreview || toolForm.image_url) && (
+                        <div className="mb-3">
+                          <p className="text-sm text-gray-500 mb-1">Preview:</p>
+                          <img
+                            src={imagePreview || toolForm.image_url}
+                            alt="Tool preview"
+                            className="w-32 h-32 object-cover rounded border"
+                            onError={(e) => { e.target.style.display = 'none'; }}
+                          />
+                        </div>
+                      )}
+
+                      {/* URL Option */}
+                      <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                          <div className="w-full border-t border-gray-300"></div>
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                          <span className="px-2 bg-white text-gray-500">Or enter URL</span>
+                        </div>
+                      </div>
                       <input
                         type="url"
                         name="image_url"
                         value={toolForm.image_url}
-                        onChange={handleToolFormChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        onChange={(e) => {
+                          handleToolFormChange(e);
+                          // Clear file if URL is entered
+                          if (e.target.value) {
+                            clearImageFile();
+                          }
+                        }}
+                        disabled={!!imageFile}
+                        className="w-full mt-3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                         placeholder="https://example.com/image.jpg"
                       />
                     </div>
@@ -643,13 +757,17 @@ const AdminDashboard = () => {
                     <div className="flex space-x-3 pt-4">
                       <button
                         type="submit"
-                        className="flex-1 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+                        disabled={uploadingImage}
+                        className="flex-1 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed"
                       >
-                        {editingTool ? 'Update Tool' : 'Create Tool'}
+                        {uploadingImage ? 'Uploading image...' : (editingTool ? 'Update Tool' : 'Create Tool')}
                       </button>
                       <button
                         type="button"
-                        onClick={() => setShowToolForm(false)}
+                        onClick={() => {
+                          setShowToolForm(false);
+                          clearImageFile();
+                        }}
                         className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-400"
                       >
                         Cancel
@@ -695,7 +813,7 @@ const AdminDashboard = () => {
                         {tool.category}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        ${tool.price_per_day}
+                        ₪{tool.price_per_day}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {tool.stock || 0}
@@ -965,7 +1083,7 @@ const AdminDashboard = () => {
                             {new Date(reservation.end_date).toLocaleDateString('en-GB')}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                            ${reservation.total_price}
+                            ₪{reservation.total_price}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(reservation.status)}`}>
@@ -1097,7 +1215,7 @@ const AdminDashboard = () => {
                           {new Date(reservation.end_date).toLocaleDateString('en-GB')}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                          ${reservation.total_price}
+                          ₪{reservation.total_price}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex flex-col space-y-1">
@@ -1198,7 +1316,7 @@ const AdminDashboard = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Discount Value * {couponForm.discount_type === 'percentage' ? '(%)' : '($)'}
+                        Discount Value * {couponForm.discount_type === 'percentage' ? '(%)' : '(₪)'}
                       </label>
                       <input
                         type="number"
@@ -1215,7 +1333,7 @@ const AdminDashboard = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Minimum Order Value ($)
+                        Minimum Order Value (₪)
                       </label>
                       <input
                         type="number"
@@ -1441,7 +1559,7 @@ const AdminDashboard = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {coupon.discount_type === 'percentage'
                           ? `${coupon.discount_value}%`
-                          : `$${coupon.discount_value}`}
+                          : `₪${coupon.discount_value}`}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500 max-w-xs">
                         <div className={hasRestrictions ? 'text-blue-600 font-medium' : 'text-gray-500'}>
@@ -1449,7 +1567,7 @@ const AdminDashboard = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        ${coupon.min_order_value || 0}
+                        ₪{coupon.min_order_value || 0}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {coupon.used_count || 0}

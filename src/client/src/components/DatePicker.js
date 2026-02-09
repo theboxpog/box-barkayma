@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const DatePicker = ({ value, onChange, minDate, allowedDays = [0, 1, 2, 3, 4, 5, 6], label }) => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const calendarRef = useRef(null);
+  const { t, language } = useLanguage();
 
   const formatDate = (date) => {
     if (!date) return '';
@@ -16,9 +18,9 @@ const DatePicker = ({ value, onChange, minDate, allowedDays = [0, 1, 2, 3, 4, 5,
   };
 
   const formatDisplayDate = (dateString) => {
-    if (!dateString) return 'Select date';
+    if (!dateString) return t('selectDate');
     const date = new Date(dateString + 'T00:00:00');
-    return date.toLocaleDateString('en-GB', {
+    return date.toLocaleDateString(language === 'he' ? 'he-IL' : 'en-GB', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -117,7 +119,16 @@ const DatePicker = ({ value, onChange, minDate, allowedDays = [0, 1, 2, 3, 4, 5,
   };
 
   const days = getDaysInMonth(currentMonth);
-  const monthName = currentMonth.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+  const monthName = currentMonth.toLocaleDateString(language === 'he' ? 'he-IL' : 'en-GB', { month: 'long', year: 'numeric' });
+
+  // Day names for both languages
+  const dayNamesShort = language === 'he'
+    ? [t('sunShort'), t('monShort'), t('tueShort'), t('wedShort'), t('thuShort'), t('friShort'), t('satShort')]
+    : ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+  const dayNamesFull = language === 'he'
+    ? [t('sun'), t('mon'), t('tue'), t('wed'), t('thu'), t('fri'), t('sat')]
+    : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   return (
     <div className="relative" ref={calendarRef}>
@@ -142,7 +153,7 @@ const DatePicker = ({ value, onChange, minDate, allowedDays = [0, 1, 2, 3, 4, 5,
 
       {allowedDays.length < 7 && (
         <p className="text-xs text-blue-600 mt-1 font-medium">
-          ✓ Allowed days: {allowedDays.map(d => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d]).join(', ')}
+          ✓ {t('allowedDays')}: {allowedDays.map(d => dayNamesFull[d]).join(', ')}
         </p>
       )}
 
@@ -171,7 +182,7 @@ const DatePicker = ({ value, onChange, minDate, allowedDays = [0, 1, 2, 3, 4, 5,
 
           {/* Day names */}
           <div className="grid grid-cols-7" style={{gap: '1px', marginBottom: '2px'}}>
-            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, idx) => (
+            {dayNamesShort.map((day, idx) => (
               <div key={idx} className="text-center font-semibold text-gray-600" style={{fontSize: '8px', padding: '1px'}}>
                 {day}
               </div>

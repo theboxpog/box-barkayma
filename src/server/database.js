@@ -88,6 +88,14 @@ function initializeDatabase() {
       // Ignore error if column already exists
     });
 
+    // Add checkout_success_message columns if they don't exist (for existing databases)
+    db.run(`ALTER TABLE contact_info ADD COLUMN checkout_success_message TEXT DEFAULT ''`, (err) => {
+      // Ignore error if column already exists
+    });
+    db.run(`ALTER TABLE contact_info ADD COLUMN checkout_success_message_he TEXT DEFAULT ''`, (err) => {
+      // Ignore error if column already exists
+    });
+
     // Insert default contact info if not exists
     db.run(`
       INSERT OR IGNORE INTO contact_info (id, email, phone, address)

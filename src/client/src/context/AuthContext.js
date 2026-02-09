@@ -67,14 +67,26 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const googleLogin = async (credential) => {
+  const googleLogin = async (credential, createIfNotExists = true) => {
     try {
-      const response = await authAPI.googleLogin({ credential });
-      const { token, user } = response.data;
+      const response = await authAPI.googleLogin({ credential, createIfNotExists });
+
+      // Check if user needs to accept privacy policy first (new user from login page)
+      if (response.data.needsPrivacyAcceptance) {
+        return {
+          success: false,
+          needsPrivacyAcceptance: true,
+          email: response.data.email,
+          name: response.data.name,
+          picture: response.data.picture
+        };
+      }
+
+      const { token, user, isNewUser } = response.data;
       localStorage.setItem('token', token);
       setToken(token);
       setUser(user);
-      return { success: true };
+      return { success: true, isNewUser };
     } catch (error) {
       return {
         success: false,

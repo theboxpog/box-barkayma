@@ -174,7 +174,7 @@ const OverdueTools = () => {
                   <div className="mt-4 pt-4 border-t border-gray-200">
                     <div className="flex items-center justify-between text-sm text-gray-600">
                       <span>Reservation #{reservation.id}</span>
-                      <span>Total Price: ${reservation.total_price.toFixed(2)}</span>
+                      <span>Total Price: ₪{reservation.total_price.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { UserPlus } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
@@ -22,6 +23,7 @@ const Signup = () => {
   const [pendingGoogleCredential, setPendingGoogleCredential] = useState(null);
   const [signupMessage, setSignupMessage] = useState('');
   const { signup, googleLogin } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -75,24 +77,20 @@ const Signup = () => {
     setShowPrivacyModal(false);
     setLoading(true);
 
-    // Check if this is a Google signup or regular signup
+    let result;
     if (pendingGoogleCredential) {
-      const result = await googleLogin(pendingGoogleCredential);
+      // Google signup
+      result = await googleLogin(pendingGoogleCredential);
       setPendingGoogleCredential(null);
-
-      if (result.success) {
-        setShowWelcomeModal(true);
-      } else {
-        setError(result.error);
-      }
     } else {
-      const result = await signup(formData.name, formData.email, formData.phone_number, formData.password);
+      // Regular signup
+      result = await signup(formData.name, formData.email, formData.phone_number, formData.password);
+    }
 
-      if (result.success) {
-        setShowWelcomeModal(true);
-      } else {
-        setError(result.error);
-      }
+    if (result.success) {
+      setShowWelcomeModal(true);
+    } else {
+      setError(result.error);
     }
 
     setLoading(false);
@@ -100,12 +98,15 @@ const Signup = () => {
 
   const handlePrivacyDecline = () => {
     setShowPrivacyModal(false);
-    setPendingGoogleCredential(null);
+  };
+
+  const handleCloseWelcomeModal = () => {
+    setShowWelcomeModal(false);
+    navigate('/');
   };
 
   const handleGoogleSuccess = async (credentialResponse) => {
-    setError('');
-    // Store the credential and show privacy modal
+    // Store credential and show privacy modal
     setPendingGoogleCredential(credentialResponse.credential);
     setShowPrivacyModal(true);
   };
@@ -114,18 +115,13 @@ const Signup = () => {
     setError('Google sign up failed. Please try again.');
   };
 
-  const handleCloseWelcomeModal = () => {
-    setShowWelcomeModal(false);
-    navigate('/');
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
         <div className="text-center mb-8">
           <UserPlus className="mx-auto h-12 w-12 text-blue-600" />
-          <h2 className="mt-4 text-3xl font-bold text-gray-900">Sign Up</h2>
-          <p className="mt-2 text-gray-600">Create your account</p>
+          <h2 className="mt-4 text-3xl font-bold text-gray-900">{t('signUp')}</h2>
+          <p className="mt-2 text-gray-600">{t('createYourAccount')}</p>
         </div>
 
         {error && (
@@ -137,7 +133,7 @@ const Signup = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Full Name
+              {t('fullName')}
             </label>
             <input
               type="text"
@@ -152,7 +148,7 @@ const Signup = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email
+              {t('email')}
             </label>
             <input
               type="email"
@@ -167,7 +163,7 @@ const Signup = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Phone Number
+              {t('phoneNumber')}
             </label>
             <input
               type="tel"
@@ -183,7 +179,7 @@ const Signup = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Password
+              {t('password')}
             </label>
             <input
               type="password"
@@ -198,7 +194,7 @@ const Signup = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Confirm Password
+              {t('confirmPassword')}
             </label>
             <input
               type="password"
@@ -216,7 +212,7 @@ const Signup = () => {
             disabled={loading}
             className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
           >
-            {loading ? 'Creating account...' : 'Sign Up'}
+            {loading ? t('creatingAccount') : t('signUp')}
           </button>
         </form>
 
@@ -226,7 +222,7 @@ const Signup = () => {
               <div className="w-full border-t border-gray-300"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or continue with</span>
+              <span className="px-2 bg-white text-gray-500">{t('orContinueWith')}</span>
             </div>
           </div>
 
@@ -234,7 +230,6 @@ const Signup = () => {
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
               onError={handleGoogleError}
-              useOneTap
               theme="outline"
               size="large"
               text="signup_with"
@@ -244,16 +239,16 @@ const Signup = () => {
         </div>
 
         <p className="mt-6 text-center text-gray-600">
-          Already have an account?{' '}
+          {t('alreadyHaveAccount')}{' '}
           <Link to="/login" className="text-blue-600 hover:text-blue-800 font-medium">
-            Login
+            {t('login')}
           </Link>
         </p>
 
         <p className="mt-4 text-center text-xs text-gray-500">
-          By signing up, you agree to our{' '}
+          {t('bySigningUp')}{' '}
           <Link to="/privacy-policy" className="text-blue-600 hover:text-blue-800 underline">
-            Privacy Policy
+            {t('privacyPolicy')}
           </Link>
         </p>
       </div>

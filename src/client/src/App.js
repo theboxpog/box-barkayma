@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { LanguageProvider } from './context/LanguageContext';
 import NavBar from './components/NavBar';
 import ProtectedRoute from './components/ProtectedRoute';
 import AccessibilityButton from './components/AccessibilityButton';
@@ -28,9 +29,10 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 function App() {
   return (
     <Router>
-      <AuthProvider>
-        <CartProvider>
-          <div className="App">
+      <LanguageProvider>
+        <AuthProvider>
+          <CartProvider>
+            <div className="App">
             <NavBar />
             <Routes>
               <Route path="/" element={<ToolsCatalog />} />
@@ -65,7 +67,7 @@ function App() {
               <Route
                 path="/admin/users"
                 element={
-                  <ProtectedRoute adminOnly={true}>
+                  <ProtectedRoute staffOnly={true}>
                     <UsersManagement />
                   </ProtectedRoute>
                 }
@@ -73,7 +75,7 @@ function App() {
               <Route
                 path="/admin/overdue"
                 element={
-                  <ProtectedRoute adminOnly={true}>
+                  <ProtectedRoute staffOnly={true}>
                     <OverdueTools />
                   </ProtectedRoute>
                 }
@@ -95,10 +97,11 @@ function App() {
                 }
               />
             </Routes>
-            <AccessibilityButton />
-          </div>
-        </CartProvider>
-      </AuthProvider>
+              <AccessibilityButton />
+            </div>
+          </CartProvider>
+        </AuthProvider>
+      </LanguageProvider>
     </Router>
   );
 }

@@ -258,7 +258,7 @@ const ToolReservations = () => {
                       </div>
                       <div className="flex items-center gap-2 text-gray-700">
                         <DollarSign size={16} className="text-gray-500" />
-                        <span>${reservation.total_price.toFixed(2)}</span>
+                        <span>₪{reservation.total_price.toFixed(2)}</span>
                       </div>
                     </div>
                   </div>

@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { toolsAPI, settingsAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { Package, Calendar, DollarSign, AlertCircle, ShoppingCart, CheckCircle } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+import { Package, Calendar, AlertCircle, ShoppingCart, CheckCircle } from 'lucide-react';
 import DatePicker from '../components/DatePicker';
 
 const ToolDetails = () => {
@@ -11,6 +12,7 @@ const ToolDetails = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { addToCart, cartItems } = useCart();
+  const { t } = useLanguage();
 
   const [tool, setTool] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -159,7 +161,7 @@ const ToolDetails = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">Loading...</div>
+        <div className="text-xl">{t('loading')}</div>
       </div>
     );
   }
@@ -201,31 +203,30 @@ const ToolDetails = () => {
               </span>
               <h1 className="text-3xl font-bold mb-4">{tool.name}</h1>
               <div className="flex items-center space-x-2 mb-2">
-                <DollarSign className="text-blue-600" />
                 <span className="text-3xl font-bold text-blue-600">
-                  ${tool.price_per_day}
-                  <span className="text-lg text-gray-600 font-normal">/day</span>
+                  ₪{tool.price_per_day}
+                  <span className="text-lg text-gray-600 font-normal">/{t('day')}</span>
                 </span>
               </div>
 
               {tool.stock !== undefined && (
                 <div className="mb-6 text-gray-600">
                   <Package className="inline mr-2" size={18} />
-                  <span className="font-medium">Total Stock:</span> {tool.stock} available
+                  <span className="font-medium">{t('totalStock')}:</span> {tool.stock} {tool.stock > 1 ? t('availableStockPlural') : t('availableStock')}
                 </div>
               )}
 
               {!tool.is_available && (
                 <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
                   <AlertCircle className="inline mr-2" size={20} />
-                  This tool is currently unavailable (maintenance mode)
+                  {t('toolUnavailable')}
                 </div>
               )}
 
               <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-2">Description</h3>
+                <h3 className="text-lg font-semibold mb-2">{t('description')}</h3>
                 <p className="text-gray-600">
-                  {tool.description || 'No description available'}
+                  {tool.description || t('noDescription')}
                 </p>
               </div>
 
@@ -234,7 +235,7 @@ const ToolDetails = () => {
                 <div className="border-t pt-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center">
                     <Calendar className="mr-2" size={20} />
-                    Book This Tool
+                    {t('bookThisTool')}
                   </h3>
 
                   {error && (
@@ -245,7 +246,7 @@ const ToolDetails = () => {
 
                   <div className="space-y-4">
                     <DatePicker
-                      label="Start Date"
+                      label={t('startDate')}
                       value={startDate}
                       onChange={(date) => {
                         setStartDate(date);
@@ -257,7 +258,7 @@ const ToolDetails = () => {
                     />
 
                     <DatePicker
-                      label="End Date"
+                      label={t('endDate')}
                       value={endDate}
                       onChange={(date) => {
                         setEndDate(date);
@@ -270,7 +271,7 @@ const ToolDetails = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Quantity
+                        {t('quantity')}
                       </label>
                       <input
                         type="number"
@@ -285,20 +286,20 @@ const ToolDetails = () => {
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                       <p className="text-xs text-gray-500 mt-1">
-                        How many of this tool do you want to rent?
+                        {t('howManyTools')}
                       </p>
                     </div>
 
                     {startDate && endDate && (
                       <div className="bg-blue-50 p-4 rounded">
                         <div className="flex justify-between items-center">
-                          <span className="font-semibold">Total Price:</span>
+                          <span className="font-semibold">{t('totalPrice')}:</span>
                           <span className="text-2xl font-bold text-blue-600">
-                            ${totalPrice.toFixed(2)}
+                            ₪{totalPrice.toFixed(2)}
                           </span>
                         </div>
                         <p className="text-sm text-gray-600 mt-1">
-                          {Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24))} days × {quantity} tool(s) × ${tool.price_per_day}/day
+                          {Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24))} {t('days')} × {quantity} {quantity === 1 ? t('tool') : t('toolsLower')} × ₪{tool.price_per_day}/{t('day')}
                         </p>
                       </div>
                     )}
@@ -308,22 +309,22 @@ const ToolDetails = () => {
                       disabled={checking || !startDate || !endDate}
                       className="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 disabled:opacity-50"
                     >
-                      {checking ? 'Checking...' : 'Check Availability'}
+                      {checking ? t('checking') : t('checkAvailabilityBtn')}
                     </button>
 
                     {availability && (
                       <div className={`p-4 rounded ${availability.available ? 'bg-green-100 border border-green-400 text-green-700' : 'bg-red-100 border border-red-400 text-red-700'}`}>
                         <div className="font-semibold mb-2">
-                          {availability.available ? '✓ Available for these dates!' : '✗ ' + availability.reason}
+                          {availability.available ? '✓ ' + t('availableForDates') : '✗ ' + availability.reason}
                         </div>
                         {availability.availableStock !== undefined && (
                           <div className="text-sm mt-2">
-                            <div>Available stock: {availability.availableStock} / {availability.totalStock}</div>
+                            <div>{availability.availableStock > 1 ? t('availableStockPlural') : t('availableStock')}: {availability.availableStock} / {availability.totalStock}</div>
                             {availability.reservedStock > 0 && (
-                              <div>Already reserved: {availability.reservedStock}</div>
+                              <div>{t('alreadyReserved')}: {availability.reservedStock}</div>
                             )}
                             {availability.cartQuantity > 0 && (
-                              <div>Already in cart: {availability.cartQuantity}</div>
+                              <div>{t('alreadyInCart')}: {availability.cartQuantity}</div>
                             )}
                           </div>
                         )}
@@ -336,17 +337,17 @@ const ToolDetails = () => {
                           <div className="bg-white rounded-full p-2">
                             <CheckCircle size={24} className="text-green-500" />
                           </div>
-                          <span className="text-lg font-bold">Added to Cart!</span>
+                          <span className="text-lg font-bold">{t('addedToCart')}</span>
                         </div>
                         <div className="text-center">
                           <p className="text-sm mb-3">
-                            {tool.name} has been added to your cart
+                            {tool.name} {t('hasBeenAddedToCart')}
                           </p>
                           <button
                             onClick={() => navigate('/cart')}
                             className="bg-white text-green-600 px-6 py-2 rounded-md font-semibold hover:bg-green-50 transition-colors"
                           >
-                            View Cart
+                            {t('viewCart')}
                           </button>
                         </div>
                       </div>
@@ -358,11 +359,11 @@ const ToolDetails = () => {
                       className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 font-semibold flex items-center justify-center space-x-2"
                     >
                       <ShoppingCart size={20} />
-                      <span>Add to Cart</span>
+                      <span>{t('addToCart')}</span>
                     </button>
 
                     <p className="text-sm text-gray-600 text-center">
-                      Items will be held in your cart until checkout
+                      {t('itemsHeldUntilCheckout')}
                     </p>
                   </div>
                 </div>

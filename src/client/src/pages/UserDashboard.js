@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { reservationsAPI, paymentsAPI } from '../services/api';
-import { Calendar, DollarSign, Package, X, Trash2 } from 'lucide-react';
+import { Calendar, DollarSign, Package } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const UserDashboard = () => {
   const [activeTab, setActiveTab] = useState('reservations');
   const [reservations, setReservations] = useState([]);
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { language } = useLanguage();
+  const locale = language === 'he' ? 'he-IL' : 'en-GB';
 
   useEffect(() => {
     fetchData();
@@ -24,34 +27,6 @@ const UserDashboard = () => {
       console.error('Failed to fetch data:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleCancelReservation = async (id) => {
-    if (!window.confirm('Are you sure you want to cancel this reservation?')) {
-      return;
-    }
-
-    try {
-      await reservationsAPI.cancel(id);
-      alert('Reservation cancelled successfully');
-      fetchData();
-    } catch (error) {
-      alert('Failed to cancel reservation');
-    }
-  };
-
-  const handleDeleteReservation = async (id) => {
-    if (!window.confirm('⚠️ WARNING: This will permanently delete this reservation.\n\nThis action CANNOT be undone.\n\nAre you sure you want to continue?')) {
-      return;
-    }
-
-    try {
-      await reservationsAPI.userDelete(id);
-      alert('Reservation deleted successfully');
-      fetchData();
-    } catch (error) {
-      alert(error.response?.data?.error || 'Failed to delete reservation');
     }
   };
 
@@ -154,12 +129,12 @@ const UserDashboard = () => {
                           <p className="flex items-center">
                             <Calendar size={16} className="mr-2" />
                             <span className="font-medium">From:</span>
-                            <span className="ml-2">{new Date(reservation.start_date).toLocaleDateString('en-GB')}</span>
+                            <span className="ml-2">{new Date(reservation.start_date).toLocaleDateString(locale)}</span>
                           </p>
                           <p className="flex items-center">
                             <Calendar size={16} className="mr-2" />
                             <span className="font-medium">To:</span>
-                            <span className="ml-2">{new Date(reservation.end_date).toLocaleDateString('en-GB')}</span>
+                            <span className="ml-2">{new Date(reservation.end_date).toLocaleDateString(locale)}</span>
                           </p>
                           <p className="flex items-center">
                             <Package size={16} className="mr-2" />
@@ -170,32 +145,11 @@ const UserDashboard = () => {
                             <DollarSign size={16} className="mr-2" />
                             <span className="font-medium">Total:</span>
                             <span className="ml-2 text-xl font-bold text-blue-600">
-                              ${reservation.total_price}
+                              ₪{reservation.total_price}
                             </span>
                           </p>
                         </div>
                       </div>
-                    </div>
-
-                    <div className="flex flex-col space-y-2">
-                      {reservation.status === 'active' && (
-                        <button
-                          onClick={() => handleCancelReservation(reservation.id)}
-                          className="flex items-center space-x-1 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-                        >
-                          <X size={16} />
-                          <span>Cancel</span>
-                        </button>
-                      )}
-                      {reservation.status !== 'active' && (
-                        <button
-                          onClick={() => handleDeleteReservation(reservation.id)}
-                          className="flex items-center space-x-1 bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800"
-                        >
-                          <Trash2 size={16} />
-                          <span>Delete</span>
-                        </button>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -238,7 +192,7 @@ const UserDashboard = () => {
                     {payments.map((payment) => (
                       <tr key={payment.id}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {new Date(payment.timestamp).toLocaleDateString('en-GB')}
+                          {new Date(payment.timestamp).toLocaleDateString(locale)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">
@@ -247,11 +201,11 @@ const UserDashboard = () => {
                           <div className="text-sm text-gray-500">{payment.category}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(payment.start_date).toLocaleDateString('en-GB')} -{' '}
-                          {new Date(payment.end_date).toLocaleDateString('en-GB')}
+                          {new Date(payment.start_date).toLocaleDateString(locale)} -{' '}
+                          {new Date(payment.end_date).toLocaleDateString(locale)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                          ${payment.amount}
+                          ₪{payment.amount}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span

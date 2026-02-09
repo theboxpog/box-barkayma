@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { ShoppingCart, Trash2, Calendar, Package, ArrowRight } from 'lucide-react';
 
 const Cart = () => {
   const { cartItems, removeFromCart, getCartTotal } = useCart();
   const { isAuthenticated } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [error, setError] = useState('');
 
@@ -39,15 +41,15 @@ const Cart = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto text-center">
             <ShoppingCart size={56} className="mx-auto text-gray-400 mb-4 md:w-16 md:h-16" />
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-3 md:mb-4">Your Cart is Empty</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-3 md:mb-4">{t('yourCartEmpty')}</h1>
             <p className="text-sm md:text-base text-gray-600 mb-6 md:mb-8">
-              Browse our tools catalog and add items to your cart to get started.
+              {t('cartEmptyMessage')}
             </p>
             <button
               onClick={() => navigate('/tools')}
               className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 font-semibold w-full sm:w-auto"
             >
-              Browse Tools
+              {t('browseTools')}
             </button>
           </div>
         </div>
@@ -64,9 +66,9 @@ const Cart = () => {
               <div className="flex items-center space-x-3">
                 <ShoppingCart size={28} className="md:w-8 md:h-8" />
                 <div>
-                  <h1 className="text-xl md:text-3xl font-bold">Shopping Cart</h1>
+                  <h1 className="text-xl md:text-3xl font-bold">{t('shoppingCart')}</h1>
                   <p className="text-sm md:text-base text-blue-100">
-                    {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'} in your cart
+                    {cartItems.length} {cartItems.length === 1 ? t('itemInCart') : t('itemsInCart')}
                   </p>
                 </div>
               </div>
@@ -112,15 +114,15 @@ const Cart = () => {
                                 </span>
                               </div>
                               <div className="text-gray-700">
-                                <span className="font-medium">Duration:</span> {item.days}{' '}
-                                {item.days === 1 ? 'day' : 'days'}
+                                <span className="font-medium">{t('duration')}:</span> {item.days}{' '}
+                                {item.days === 1 ? t('day') : t('days')}
                               </div>
                               <div className="text-gray-700">
-                                <span className="font-medium">Quantity:</span> {item.quantity}{' '}
-                                {item.quantity === 1 ? 'tool' : 'tools'}
+                                <span className="font-medium">{t('quantity')}:</span> {item.quantity}{' '}
+                                {item.quantity === 1 ? t('tool') : t('toolsLower')}
                               </div>
                               <div className="text-gray-700">
-                                <span className="font-medium">Price per day:</span> $
+                                <span className="font-medium">{t('pricePerDay')}:</span> ₪
                                 {item.pricePerDay}
                               </div>
                             </div>
@@ -130,14 +132,14 @@ const Cart = () => {
 
                       <div className="flex md:flex-col items-center md:items-end justify-between md:justify-start md:ml-6 md:text-right pt-3 md:pt-0 border-t md:border-t-0">
                         <div className="text-xl md:text-2xl font-bold text-blue-600 md:mb-4">
-                          ${item.totalPrice.toFixed(2)}
+                          ₪{item.totalPrice.toFixed(2)}
                         </div>
                         <button
                           onClick={() => removeFromCart(item.id)}
                           className="text-red-600 hover:text-red-800 flex items-center space-x-1 text-sm md:text-base"
                         >
                           <Trash2 size={16} className="md:w-[18px] md:h-[18px]" />
-                          <span>Remove</span>
+                          <span>{t('remove')}</span>
                         </button>
                       </div>
                     </div>
@@ -147,9 +149,9 @@ const Cart = () => {
 
               <div className="border-t border-gray-200 mt-6 md:mt-8 pt-4 md:pt-6">
                 <div className="flex items-center justify-between mb-4 md:mb-6">
-                  <div className="text-xl md:text-2xl font-bold text-gray-800">Total</div>
+                  <div className="text-xl md:text-2xl font-bold text-gray-800">{t('total')}</div>
                   <div className="text-2xl md:text-3xl font-bold text-blue-600">
-                    ${getCartTotal().toFixed(2)}
+                    ₪{getCartTotal().toFixed(2)}
                   </div>
                 </div>
 
@@ -158,27 +160,20 @@ const Cart = () => {
                     onClick={() => navigate('/tools')}
                     className="flex-1 bg-gray-200 text-gray-800 py-3 px-4 md:px-6 rounded-md hover:bg-gray-300 font-semibold"
                   >
-                    Continue Shopping
+                    {t('continueShopping')}
                   </button>
                   <button
                     onClick={handleCheckout}
                     className="flex-1 bg-blue-600 text-white py-3 px-4 md:px-6 rounded-md hover:bg-blue-700 font-semibold flex items-center justify-center space-x-2"
                   >
                     <ArrowRight size={20} />
-                    <span>Proceed to Checkout</span>
+                    <span>{t('proceedToCheckout')}</span>
                   </button>
                 </div>
 
                 {!isAuthenticated && (
                   <p className="text-sm text-gray-600 text-center mt-4">
-                    Please{' '}
-                    <button
-                      onClick={() => navigate('/login')}
-                      className="text-blue-600 hover:underline font-semibold"
-                    >
-                      login
-                    </button>{' '}
-                    to proceed with checkout
+                    {t('pleaseLoginCheckout')}
                   </p>
                 )}
               </div>
