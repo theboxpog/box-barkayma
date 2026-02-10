@@ -5,8 +5,6 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { reservationsAPI, paymentsAPI, couponsAPI, authAPI, toolsAPI } from '../services/api';
 import { CreditCard, Package, Calendar, CheckCircle, Loader, Tag, X, Phone, Lock } from 'lucide-react';
-import axios from 'axios';
-
 const Checkout = () => {
   const { cartItems, clearCart, getCartTotal } = useCart();
   const { isAuthenticated, user, updateUser } = useAuth();
@@ -35,7 +33,7 @@ const Checkout = () => {
     const initSumit = async () => {
       try {
         // Fetch Sumit config from server
-        const response = await axios.get('http://localhost:5000/api/payments/sumit-config');
+        const response = await paymentsAPI.getSumitConfig();
         setSumitConfig(response.data);
 
         // Wait for jQuery and Sumit to be available
