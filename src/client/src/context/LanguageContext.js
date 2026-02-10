@@ -264,7 +264,7 @@ const translations = {
     overdue: 'באיחור',
 
     // Home page
-    welcomeTitle: 'ברוכים הבאים ל-the box',
+    welcomeTitle: 'ברוכים הבאים להקופסא',
     welcomeSubtitle: 'המקום שלך להשכרת כלים',
     browseTools: 'עיין בכלים',
     featuredTools: 'כלים מומלצים',

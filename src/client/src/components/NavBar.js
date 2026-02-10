@@ -30,7 +30,7 @@ const NavBar = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 text-lg md:text-xl font-bold z-20" onClick={closeMobileMenu}>
             <Wrench size={24} className="md:w-7 md:h-7" />
-            <span>the box</span>
+            <span>{language === 'he' ? 'הקופסא' : 'the box'}</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -164,9 +164,9 @@ const NavBar = () => {
               title="Change Language"
             >
               <Globe size={16} />
-              <span>{language === 'he' ? 'EN' : 'עב'}</span>
+              <span>{language === 'he' ? 'עב' : 'EN'}</span>
             </button>
-            <Link to="/cart" className="relative" onClick={closeMobileMenu}>
+            <Link to="/cart" className="relative flex items-center" onClick={closeMobileMenu}>
               <ShoppingCart size={22} />
               {getCartCount() > 0 && (
                 <span className="absolute -top-2 ltr:-right-2 rtl:-left-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold cart-badge-pulse shadow-lg">
