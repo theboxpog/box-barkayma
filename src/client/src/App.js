@@ -27,8 +27,10 @@ import Contact from './pages/Contact';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 
 function App() {
+  const basename = window.location.hostname === 'localhost' ? '/' : '/box-barkayma';
+
   return (
-    <Router>
+    <Router basename={basename}>
       <LanguageProvider>
         <AuthProvider>
           <CartProvider>
