@@ -424,7 +424,7 @@ const Checkout = () => {
                   </div>
                 )}
 
-                <form ref={formRef} data-og="form" onSubmit={handlePlaceOrder} className="space-y-4">
+                <form ref={formRef} id="checkout-form" data-og="form" onSubmit={handlePlaceOrder} className="space-y-4">
                   {/* Phone Number Section */}
                   {needsPhoneNumber && (
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
