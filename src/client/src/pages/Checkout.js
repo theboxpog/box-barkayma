@@ -183,6 +183,21 @@ const Checkout = () => {
   };
 
   const handlePlaceOrder = async (e) => {
+    // Get the Sumit token from the form first
+    const form = formRef.current;
+    const tokenInput = form?.querySelector('input[name="og-token"]');
+    const sumitToken = tokenInput?.value;
+
+    const finalTotal = getFinalTotal();
+
+    // If no token and payment is required, let Sumit handle the form submission
+    // Sumit will create a token and resubmit the form
+    if (!sumitToken && finalTotal > 0) {
+      // Don't prevent default - let Sumit intercept and create token
+      return;
+    }
+
+    // Now we have a token (or no payment needed), prevent default and process
     e.preventDefault();
 
     if (!isAuthenticated) {
@@ -211,19 +226,13 @@ const Checkout = () => {
       return;
     }
 
-    const finalTotal = getFinalTotal();
-
     // If total is 0 (coupon covers everything), skip payment
     if (finalTotal <= 0) {
       await processOrderWithoutPayment();
       return;
     }
 
-    // Get the Sumit token from the form
-    const form = formRef.current;
-    const tokenInput = form?.querySelector('input[name="og-token"]');
-    const sumitToken = tokenInput?.value;
-
+    // At this point we have a token
     if (!sumitToken) {
       setError(language === 'he' ? 'אנא מלא את פרטי כרטיס האשראי' : 'Please fill in your credit card details');
       return;
