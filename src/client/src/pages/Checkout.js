@@ -665,8 +665,7 @@ const Checkout = () => {
                 <button
                   type="submit"
                   form="checkout-form"
-                  onClick={handlePlaceOrder}
-                  disabled={processing || (!sumitReady && getFinalTotal() > 0)}
+                  disabled={processing}
                   className="w-full bg-green-600 text-white py-3 px-6 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center justify-center space-x-2"
                 >
                   {processing ? (
