@@ -30,25 +30,31 @@ const Checkout = () => {
 
   // Fetch Sumit configuration and initialize
   useEffect(() => {
+    let checkSumitInterval;
+    let timeoutId;
+
     const initSumit = async () => {
       try {
         // Fetch Sumit config from server
         const response = await paymentsAPI.getSumitConfig();
         setSumitConfig(response.data);
+        console.log('Sumit config loaded:', response.data);
 
         // Wait for jQuery and Sumit to be available
-        const checkSumit = setInterval(() => {
+        checkSumitInterval = setInterval(() => {
           if (window.jQuery && window.OfficeGuy && window.OfficeGuy.Payments) {
-            clearInterval(checkSumit);
+            clearInterval(checkSumitInterval);
+            clearTimeout(timeoutId);
             setSumitReady(true);
+            console.log('Sumit library detected and ready');
           }
         }, 100);
 
         // Timeout after 10 seconds
-        setTimeout(() => {
-          clearInterval(checkSumit);
-          if (!sumitReady) {
-            console.warn('Sumit payments library not loaded');
+        timeoutId = setTimeout(() => {
+          clearInterval(checkSumitInterval);
+          if (!window.OfficeGuy || !window.OfficeGuy.Payments) {
+            console.error('Sumit payments library failed to load after 10 seconds');
           }
         }, 10000);
       } catch (err) {
@@ -57,22 +63,62 @@ const Checkout = () => {
     };
 
     initSumit();
+
+    return () => {
+      if (checkSumitInterval) clearInterval(checkSumitInterval);
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, []);
 
   // Initialize Sumit form binding when ready
   useEffect(() => {
-    if (sumitReady && sumitConfig && formRef.current) {
+    if (sumitReady && sumitConfig && formRef.current && user && cartItems.length > 0) {
       try {
+        // Log available methods for debugging
+        console.log('Sumit Payments methods:', Object.keys(window.OfficeGuy.Payments));
+
+        const finalTotal = getCartTotal();
+        const itemsDescription = cartItems.map(item => item.toolName).join(', ');
+
         window.OfficeGuy.Payments.BindFormSubmit({
           CompanyID: parseInt(sumitConfig.companyId),
-          APIPublicKey: sumitConfig.publicKey
+          APIPublicKey: sumitConfig.publicKey,
+          FormSelector: '#checkout-form',
+          ChargeType: 1, // Regular charge
+          Currency: 1, // ILS
+          SumToBill: finalTotal,
+          Items: [{
+            Item: {
+              ID: 'rental',
+              Name: itemsDescription.substring(0, 100),
+              Price: finalTotal,
+              Quantity: 1
+            }
+          }],
+          Customer: {
+            Name: user.name || user.email.split('@')[0],
+            Email: user.email,
+            Phone: phoneNumber || ''
+          },
+          ResponseCallback: function(response) {
+            console.log('Sumit BindFormSubmit response:', response);
+            // After Sumit generates token, auto-submit the form
+            if (response.Status === 0) {
+              // Token generated successfully - trigger form submit again
+              const form = document.getElementById('checkout-form');
+              if (form) {
+                // Use requestSubmit to trigger the onSubmit handler
+                form.requestSubmit();
+              }
+            }
+          }
         });
-        console.log('Sumit payments initialized');
+        console.log('Sumit BindFormSubmit initialized with customer and items');
       } catch (err) {
         console.error('Failed to initialize Sumit:', err);
       }
     }
-  }, [sumitReady, sumitConfig]);
+  }, [sumitReady, sumitConfig, user, cartItems, phoneNumber, getCartTotal]);
 
   // Check if user has phone number on component mount
   useEffect(() => {
@@ -183,23 +229,78 @@ const Checkout = () => {
   };
 
   const handlePlaceOrder = async (e) => {
-    // Get the Sumit token from the form first
+    // Get the Sumit token from the form
     const form = formRef.current;
-    const tokenInput = form?.querySelector('input[name="og-token"]');
+    const tokenInput = form?.querySelector('input[name="CardToken"], input[name="og-token"], input[name="SingleUseToken"]');
     const sumitToken = tokenInput?.value;
 
     const finalTotal = getFinalTotal();
 
-    // If no token and payment is required, let Sumit handle the form submission
-    // Sumit will create a token and resubmit the form
+    console.log('handlePlaceOrder called', { finalTotal, sumitReady, sumitToken, tokenInput });
+
+    // If no token and payment is required, let Sumit handle it
     if (!sumitToken && finalTotal > 0) {
-      // Don't prevent default - let Sumit intercept and create token
+      // Validate basic requirements first
+      if (!isAuthenticated) {
+        e.preventDefault();
+        navigate('/login');
+        return;
+      }
+
+      if (cartItems.length === 0) {
+        e.preventDefault();
+        setError('Your cart is empty');
+        return;
+      }
+
+      if (needsPhoneNumber) {
+        e.preventDefault();
+        setError(language === 'he' ? 'אנא הוסף את מספר הטלפון שלך לפני התשלום' : 'Please add your phone number before checkout');
+        return;
+      }
+
+      if (!phoneNumber) {
+        e.preventDefault();
+        setError(language === 'he' ? 'מספר טלפון נדרש לתשלום' : 'Phone number is required for checkout');
+        return;
+      }
+
+      const digitsOnly = phoneNumber.replace(/\D/g, '');
+      if (digitsOnly.length < 10 || digitsOnly.length > 15) {
+        e.preventDefault();
+        setError(language === 'he' ? 'מספר טלפון חייב להכיל 10-15 ספרות' : 'Phone number must be 10-15 digits');
+        return;
+      }
+
+      if (!sumitReady || !window.OfficeGuy || !window.OfficeGuy.Payments) {
+        e.preventDefault();
+        setError(language === 'he' ? 'מערכת התשלום לא נטענה. אנא רענן את הדף.' : 'Payment system not loaded. Please refresh the page.');
+        return;
+      }
+
+      // Get card details for validation
+      const cardNumber = form.querySelector('[data-og="cardnumber"]')?.value?.replace(/\s/g, '');
+      const expMonth = form.querySelector('[data-og="expirationmonth"]')?.value;
+      const expYear = form.querySelector('[data-og="expirationyear"]')?.value;
+      const cvv = form.querySelector('[data-og="cvv"]')?.value;
+      const citizenId = form.querySelector('[data-og="citizenid"]')?.value;
+
+      if (!cardNumber || !expMonth || !expYear || !cvv || !citizenId) {
+        e.preventDefault();
+        setError(language === 'he' ? 'אנא מלא את כל פרטי כרטיס האשראי' : 'Please fill in all credit card details');
+        return;
+      }
+
+      // DO NOT call e.preventDefault() - let Sumit intercept the form submission
+      console.log('Letting Sumit intercept form submission...');
+      setProcessing(true);
       return;
     }
 
-    // Now we have a token (or no payment needed), prevent default and process
+    // We have a token or no payment needed - prevent default and process
     e.preventDefault();
 
+    // Basic validations
     if (!isAuthenticated) {
       navigate('/login');
       return;
@@ -210,36 +311,30 @@ const Checkout = () => {
       return;
     }
 
-    if (needsPhoneNumber) {
-      setError('Please add your phone number before checkout');
+    if (needsPhoneNumber || !phoneNumber) {
+      setError(language === 'he' ? 'מספר טלפון נדרש לתשלום' : 'Phone number is required for checkout');
       return;
     }
 
-    if (!phoneNumber) {
-      setError('Phone number is required for checkout');
-      return;
-    }
-
-    const digitsOnly = phoneNumber.replace(/\D/g, '');
-    if (digitsOnly.length < 10 || digitsOnly.length > 15) {
-      setError('Phone number must be 10-15 digits');
-      return;
-    }
-
-    // If total is 0 (coupon covers everything), skip payment
+    // If total is 0, process without payment
     if (finalTotal <= 0) {
       await processOrderWithoutPayment();
       return;
     }
 
-    // At this point we have a token
-    if (!sumitToken) {
-      setError(language === 'he' ? 'אנא מלא את פרטי כרטיס האשראי' : 'Please fill in your credit card details');
-      return;
+    // Process with token
+    if (sumitToken) {
+      setProcessing(true);
+      setError('');
+      await processPaymentWithToken(sumitToken);
+    } else {
+      setError(language === 'he' ? 'שגיאה בעיבוד התשלום. אנא נסה שוב.' : 'Payment processing error. Please try again.');
     }
+  };
 
-    setProcessing(true);
-    setError('');
+  // Process payment with Sumit token
+  const processPaymentWithToken = async (sumitToken) => {
+    const finalTotal = getFinalTotal();
 
     try {
       // Pre-checkout validation: Check availability
@@ -291,7 +386,34 @@ const Checkout = () => {
         return;
       }
 
-      // Create reservations
+      // FIRST: Charge with Sumit token (before creating reservations)
+      const chargeResponse = await paymentsAPI.sumitCharge({
+        token: sumitToken,
+        amount: finalTotal,
+        description: `Tool Rental - ${cartItems.length} item(s)`,
+        reservationIds: [], // No reservations yet - will create after successful payment
+        customerName: user?.name || user?.email?.split('@')[0] || 'Customer',
+        customerEmail: user?.email,
+        customerPhone: phoneNumber
+      });
+
+      if (!chargeResponse.data.success) {
+        // Payment failed - do NOT create reservations
+        // Get better error message from Sumit response
+        const statusDesc = chargeResponse.data.sumitResponse?.Data?.Payment?.StatusDescription;
+        const errorMsg = statusDesc || chargeResponse.data.error || (language === 'he' ? 'התשלום נכשל. אנא נסה שוב.' : 'Payment failed. Please try again.');
+        setError(errorMsg);
+
+        // Clear the used token so a new one will be generated on next submit
+        const form = formRef.current;
+        const tokenInput = form?.querySelector('input[name="CardToken"], input[name="og-token"], input[name="SingleUseToken"]');
+        if (tokenInput) {
+          tokenInput.value = '';
+        }
+        return;
+      }
+
+      // Payment successful - NOW create reservations
       const reservationsToCreate = cartItems.map(item => ({
         tool_id: item.toolId,
         start_date: item.startDate,
@@ -303,30 +425,43 @@ const Checkout = () => {
       const batchResponse = await reservationsAPI.createBatch(reservationsToCreate);
       const createdReservations = batchResponse.data.reservations;
 
-      // Charge with Sumit token
-      const chargeResponse = await paymentsAPI.sumitCharge({
-        token: sumitToken,
-        amount: finalTotal,
-        description: `Tool Rental - ${cartItems.length} item(s)`,
-        reservationIds: createdReservations.map(r => r.id)
-      });
-
-      if (chargeResponse.data.success) {
-        clearCart();
-        navigate('/checkout/success', {
-          state: {
-            orderCount: cartItems.length,
-            totalAmount: finalTotal,
-            reservations: createdReservations
+      // Record payment for the created reservations
+      const paymentId = chargeResponse.data.paymentId;
+      if (paymentId && createdReservations.length > 0) {
+        // Link payment to reservations via confirm endpoint
+        for (const reservation of createdReservations) {
+          try {
+            await paymentsAPI.confirmPayment(paymentId, reservation.id);
+          } catch (linkErr) {
+            console.warn('Could not link payment to reservation:', linkErr);
           }
-        });
-      } else {
-        setError(chargeResponse.data.error || 'Payment failed. Please try again.');
+        }
       }
+
+      clearCart();
+      navigate('/checkout/success', {
+        state: {
+          orderCount: cartItems.length,
+          totalAmount: finalTotal,
+          reservations: createdReservations
+        }
+      });
 
     } catch (err) {
       console.error('Checkout error:', err);
-      setError(err.response?.data?.error || 'Checkout failed. Please try again.');
+      // Extract error message from Sumit response or use default
+      const sumitError = err.response?.data?.sumitResponse?.Data?.Payment?.StatusDescription;
+      const sumitUserError = err.response?.data?.sumitResponse?.UserErrorMessage;
+      const apiError = err.response?.data?.error;
+      const errorMsg = sumitError || sumitUserError || apiError || (language === 'he' ? 'התשלום נכשל. בדוק את פרטי הכרטיס ונסה שוב.' : 'Payment failed. Please check your card details and try again.');
+      setError(errorMsg);
+
+      // Clear the used token so a new one will be generated on next submit
+      const form = formRef.current;
+      const tokenInput = form?.querySelector('input[name="CardToken"], input[name="og-token"], input[name="SingleUseToken"]');
+      if (tokenInput) {
+        tokenInput.value = '';
+      }
     } finally {
       setProcessing(false);
     }
@@ -489,14 +624,26 @@ const Checkout = () => {
                   {/* Sumit Credit Card Form */}
                   {getFinalTotal() > 0 ? (
                     <>
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-                        <div className="flex items-center">
-                          <Lock className="text-blue-600 mr-2" size={18} />
-                          <span className="text-sm text-blue-800">
-                            {language === 'he' ? 'תשלום מאובטח באמצעות SUMIT' : 'Secure payment powered by SUMIT'}
-                          </span>
+                      {!sumitReady && (
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+                          <div className="flex items-center">
+                            <Loader className="text-yellow-600 mr-2 animate-spin" size={18} />
+                            <span className="text-sm text-yellow-800">
+                              {language === 'he' ? 'טוען מערכת תשלום...' : 'Loading payment system...'}
+                            </span>
+                          </div>
                         </div>
-                      </div>
+                      )}
+                      {sumitReady && (
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                          <div className="flex items-center">
+                            <Lock className="text-blue-600 mr-2" size={18} />
+                            <span className="text-sm text-blue-800">
+                              {language === 'he' ? 'תשלום מאובטח באמצעות SUMIT' : 'Secure payment powered by SUMIT'}
+                            </span>
+                          </div>
+                        </div>
+                      )}
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -573,6 +720,7 @@ const Checkout = () => {
                       <p className="text-sm text-green-700">{t('couponCoversAll')}</p>
                     </div>
                   )}
+
                 </form>
               </div>
             </div>

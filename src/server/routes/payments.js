@@ -52,7 +52,7 @@ router.post('/create-payment-intent', authenticateToken, async (req, res) => {
 
 // Charge with Sumit token
 router.post('/sumit-charge', authenticateToken, async (req, res) => {
-  const { token, amount, description, reservationIds } = req.body;
+  const { token, amount, description, reservationIds, customerName, customerEmail, customerPhone } = req.body;
   const user_id = req.user.id;
 
   if (!token || !amount) {
@@ -60,34 +60,61 @@ router.post('/sumit-charge', authenticateToken, async (req, res) => {
   }
 
   try {
-    // Call Sumit API to charge the card
-    const sumitResponse = await axios.post(SUMIT_API_URL, {
+    // Build the charge request - Sumit API format
+    // UnitPrice must be OUTSIDE the Item object, at the same level as Quantity
+    const chargeRequest = {
       Credentials: {
         CompanyID: parseInt(SUMIT_COMPANY_ID),
         APIKey: SUMIT_PRIVATE_KEY
       },
       SingleUseToken: token,
-      Amount: amount,
-      Description: description || 'Tool Rental Payment',
-      ResponseLanguage: 'he'
-    }, {
+      Items: [
+        {
+          Item: {
+            ExternalIdentifier: '1',
+            Name: description || 'Tool Rental',
+            SKU: 'RENTAL',
+            SearchMode: 'Automatic'
+          },
+          Quantity: 1,
+          UnitPrice: parseFloat(amount.toFixed(2)),
+          Currency: 'ILS'
+        }
+      ],
+      Customer: {
+        Name: customerName || req.user.name || 'Customer',
+        Email: customerEmail || req.user.email || '',
+        Phone: customerPhone || ''
+      }
+    };
+
+    // Call Sumit API to charge the card
+    const sumitResponse = await axios.post(SUMIT_API_URL, chargeRequest, {
       headers: {
         'Content-Type': 'application/json'
       }
     });
 
-    // Check if Sumit returned success
-    if (sumitResponse.data && sumitResponse.data.Status === 0) {
-      // Payment successful - record in database
-      const sumitPaymentId = sumitResponse.data.Data?.PaymentId || `sumit_${Date.now()}`;
+    // Check if Sumit returned success with a REAL PaymentId
+    // Status === 0 means success, PaymentId is at Data.Payment.ID
+    const sumitPaymentId = sumitResponse.data?.Data?.Payment?.ID;
+    const isValidPayment = sumitResponse.data?.Data?.Payment?.ValidPayment;
 
+    const isRealSuccess = sumitResponse.data &&
+                          sumitResponse.data.Status === 0 &&
+                          sumitPaymentId &&
+                          isValidPayment === true;
+
+
+    if (isRealSuccess) {
+      // Payment successful with real PaymentId - record in database
       // Record payment for each reservation
       if (reservationIds && reservationIds.length > 0) {
         for (const reservationId of reservationIds) {
           await new Promise((resolve, reject) => {
             db.run(
               'INSERT INTO payments (reservation_id, user_id, amount, success, stripe_payment_id) VALUES (?, ?, ?, ?, ?)',
-              [reservationId, user_id, amount / reservationIds.length, 1, sumitPaymentId],
+              [reservationId, user_id, amount / reservationIds.length, 1, String(sumitPaymentId)],
               function (err) {
                 if (err) reject(err);
                 else resolve(this.lastID);
@@ -100,12 +127,14 @@ router.post('/sumit-charge', authenticateToken, async (req, res) => {
       res.json({
         success: true,
         message: 'Payment successful',
-        paymentId: sumitPaymentId,
+        paymentId: String(sumitPaymentId),
         sumitResponse: sumitResponse.data
       });
     } else {
-      // Payment failed
-      const errorMessage = sumitResponse.data?.UserErrorMessage || sumitResponse.data?.TechnicalErrorMessage || 'Payment failed';
+      // Payment failed or no valid PaymentId returned
+      const errorMessage = sumitResponse.data?.UserErrorMessage ||
+                          sumitResponse.data?.TechnicalErrorMessage ||
+                          (sumitResponse.data?.Status === 0 ? 'Payment not confirmed by processor' : 'Payment failed');
       res.status(400).json({
         success: false,
         error: errorMessage,
@@ -113,10 +142,19 @@ router.post('/sumit-charge', authenticateToken, async (req, res) => {
       });
     }
   } catch (error) {
-    console.error('Sumit payment error:', error.response?.data || error.message);
-    res.status(500).json({
+    console.error('Sumit payment error:', error.message);
+
+    // Sumit might return error with Status !== 0
+    const sumitData = error.response?.data;
+    const errorMessage = sumitData?.UserErrorMessage ||
+                        sumitData?.TechnicalErrorMessage ||
+                        error.message ||
+                        'Payment processing failed';
+
+    res.status(400).json({
       success: false,
-      error: error.response?.data?.UserErrorMessage || 'Payment processing failed'
+      error: errorMessage,
+      sumitResponse: sumitData
     });
   }
 });
