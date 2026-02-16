@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/box-barkayma/static/css/main.b1894a08.css",
+    "main.js": "/box-barkayma/static/js/main.ef67708d.js",
+    "static/js/453.0035c639.chunk.js": "/box-barkayma/static/js/453.0035c639.chunk.js",
+    "index.html": "/box-barkayma/index.html",
+    "main.b1894a08.css.map": "/box-barkayma/static/css/main.b1894a08.css.map",
+    "main.ef67708d.js.map": "/box-barkayma/static/js/main.ef67708d.js.map",
+    "453.0035c639.chunk.js.map": "/box-barkayma/static/js/453.0035c639.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.b1894a08.css",
+    "static/js/main.ef67708d.js"
+  ]
+}
