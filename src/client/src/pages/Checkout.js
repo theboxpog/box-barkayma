@@ -387,6 +387,10 @@ const Checkout = () => {
       }
 
       // FIRST: Charge with Sumit token (before creating reservations)
+      // Get customer ID number from form
+      const idNumberInput = document.getElementById('customer-id-number');
+      const customerIdNumber = idNumberInput?.value || '';
+
       const chargeResponse = await paymentsAPI.sumitCharge({
         token: sumitToken,
         amount: finalTotal,
@@ -394,7 +398,8 @@ const Checkout = () => {
         reservationIds: [], // No reservations yet - will create after successful payment
         customerName: user?.name || user?.email?.split('@')[0] || 'Customer',
         customerEmail: user?.email,
-        customerPhone: phoneNumber
+        customerPhone: phoneNumber,
+        customerIdNumber: customerIdNumber
       });
 
       if (!chargeResponse.data.success) {
@@ -703,6 +708,7 @@ const Checkout = () => {
                         </label>
                         <input
                           type="text"
+                          id="customer-id-number"
                           data-og="citizenid"
                           placeholder={language === 'he' ? 'מספר תעודת זהות' : 'ID Number'}
                           maxLength="9"
