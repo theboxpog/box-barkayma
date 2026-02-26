@@ -72,8 +72,8 @@ router.post('/sumit-charge', authenticateToken, async (req, res) => {
         {
           Item: {
             ExternalIdentifier: '1',
-            Name: description || 'Tool Rental',
-            SKU: 'RENTAL',
+            Name: description || 'The Box',
+            SKU: 'THEBOX',
             SearchMode: 'Automatic'
           },
           Quantity: 1,
@@ -85,8 +85,11 @@ router.post('/sumit-charge', authenticateToken, async (req, res) => {
         Name: customerName || req.user.name || 'Customer',
         Email: customerEmail || req.user.email || '',
         Phone: customerPhone || '',
-        IdentityNumber: customerIdNumber || ''
-      }
+        IdentityNumber: customerIdNumber || '',
+        SendDocumentByEmail: true
+      },
+      SendDocumentByEmail: true,
+      DocumentDescription: description || 'The Box'
     };
 
     // Call Sumit API to charge the card

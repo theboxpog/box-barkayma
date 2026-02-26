@@ -394,7 +394,7 @@ const Checkout = () => {
       const chargeResponse = await paymentsAPI.sumitCharge({
         token: sumitToken,
         amount: finalTotal,
-        description: `Tool Rental - ${cartItems.length} item(s)`,
+        description: `The Box - ${cartItems.map(item => item.toolName).join(', ')}`,
         reservationIds: [], // No reservations yet - will create after successful payment
         customerName: user?.name || user?.email?.split('@')[0] || 'Customer',
         customerEmail: user?.email,
