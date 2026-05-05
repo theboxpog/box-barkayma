@@ -94,6 +94,8 @@ export const paymentsAPI = {
     api.post('/payments/confirm', { payment_intent_id: paymentIntentId, reservation_id: reservationId }),
   sumitCharge: (data) => api.post('/payments/sumit-charge', data),
   getSumitConfig: () => api.get('/payments/sumit-config'),
+  bitInit: (data) => api.post('/payments/bit-init', data),
+  bitVerify: (data) => api.post('/payments/bit-verify', data),
   getHistory: () => api.get('/payments/history'),
   getByReservation: (reservationId) => api.get(`/payments/reservation/${reservationId}`)
 };

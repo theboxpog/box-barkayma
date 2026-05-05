@@ -7,6 +7,7 @@ const router = express.Router();
 
 // Sumit API configuration
 const SUMIT_API_URL = 'https://api.sumit.co.il/billing/payments/charge/';
+const SUMIT_BEGIN_REDIRECT_URL = 'https://api.sumit.co.il/billing/payments/beginredirect/';
 const SUMIT_COMPANY_ID = process.env.SUMIT_COMPANY_ID;
 const SUMIT_PRIVATE_KEY = process.env.SUMIT_PRIVATE_KEY;
 
@@ -268,6 +269,187 @@ router.get('/reservation/:reservationId', authenticateToken, (req, res) => {
       res.json(payment);
     }
   );
+});
+
+// Payment - Initialize and get redirect URL via Sumit BeginRedirect API
+router.post('/bit-init', authenticateToken, async (req, res) => {
+  const { amount, description, cartItems, customerName, customerEmail, customerPhone, couponData } = req.body;
+  const user_id = req.user.id;
+
+  if (!amount || !cartItems || cartItems.length === 0) {
+    return res.status(400).json({ error: 'Amount and cart items are required' });
+  }
+
+  try {
+    // Generate unique identifier
+    const identifier = `pay_${user_id}_${Date.now()}`;
+
+    // Save pending order to database
+    await new Promise((resolve, reject) => {
+      db.run(
+        'INSERT INTO pending_bit_orders (user_id, identifier, amount, cart_data, customer_data, status) VALUES (?, ?, ?, ?, ?, ?)',
+        [
+          user_id,
+          identifier,
+          amount,
+          JSON.stringify(cartItems),
+          JSON.stringify({ customerName, customerEmail, customerPhone, couponData }),
+          'pending'
+        ],
+        function (err) {
+          if (err) reject(err);
+          else resolve(this.lastID);
+        }
+      );
+    });
+
+    // Determine callback URL
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5001';
+    const callbackUrl = `${frontendUrl}/checkout/bit-callback`;
+
+    // Call Sumit BeginRedirect API
+    const beginRedirectRequest = {
+      Credentials: {
+        CompanyID: parseInt(SUMIT_COMPANY_ID),
+        APIKey: SUMIT_PRIVATE_KEY
+      },
+      Items: [
+        {
+          Item: {
+            ExternalIdentifier: '1',
+            Name: description || 'The Box - השכרת כלים',
+            SearchMode: 'Automatic'
+          },
+          Quantity: 1,
+          UnitPrice: parseFloat(amount.toFixed(2)),
+          Currency: 'ILS'
+        }
+      ],
+      Customer: {
+        Name: customerName || 'Customer',
+        Email: customerEmail || '',
+        Phone: customerPhone || '',
+        SendDocumentByEmail: true
+      },
+      ExternalIdentifier: identifier,
+      RedirectURL: callbackUrl,
+      SendDocumentByEmail: true
+    };
+
+    const sumitResponse = await axios.post(SUMIT_BEGIN_REDIRECT_URL, beginRedirectRequest, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    const redirectUrl = sumitResponse.data?.Data?.RedirectURL || sumitResponse.data?.Data?.Url;
+
+    if (sumitResponse.data?.Status === 0 && redirectUrl) {
+      res.json({
+        success: true,
+        redirectUrl,
+        identifier
+      });
+    } else {
+      const errorMsg = sumitResponse.data?.UserErrorMessage ||
+                       sumitResponse.data?.TechnicalErrorMessage ||
+                       'Failed to create payment redirect';
+      console.error('Sumit BeginRedirect error:', sumitResponse.data);
+      res.status(500).json({ error: errorMsg });
+    }
+  } catch (error) {
+    console.error('Payment init error:', error.response?.data || error.message);
+    const errorMsg = error.response?.data?.UserErrorMessage ||
+                     error.response?.data?.TechnicalErrorMessage ||
+                     'Failed to initialize payment';
+    res.status(500).json({ error: errorMsg });
+  }
+});
+
+// BIT Payment - Verify and complete order after redirect
+router.post('/bit-verify', authenticateToken, async (req, res) => {
+  const { paymentId, externalIdentifier } = req.body;
+  const user_id = req.user.id;
+
+  if (!paymentId || !externalIdentifier) {
+    return res.status(400).json({ error: 'Payment ID and identifier are required' });
+  }
+
+  try {
+    // Look up pending order
+    const pendingOrder = await new Promise((resolve, reject) => {
+      db.get(
+        'SELECT * FROM pending_bit_orders WHERE identifier = ? AND user_id = ? AND status = ?',
+        [externalIdentifier, user_id, 'pending'],
+        (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        }
+      );
+    });
+
+    if (!pendingOrder) {
+      return res.status(404).json({ error: 'Pending order not found or already completed' });
+    }
+
+    const cartItems = JSON.parse(pendingOrder.cart_data);
+
+    // Create reservations from saved cart data
+    const createdReservations = [];
+    for (const item of cartItems) {
+      const reservationId = await new Promise((resolve, reject) => {
+        db.run(
+          'INSERT INTO reservations (user_id, tool_id, start_date, end_date, total_price, quantity, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          [user_id, item.toolId, item.startDate, item.endDate, item.totalPrice, item.quantity || 1, 'active'],
+          function (err) {
+            if (err) reject(err);
+            else resolve(this.lastID);
+          }
+        );
+      });
+
+      createdReservations.push({
+        id: reservationId,
+        tool_id: item.toolId,
+        toolName: item.toolName,
+        start_date: item.startDate,
+        end_date: item.endDate,
+        total_price: item.totalPrice
+      });
+
+      // Record payment for this reservation
+      await new Promise((resolve, reject) => {
+        db.run(
+          'INSERT INTO payments (reservation_id, user_id, amount, success, stripe_payment_id) VALUES (?, ?, ?, ?, ?)',
+          [reservationId, user_id, item.totalPrice, 1, String(paymentId)],
+          function (err) {
+            if (err) reject(err);
+            else resolve(this.lastID);
+          }
+        );
+      });
+    }
+
+    // Mark pending order as completed
+    await new Promise((resolve, reject) => {
+      db.run(
+        'UPDATE pending_bit_orders SET status = ? WHERE id = ?',
+        ['completed', pendingOrder.id],
+        (err) => {
+          if (err) reject(err);
+          else resolve();
+        }
+      );
+    });
+
+    res.json({
+      success: true,
+      message: 'BIT payment verified and order created',
+      reservations: createdReservations,
+      paymentId: String(paymentId)
+    });
+  } catch (error) {
+    console.error('BIT verify error:', error.message);
+    res.status(500).json({ error: 'Failed to verify BIT payment' });
+  }
 });
 
 module.exports = router;

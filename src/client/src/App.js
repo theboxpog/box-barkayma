@@ -25,6 +25,7 @@ import RentalSettings from './pages/RentalSettings';
 import ToolAvailability from './pages/ToolAvailability';
 import Contact from './pages/Contact';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import BitCallback from './pages/BitCallback';
 
 function App() {
   const basename = window.location.hostname === 'localhost' ? '/' : '/box-barkayma';
@@ -50,6 +51,7 @@ function App() {
               <Route path="/cart" element={<Cart />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/checkout/success" element={<CheckoutSuccess />} />
+              <Route path="/checkout/bit-callback" element={<BitCallback />} />
               <Route
                 path="/dashboard"
                 element={

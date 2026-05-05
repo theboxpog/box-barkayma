@@ -102,6 +102,21 @@ function initializeDatabase() {
       VALUES (1, 'contact@toolrental.com', '+972 50-123-4567', '123 Tool Street, Tel Aviv, Israel')
     `);
 
+    // Pending BIT orders table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS pending_bit_orders (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        identifier TEXT UNIQUE NOT NULL,
+        amount REAL NOT NULL,
+        cart_data TEXT NOT NULL,
+        customer_data TEXT NOT NULL,
+        status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'completed', 'failed')),
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    `);
+
     console.log('Database tables initialized');
   });
 }
