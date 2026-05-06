@@ -16,32 +16,54 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('token'));
 
+  const refreshUser = async () => {
+    const storedToken = localStorage.getItem('token');
+    if (!storedToken) return;
+    try {
+      const response = await authAPI.getMe();
+      // Bail out if the token changed while the request was in-flight
+      // (e.g. a concurrent login or logout happened)
+      if (localStorage.getItem('token') !== storedToken) return;
+      const { freshToken, ...userData } = response.data;
+      if (freshToken) {
+        localStorage.setItem('token', freshToken);
+        setToken(freshToken);
+      }
+      setUser(userData);
+    } catch (error) {
+      if (localStorage.getItem('token') === storedToken) {
+        localStorage.removeItem('token');
+        setToken(null);
+        setUser(null);
+      }
+    }
+  };
+
   useEffect(() => {
     const initAuth = async () => {
-      const storedToken = localStorage.getItem('token');
-      if (storedToken) {
-        try {
-          const response = await authAPI.getMe();
-          setUser(response.data);
-        } catch (error) {
-          console.error('Failed to fetch user:', error);
-          localStorage.removeItem('token');
-          setToken(null);
-        }
-      }
+      await refreshUser();
       setLoading(false);
     };
 
     initAuth();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refreshUser();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
   const login = async (email, password) => {
     try {
       const response = await authAPI.login({ email, password });
-      const { token, user } = response.data;
+      const { token } = response.data;
       localStorage.setItem('token', token);
       setToken(token);
-      setUser(user);
+      await refreshUser();
       return { success: true };
     } catch (error) {
       return {
@@ -82,10 +104,10 @@ export const AuthProvider = ({ children }) => {
         };
       }
 
-      const { token, user, isNewUser } = response.data;
+      const { token, isNewUser } = response.data;
       localStorage.setItem('token', token);
       setToken(token);
-      setUser(user);
+      await refreshUser();
       return { success: true, isNewUser };
     } catch (error) {
       return {

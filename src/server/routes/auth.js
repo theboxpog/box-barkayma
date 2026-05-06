@@ -131,7 +131,12 @@ router.get('/me', authenticateToken, (req, res) => {
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
       }
-      res.json(user);
+      const freshToken = jwt.sign(
+        { id: user.id, email: user.email, role: user.role },
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.JWT_EXPIRES_IN }
+      );
+      res.json({ ...user, freshToken });
     }
   );
 });

@@ -27,7 +27,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 403) {
+    if (error.response && error.response.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
@@ -95,7 +95,8 @@ export const paymentsAPI = {
   sumitCharge: (data) => api.post('/payments/sumit-charge', data),
   getSumitConfig: () => api.get('/payments/sumit-config'),
   getHistory: () => api.get('/payments/history'),
-  getByReservation: (reservationId) => api.get(`/payments/reservation/${reservationId}`)
+  getByReservation: (reservationId) => api.get(`/payments/reservation/${reservationId}`),
+  bitInit: (data) => api.post('/payments/bit-init', data)
 };
 
 // Settings API

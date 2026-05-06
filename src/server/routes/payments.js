@@ -10,6 +10,85 @@ const SUMIT_API_URL = 'https://api.sumit.co.il/billing/payments/charge/';
 const SUMIT_COMPANY_ID = process.env.SUMIT_COMPANY_ID;
 const SUMIT_PRIVATE_KEY = process.env.SUMIT_PRIVATE_KEY;
 
+// Initialize SUMIT hosted payment page via BeginRedirect API
+router.post('/bit-init', authenticateToken, async (req, res) => {
+  const { amount, description, cartItems, customerName, customerEmail, customerPhone } = req.body;
+
+  if (!amount || amount <= 0) {
+    return res.status(400).json({ success: false, error: 'Valid amount is required' });
+  }
+
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const identifier = `order_${Date.now()}_${req.user.id}`;
+
+  try {
+    const redirectRequest = {
+      Credentials: {
+        CompanyID: parseInt(SUMIT_COMPANY_ID),
+        APIKey: SUMIT_PRIVATE_KEY
+      },
+      Items: [
+        {
+          Item: {
+            ExternalIdentifier: '1',
+            Name: description || 'The Box - Tool Rental',
+            SKU: 'THEBOX',
+            SearchMode: 'Automatic'
+          },
+          Quantity: 1,
+          UnitPrice: parseFloat(parseFloat(amount).toFixed(2)),
+          Currency: 'ILS'
+        }
+      ],
+      Customer: {
+        Name: customerName || req.user.name || 'Customer',
+        Email: customerEmail || req.user.email || '',
+        Phone: customerPhone || '',
+        SendDocumentByEmail: true
+      },
+      SendDocumentByEmail: true,
+      DocumentDescription: description || 'The Box - Tool Rental',
+      SuccessRedirectUrl: `${frontendUrl}/checkout/payment-callback?status=success&id=${identifier}`,
+      FailureRedirectUrl: `${frontendUrl}/checkout/payment-callback?status=failure`,
+      SuccessRedirectURL: `${frontendUrl}/checkout/payment-callback?status=success&id=${identifier}`,
+      FailureRedirectURL: `${frontendUrl}/checkout/payment-callback?status=failure`,
+      SuccessUrl: `${frontendUrl}/checkout/payment-callback?status=success&id=${identifier}`,
+      FailureUrl: `${frontendUrl}/checkout/payment-callback?status=failure`,
+      ReturnUrl: `${frontendUrl}/checkout/payment-callback?status=success&id=${identifier}`
+    };
+
+    const sumitResponse = await axios.post(
+      'https://api.sumit.co.il/billing/payments/beginredirect/',
+      redirectRequest,
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+
+    console.log('SUMIT beginredirect response:', JSON.stringify(sumitResponse.data, null, 2));
+
+    const data = sumitResponse.data;
+    const redirectUrl = data?.Data?.RedirectURL || data?.Data?.RedirectUrl || data?.Data?.Url;
+
+    if (data?.Status === 0 && redirectUrl) {
+      res.json({ success: true, redirectUrl, identifier });
+    } else {
+      const errorMsg = data?.UserErrorMessage ||
+                       data?.TechnicalErrorMessage ||
+                       `SUMIT error (status ${data?.Status}): ${JSON.stringify(data?.Data)}`;
+      console.error('SUMIT beginredirect failed:', errorMsg);
+      res.status(400).json({ success: false, error: errorMsg, sumitResponse: data });
+    }
+  } catch (error) {
+    console.error('SUMIT beginredirect error:', error.message);
+    console.error('SUMIT response body:', JSON.stringify(error.response?.data, null, 2));
+    const sumitData = error.response?.data;
+    const errorMsg = sumitData?.UserErrorMessage ||
+                     sumitData?.TechnicalErrorMessage ||
+                     error.message ||
+                     'Failed to initialize payment';
+    res.status(500).json({ success: false, error: errorMsg, sumitResponse: sumitData });
+  }
+});
+
 // Get Sumit configuration for client
 router.get('/sumit-config', (req, res) => {
   res.json({

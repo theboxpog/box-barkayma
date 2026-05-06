@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -14,6 +14,11 @@ const Checkout = () => {
 
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
+
+  // Payment iframe state
+  const [sumitUrl, setSumitUrl] = useState('');
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const iframeRef = useRef(null);
 
   // Phone number state
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -155,36 +160,39 @@ const Checkout = () => {
     setError('');
 
     try {
-      const cartData = cartItems.map(item => ({
-        toolId: item.toolId,
-        toolName: item.toolName,
-        startDate: item.startDate,
-        endDate: item.endDate,
-        quantity: item.quantity,
-        totalPrice: item.totalPrice
-      }));
-
+      // Step 1: Get SUMIT payment URL
       const response = await paymentsAPI.bitInit({
         amount: finalTotal,
         description: `The Box - ${cartItems.map(item => item.toolName).join(', ')}`,
-        cartItems: cartData,
         customerName: user?.name || user?.email?.split('@')[0] || 'Customer',
         customerEmail: user?.email,
-        customerPhone: phoneNumber,
-        couponData: appliedCoupon ? { code: appliedCoupon.coupon.code, discount: getDiscountAmount() } : null
+        customerPhone: phoneNumber
       });
 
-      if (response.data.success && response.data.redirectUrl) {
-        localStorage.setItem('pendingBitOrder', JSON.stringify({
-          identifier: response.data.identifier,
-          cartItems: cartData,
-          totalAmount: finalTotal
-        }));
-        window.location.href = response.data.redirectUrl;
-      } else {
+      if (!response.data.success || !response.data.redirectUrl) {
         setError(response.data.error || (language === 'he' ? 'שגיאה באתחול תשלום' : 'Failed to initialize payment'));
         setProcessing(false);
+        return;
       }
+
+      // Step 2: Create reservations now (before redirect)
+      const reservationsToCreate = cartItems.map(item => ({
+        tool_id: item.toolId,
+        start_date: item.startDate,
+        end_date: item.endDate,
+        quantity: item.quantity,
+        total_price: item.totalPrice
+      }));
+
+      await reservationsAPI.createBatch(reservationsToCreate);
+
+      // Step 3: Clear the cart
+      if (user?.id) localStorage.removeItem(`cart_${user.id}`);
+      clearCart();
+
+      // Step 4: Redirect to SUMIT for payment
+      window.location.href = response.data.redirectUrl;
+
     } catch (err) {
       setError(err.response?.data?.error || (language === 'he' ? 'שגיאה בתהליך התשלום' : 'Payment initialization failed'));
       setProcessing(false);

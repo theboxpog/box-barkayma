@@ -18,6 +18,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import CheckoutSuccess from './pages/CheckoutSuccess';
+import PaymentCallback from './pages/PaymentCallback';
 import UsersManagement from './pages/UsersManagement';
 import OverdueTools from './pages/OverdueTools';
 import ToolReservations from './pages/ToolReservations';
@@ -27,7 +28,7 @@ import Contact from './pages/Contact';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 
 function App() {
-  const basename = window.location.hostname === 'localhost' ? '/' : '/box-barkayma';
+  const basename = window.location.hostname.includes('github.io') ? '/box-barkayma' : '/';
 
   return (
     <Router basename={basename}>
@@ -50,6 +51,7 @@ function App() {
               <Route path="/cart" element={<Cart />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/checkout/success" element={<CheckoutSuccess />} />
+              <Route path="/checkout/payment-callback" element={<PaymentCallback />} />
               <Route
                 path="/dashboard"
                 element={
