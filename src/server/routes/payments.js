@@ -18,7 +18,12 @@ router.post('/bit-init', authenticateToken, async (req, res) => {
     return res.status(400).json({ success: false, error: 'Valid amount is required' });
   }
 
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  if (!SUMIT_COMPANY_ID || !SUMIT_PRIVATE_KEY) {
+    console.error('SUMIT credentials missing from environment variables');
+    return res.status(500).json({ success: false, error: 'Payment system not configured. Contact support.' });
+  }
+
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5001';
   const identifier = `order_${Date.now()}_${req.user.id}`;
 
   try {
