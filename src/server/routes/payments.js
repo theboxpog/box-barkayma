@@ -48,26 +48,22 @@ router.post('/bit-init', authenticateToken, async (req, res) => {
       Customer: {
         Name: customerName || req.user.name || 'Customer',
         Email: customerEmail || req.user.email || '',
-        Phone: customerPhone || '',
-        SendDocumentByEmail: true
+        Phone: customerPhone || ''
       },
-      SendDocumentByEmail: true,
       DocumentDescription: description || 'The Box - Tool Rental',
       SuccessRedirectUrl: `${frontendUrl}/checkout/payment-callback?status=success&id=${identifier}`,
-      FailureRedirectUrl: `${frontendUrl}/checkout/payment-callback?status=failure`,
-      SuccessRedirectURL: `${frontendUrl}/checkout/payment-callback?status=success&id=${identifier}`,
-      FailureRedirectURL: `${frontendUrl}/checkout/payment-callback?status=failure`,
-      SuccessUrl: `${frontendUrl}/checkout/payment-callback?status=success&id=${identifier}`,
-      FailureUrl: `${frontendUrl}/checkout/payment-callback?status=failure`,
-      ReturnUrl: `${frontendUrl}/checkout/payment-callback?status=success&id=${identifier}`
+      FailureRedirectUrl: `${frontendUrl}/checkout/payment-callback?status=failure`
     };
 
     console.log('Sending to SUMIT:', JSON.stringify({ ...redirectRequest, Credentials: { CompanyID: redirectRequest.Credentials.CompanyID, APIKey: '***' } }, null, 2));
 
     const sumitResponse = await axios.post(
-      'https://api.sumit.co.il/billing/payments/beginredirect/',
+      'https://api.sumit.co.il/billing/payments/beginredirect',
       redirectRequest,
-      { headers: { 'Content-Type': 'application/json' } }
+      {
+        headers: { 'Content-Type': 'application/json' },
+        maxRedirects: 0
+      }
     );
 
     console.log('SUMIT beginredirect response:', JSON.stringify(sumitResponse.data, null, 2));
