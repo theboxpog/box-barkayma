@@ -62,6 +62,8 @@ router.post('/bit-init', authenticateToken, async (req, res) => {
       ReturnUrl: `${frontendUrl}/checkout/payment-callback?status=success&id=${identifier}`
     };
 
+    console.log('Sending to SUMIT:', JSON.stringify({ ...redirectRequest, Credentials: { CompanyID: redirectRequest.Credentials.CompanyID, APIKey: '***' } }, null, 2));
+
     const sumitResponse = await axios.post(
       'https://api.sumit.co.il/billing/payments/beginredirect/',
       redirectRequest,
@@ -84,13 +86,15 @@ router.post('/bit-init', authenticateToken, async (req, res) => {
     }
   } catch (error) {
     console.error('SUMIT beginredirect error:', error.message);
+    console.error('SUMIT status code:', error.response?.status);
+    console.error('SUMIT response headers:', JSON.stringify(error.response?.headers, null, 2));
     console.error('SUMIT response body:', JSON.stringify(error.response?.data, null, 2));
     const sumitData = error.response?.data;
     const errorMsg = sumitData?.UserErrorMessage ||
                      sumitData?.TechnicalErrorMessage ||
                      error.message ||
                      'Failed to initialize payment';
-    res.status(500).json({ success: false, error: errorMsg, sumitResponse: sumitData });
+    res.status(500).json({ success: false, error: errorMsg, sumitResponse: sumitData, statusCode: error.response?.status });
   }
 });
 
