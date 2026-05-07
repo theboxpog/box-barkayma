@@ -9,7 +9,7 @@ const router = express.Router();
 const SUMIT_API_URL = 'https://api.sumit.co.il/billing/payments/charge/';
 const SUMIT_COMPANY_ID = process.env.SUMIT_COMPANY_ID;
 const SUMIT_PRIVATE_KEY = process.env.SUMIT_PRIVATE_KEY;
-const SUMIT_BEGINREDIRECT_URL = process.env.SUMIT_PROXY_URL || 'https://api.sumit.co.il/api/v0.1/Payment/BeginRedirect';
+const SUMIT_BEGINREDIRECT_URL = process.env.SUMIT_PROXY_URL || 'https://api.sumit.co.il/billing/payments/beginredirect/';
 
 // Initialize SUMIT hosted payment page via BeginRedirect API
 router.post('/bit-init', authenticateToken, async (req, res) => {
