@@ -9,6 +9,10 @@ const router = express.Router();
 const SUMIT_API_URL = 'https://api.sumit.co.il/billing/payments/charge/';
 const SUMIT_COMPANY_ID = process.env.SUMIT_COMPANY_ID;
 const SUMIT_PRIVATE_KEY = process.env.SUMIT_PRIVATE_KEY;
+// SUMIT_PROXY_URL: set this on Render to a Cloudflare Worker URL that proxies
+// the beginredirect call — needed because SUMIT's API blocks cloud server IPs (AWS WAF).
+// Example: https://sumit-proxy.YOUR-NAME.workers.dev
+const SUMIT_BEGINREDIRECT_URL = process.env.SUMIT_PROXY_URL || 'https://api.sumit.co.il/billing/payments/beginredirect/';
 
 // Initialize SUMIT hosted payment page via BeginRedirect API
 router.post('/bit-init', authenticateToken, async (req, res) => {
@@ -59,17 +63,9 @@ router.post('/bit-init', authenticateToken, async (req, res) => {
     console.log('Sending to SUMIT:', JSON.stringify({ ...redirectRequest, Credentials: { CompanyID: redirectRequest.Credentials.CompanyID, APIKey: '***' } }, null, 2));
 
     const sumitResponse = await axios.post(
-      'https://api.sumit.co.il/billing/payments/beginredirect/',
+      SUMIT_BEGINREDIRECT_URL,
       redirectRequest,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json, text/plain, */*',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Origin': 'https://the-box.top',
-          'Referer': 'https://the-box.top/'
-        }
-      }
+      { headers: { 'Content-Type': 'application/json' } }
     );
 
     console.log('SUMIT beginredirect response:', JSON.stringify(sumitResponse.data, null, 2));

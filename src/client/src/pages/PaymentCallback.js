@@ -15,7 +15,11 @@ const PaymentCallback = () => {
   const [done, setDone] = useState(false);
 
   useEffect(() => {
-    if (status !== 'success') return;
+    // Payment was cancelled or failed — clear pending order so nothing is accidentally confirmed
+    if (status !== 'success') {
+      localStorage.removeItem('pendingBitOrder');
+      return;
+    }
 
     const pending = JSON.parse(localStorage.getItem('pendingBitOrder') || 'null');
 
