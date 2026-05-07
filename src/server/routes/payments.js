@@ -84,26 +84,10 @@ router.post('/bit-init', authenticateToken, async (req, res) => {
     }
   } catch (error) {
     const sumitData = error.response?.data;
-    const isWafBlock = error.response?.status === 405 ||
-      (typeof sumitData === 'string' && sumitData.includes('Human Verification'));
-
-    if (isWafBlock) {
-      // SUMIT API is WAF-blocked — fall back to direct payment page URL
-      console.warn('SUMIT API WAF-blocked, falling back to direct payment page URL');
-      const directParams = new URLSearchParams({
-        amount: parseFloat(amount).toFixed(2),
-        DocumentDescription: description || 'The Box - Tool Rental',
-        CustomerName: customerName || req.user.name || 'Customer',
-        CustomerEmail: customerEmail || req.user.email || '',
-        CustomerPhone: customerPhone || '',
-        SuccessRedirectUrl: `${frontendUrl}/checkout/payment-callback?status=success`,
-        FailureRedirectUrl: `${frontendUrl}/checkout/payment-callback?status=failure`
-      });
-      const directUrl = `${process.env.SUMIT_PAYMENT_PAGE_URL || 'https://pay.sumit.co.il/2twmg6/v4it46/v4iydh/payment/'}?${directParams.toString()}`;
-      return res.json({ success: true, redirectUrl: directUrl });
-    }
 
     console.error('SUMIT beginredirect error:', error.message);
+    console.error('SUMIT status code:', error.response?.status);
+    console.error('SUMIT response body:', JSON.stringify(error.response?.data, null, 2));
     const errorMsg = (typeof sumitData === 'object' && sumitData?.UserErrorMessage) ||
                      (typeof sumitData === 'object' && sumitData?.TechnicalErrorMessage) ||
                      error.message || 'Failed to initialize payment';
