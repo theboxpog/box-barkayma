@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -156,73 +155,34 @@ const Checkout = () => {
     setError('');
 
     try {
-      // Fetch SUMIT credentials from our server
-      const configResponse = await paymentsAPI.getSumitConfig();
-      const { companyId, apiKey } = configResponse.data;
-
-      if (!companyId || !apiKey) {
-        setError(language === 'he' ? 'מערכת התשלום אינה מוגדרת' : 'Payment system not configured');
-        setProcessing(false);
-        return;
-      }
-
-      const identifier = `order_${Date.now()}_${user?.id}`;
-      const frontendUrl = window.location.origin;
-
-      // Call SUMIT beginredirect directly from the browser (bypasses server WAF issues)
-      const sumitResponse = await axios.post(
-        'https://api.sumit.co.il/billing/payments/beginredirect/',
-        {
-          Credentials: {
-            CompanyID: parseInt(companyId),
-            APIKey: apiKey
-          },
-          Items: [{
-            Item: {
-              ExternalIdentifier: '1',
-              Name: `The Box - Tool Rental`,
-              SKU: 'THEBOX',
-              SearchMode: 'Automatic'
-            },
-            Quantity: 1,
-            UnitPrice: parseFloat(finalTotal.toFixed(2)),
-            Currency: 'ILS'
-          }],
-          Customer: {
-            Name: user?.name || user?.email?.split('@')[0] || 'Customer',
-            Email: user?.email || '',
-            Phone: phoneNumber
-          },
-          DocumentDescription: `The Box - Tool Rental`,
-          SuccessRedirectUrl: `${frontendUrl}/checkout/payment-callback?status=success&id=${identifier}`,
-          FailureRedirectUrl: `${frontendUrl}/checkout/payment-callback?status=failure`
-        }
-      );
-
-      const data = sumitResponse.data;
-      const redirectUrl = data?.Data?.RedirectURL || data?.Data?.RedirectUrl || data?.Data?.Url;
-
-      if (data?.Status !== 0 || !redirectUrl) {
-        const errMsg = data?.UserErrorMessage || data?.TechnicalErrorMessage || (language === 'he' ? 'שגיאה באתחול תשלום' : 'Failed to initialize payment');
-        setError(errMsg);
-        setProcessing(false);
-        return;
-      }
-
-      // Save pending order so PaymentCallback can create reservations after redirect
+      // Save pending order BEFORE calling server, so it's ready when we return
       localStorage.setItem('pendingBitOrder', JSON.stringify({
         cartItems: cartItems.map(item => ({ ...item })),
         totalAmount: finalTotal,
         userId: user?.id
       }));
 
-      // Redirect user to SUMIT's payment page
-      window.location.href = redirectUrl;
+      const response = await paymentsAPI.bitInit({
+        amount: finalTotal,
+        description: `The Box - Tool Rental`,
+        customerName: user?.name || user?.email?.split('@')[0] || 'Customer',
+        customerEmail: user?.email,
+        customerPhone: phoneNumber
+      });
+
+      if (!response.data.success || !response.data.redirectUrl) {
+        localStorage.removeItem('pendingBitOrder');
+        setError(response.data.error || (language === 'he' ? 'שגיאה באתחול תשלום' : 'Failed to initialize payment'));
+        setProcessing(false);
+        return;
+      }
+
+      // Redirect user to SUMIT's payment page (full redirect — payment happens on SUMIT's site)
+      window.location.href = response.data.redirectUrl;
 
     } catch (err) {
-      const errMsg = err.response?.data?.UserErrorMessage ||
-                     err.response?.data?.TechnicalErrorMessage ||
-                     err.response?.data?.error ||
+      localStorage.removeItem('pendingBitOrder');
+      const errMsg = err.response?.data?.error ||
                      (language === 'he' ? 'שגיאה בתהליך התשלום' : 'Payment initialization failed');
       setError(errMsg);
       setProcessing(false);

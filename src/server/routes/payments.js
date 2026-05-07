@@ -23,7 +23,8 @@ router.post('/bit-init', authenticateToken, async (req, res) => {
     return res.status(500).json({ success: false, error: 'Payment system not configured. Contact support.' });
   }
 
-  const frontendUrl = process.env.FRONTEND_URL || 'https://the-box.top';
+  // Use the Origin header from the request so it works on both localhost and production
+  const frontendUrl = req.headers.origin || process.env.FRONTEND_URL || 'https://the-box.top';
   const identifier = `order_${Date.now()}_${req.user.id}`;
 
   try {
