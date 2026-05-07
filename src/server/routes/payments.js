@@ -65,7 +65,6 @@ router.post('/bit-init', authenticateToken, async (req, res) => {
       {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${SUMIT_PRIVATE_KEY}`,
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         }
       }
@@ -356,6 +355,52 @@ router.get('/reservation/:reservationId', authenticateToken, (req, res) => {
       res.json(payment);
     }
   );
+});
+
+// Diagnostic route — tests SUMIT API directly, logs full raw response
+router.get('/test-sumit', async (req, res) => {
+  const results = [];
+
+  const endpoints = [
+    'https://api.sumit.co.il/billing/payments/beginredirect/',
+    'https://api.sumit.co.il/api/v0.1/Payment/BeginRedirect'
+  ];
+
+  for (const url of endpoints) {
+    try {
+      const response = await axios({
+        method: 'post',
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        },
+        data: {
+          Credentials: {
+            CompanyID: parseInt(SUMIT_COMPANY_ID),
+            APIKey: SUMIT_PRIVATE_KEY
+          },
+          Items: [{ Item: { ExternalIdentifier: '1', Name: 'Test', SKU: 'TEST', SearchMode: 'Automatic' }, Quantity: 1, UnitPrice: 1, Currency: 'ILS' }],
+          Customer: { Name: 'Test', Email: 'test@test.com', Phone: '0500000000' },
+          DocumentDescription: 'Test',
+          SuccessRedirectUrl: 'https://the-box.top/checkout/payment-callback?status=success',
+          FailureRedirectUrl: 'https://the-box.top/checkout/payment-callback?status=failure'
+        },
+        validateStatus: () => true
+      });
+
+      results.push({
+        url,
+        status: response.status,
+        isHtml: typeof response.data === 'string' && response.data.includes('Human Verification'),
+        data: response.data
+      });
+    } catch (err) {
+      results.push({ url, error: err.message });
+    }
+  }
+
+  res.json(results);
 });
 
 module.exports = router;
