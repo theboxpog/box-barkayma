@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { LanguageProvider } from './context/LanguageContext';
@@ -27,6 +27,24 @@ import ToolAvailability from './pages/ToolAvailability';
 import Contact from './pages/Contact';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 
+// Detects when user returns from SUMIT's payment page and auto-confirms the order.
+// Only fires when document.referrer is sumit.co.il (user actually came from SUMIT).
+const PaymentGuard = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.pathname === '/checkout/payment-callback') return;
+    const pending = localStorage.getItem('pendingBitOrder');
+    const cameFromSumit = document.referrer.includes('sumit.co.il');
+    if (pending && cameFromSumit) {
+      navigate('/checkout/payment-callback?status=success', { replace: true });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return null;
+};
+
 function App() {
   const basename = window.location.hostname.includes('github.io') ? '/box-barkayma' : '/';
 
@@ -37,6 +55,7 @@ function App() {
           <CartProvider>
             <div className="App">
             <NavBar />
+            <PaymentGuard />
             <Routes>
               <Route path="/" element={<ToolsCatalog />} />
               <Route path="/login" element={<Login />} />
