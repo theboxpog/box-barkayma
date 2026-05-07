@@ -160,7 +160,6 @@ const Checkout = () => {
     setError('');
 
     try {
-      // Step 1: Get SUMIT payment URL
       const response = await paymentsAPI.bitInit({
         amount: finalTotal,
         description: `The Box - ${cartItems.map(item => item.toolName).join(', ')}`,
@@ -175,29 +174,65 @@ const Checkout = () => {
         return;
       }
 
-      // Step 2: Create reservations now (before redirect)
-      const reservationsToCreate = cartItems.map(item => ({
-        tool_id: item.toolId,
-        start_date: item.startDate,
-        end_date: item.endDate,
-        quantity: item.quantity,
-        total_price: item.totalPrice
-      }));
-
-      await reservationsAPI.createBatch(reservationsToCreate);
-
-      // Step 3: Clear the cart
-      if (user?.id) localStorage.removeItem(`cart_${user.id}`);
-      clearCart();
-
-      // Step 4: Redirect to SUMIT for payment
-      window.location.href = response.data.redirectUrl;
+      setSumitUrl(response.data.redirectUrl);
+      setShowPaymentModal(true);
+      setProcessing(false);
 
     } catch (err) {
       setError(err.response?.data?.error || (language === 'he' ? 'שגיאה בתהליך התשלום' : 'Payment initialization failed'));
       setProcessing(false);
     }
   };
+
+  const handleIframePaymentSuccess = async (cartSnapshot, totalAmount) => {
+    setShowPaymentModal(false);
+    setProcessing(true);
+    try {
+      const reservationsToCreate = cartSnapshot.map(item => ({
+        tool_id: item.toolId,
+        start_date: item.startDate,
+        end_date: item.endDate,
+        quantity: item.quantity,
+        total_price: item.totalPrice
+      }));
+      const batchResponse = await reservationsAPI.createBatch(reservationsToCreate);
+      if (user?.id) localStorage.removeItem(`cart_${user.id}`);
+      clearCart();
+      navigate('/checkout/success', {
+        state: { orderCount: cartSnapshot.length, totalAmount, reservations: batchResponse.data.reservations }
+      });
+    } catch (err) {
+      setError(err.response?.data?.error || (language === 'he' ? 'שגיאה ביצירת ההזמנה' : 'Failed to create reservation'));
+      setProcessing(false);
+    }
+  };
+
+  // Poll iframe URL to detect when SUMIT redirects back to our callback
+  useEffect(() => {
+    if (!showPaymentModal) return;
+    const cartSnapshot = cartItems.map(item => ({ ...item }));
+    const totalSnapshot = getFinalTotal();
+
+    const interval = setInterval(() => {
+      try {
+        const iframeUrl = iframeRef.current?.contentWindow?.location?.href;
+        if (iframeUrl && iframeUrl.includes('/checkout/payment-callback')) {
+          clearInterval(interval);
+          const params = new URL(iframeUrl).searchParams;
+          if (params.get('status') === 'success') {
+            handleIframePaymentSuccess(cartSnapshot, totalSnapshot);
+          } else {
+            setShowPaymentModal(false);
+            setError(language === 'he' ? 'התשלום נכשל. אנא נסה שוב.' : 'Payment failed. Please try again.');
+          }
+        }
+      } catch (e) {
+        // Cross-origin — still on SUMIT's domain, keep polling
+      }
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [showPaymentModal]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const processOrderWithoutPayment = async () => {
     setProcessing(true);
@@ -249,6 +284,30 @@ const Checkout = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
+      {/* SUMIT Payment Modal */}
+      {showPaymentModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl">
+            <div className="flex justify-between items-center p-4 border-b">
+              <h2 className="text-lg font-bold text-gray-800">
+                {language === 'he' ? 'תשלום מאובטח' : 'Secure Payment'}
+              </h2>
+              <button
+                onClick={() => { setShowPaymentModal(false); setSumitUrl(''); }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <iframe
+              ref={iframeRef}
+              src={sumitUrl}
+              style={{ width: '100%', height: '500px', border: 'none' }}
+              title="SUMIT Payment"
+            />
+          </div>
+        </div>
+      )}
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-3xl font-bold text-gray-800 mb-8">{t('checkoutTitle')}</h1>

@@ -23,7 +23,7 @@ router.post('/bit-init', authenticateToken, async (req, res) => {
     return res.status(500).json({ success: false, error: 'Payment system not configured. Contact support.' });
   }
 
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5001';
+  const frontendUrl = process.env.FRONTEND_URL || 'https://the-box.top';
   const identifier = `order_${Date.now()}_${req.user.id}`;
 
   try {
@@ -58,11 +58,16 @@ router.post('/bit-init', authenticateToken, async (req, res) => {
     console.log('Sending to SUMIT:', JSON.stringify({ ...redirectRequest, Credentials: { CompanyID: redirectRequest.Credentials.CompanyID, APIKey: '***' } }, null, 2));
 
     const sumitResponse = await axios.post(
-      'https://api.sumit.co.il/billing/payments/beginredirect',
+      'https://api.sumit.co.il/billing/payments/beginredirect/',
       redirectRequest,
       {
-        headers: { 'Content-Type': 'application/json' },
-        maxRedirects: 0
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json, text/plain, */*',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Origin': 'https://the-box.top',
+          'Referer': 'https://the-box.top/'
+        }
       }
     );
 
