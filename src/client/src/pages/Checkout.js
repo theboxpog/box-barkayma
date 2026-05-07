@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -14,11 +15,6 @@ const Checkout = () => {
 
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
-
-  // Payment iframe state
-  const [sumitUrl, setSumitUrl] = useState('');
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const iframeRef = useRef(null);
 
   // Phone number state
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -160,79 +156,78 @@ const Checkout = () => {
     setError('');
 
     try {
-      const response = await paymentsAPI.bitInit({
-        amount: finalTotal,
-        description: `The Box - ${cartItems.map(item => item.toolName).join(', ')}`,
-        customerName: user?.name || user?.email?.split('@')[0] || 'Customer',
-        customerEmail: user?.email,
-        customerPhone: phoneNumber
-      });
+      // Fetch SUMIT credentials from our server
+      const configResponse = await paymentsAPI.getSumitConfig();
+      const { companyId, apiKey } = configResponse.data;
 
-      if (!response.data.success || !response.data.redirectUrl) {
-        setError(response.data.error || (language === 'he' ? 'שגיאה באתחול תשלום' : 'Failed to initialize payment'));
+      if (!companyId || !apiKey) {
+        setError(language === 'he' ? 'מערכת התשלום אינה מוגדרת' : 'Payment system not configured');
         setProcessing(false);
         return;
       }
 
-      setSumitUrl(response.data.redirectUrl);
-      setShowPaymentModal(true);
-      setProcessing(false);
+      const identifier = `order_${Date.now()}_${user?.id}`;
+      const frontendUrl = window.location.origin;
 
-    } catch (err) {
-      setError(err.response?.data?.error || (language === 'he' ? 'שגיאה בתהליך התשלום' : 'Payment initialization failed'));
-      setProcessing(false);
-    }
-  };
-
-  const handleIframePaymentSuccess = async (cartSnapshot, totalAmount) => {
-    setShowPaymentModal(false);
-    setProcessing(true);
-    try {
-      const reservationsToCreate = cartSnapshot.map(item => ({
-        tool_id: item.toolId,
-        start_date: item.startDate,
-        end_date: item.endDate,
-        quantity: item.quantity,
-        total_price: item.totalPrice
-      }));
-      const batchResponse = await reservationsAPI.createBatch(reservationsToCreate);
-      if (user?.id) localStorage.removeItem(`cart_${user.id}`);
-      clearCart();
-      navigate('/checkout/success', {
-        state: { orderCount: cartSnapshot.length, totalAmount, reservations: batchResponse.data.reservations }
-      });
-    } catch (err) {
-      setError(err.response?.data?.error || (language === 'he' ? 'שגיאה ביצירת ההזמנה' : 'Failed to create reservation'));
-      setProcessing(false);
-    }
-  };
-
-  // Poll iframe URL to detect when SUMIT redirects back to our callback
-  useEffect(() => {
-    if (!showPaymentModal) return;
-    const cartSnapshot = cartItems.map(item => ({ ...item }));
-    const totalSnapshot = getFinalTotal();
-
-    const interval = setInterval(() => {
-      try {
-        const iframeUrl = iframeRef.current?.contentWindow?.location?.href;
-        if (iframeUrl && iframeUrl.includes('/checkout/payment-callback')) {
-          clearInterval(interval);
-          const params = new URL(iframeUrl).searchParams;
-          if (params.get('status') === 'success') {
-            handleIframePaymentSuccess(cartSnapshot, totalSnapshot);
-          } else {
-            setShowPaymentModal(false);
-            setError(language === 'he' ? 'התשלום נכשל. אנא נסה שוב.' : 'Payment failed. Please try again.');
-          }
+      // Call SUMIT beginredirect directly from the browser (bypasses server WAF issues)
+      const sumitResponse = await axios.post(
+        'https://api.sumit.co.il/billing/payments/beginredirect/',
+        {
+          Credentials: {
+            CompanyID: parseInt(companyId),
+            APIKey: apiKey
+          },
+          Items: [{
+            Item: {
+              ExternalIdentifier: '1',
+              Name: `The Box - Tool Rental`,
+              SKU: 'THEBOX',
+              SearchMode: 'Automatic'
+            },
+            Quantity: 1,
+            UnitPrice: parseFloat(finalTotal.toFixed(2)),
+            Currency: 'ILS'
+          }],
+          Customer: {
+            Name: user?.name || user?.email?.split('@')[0] || 'Customer',
+            Email: user?.email || '',
+            Phone: phoneNumber
+          },
+          DocumentDescription: `The Box - Tool Rental`,
+          SuccessRedirectUrl: `${frontendUrl}/checkout/payment-callback?status=success&id=${identifier}`,
+          FailureRedirectUrl: `${frontendUrl}/checkout/payment-callback?status=failure`
         }
-      } catch (e) {
-        // Cross-origin — still on SUMIT's domain, keep polling
-      }
-    }, 500);
+      );
 
-    return () => clearInterval(interval);
-  }, [showPaymentModal]); // eslint-disable-line react-hooks/exhaustive-deps
+      const data = sumitResponse.data;
+      const redirectUrl = data?.Data?.RedirectURL || data?.Data?.RedirectUrl || data?.Data?.Url;
+
+      if (data?.Status !== 0 || !redirectUrl) {
+        const errMsg = data?.UserErrorMessage || data?.TechnicalErrorMessage || (language === 'he' ? 'שגיאה באתחול תשלום' : 'Failed to initialize payment');
+        setError(errMsg);
+        setProcessing(false);
+        return;
+      }
+
+      // Save pending order so PaymentCallback can create reservations after redirect
+      localStorage.setItem('pendingBitOrder', JSON.stringify({
+        cartItems: cartItems.map(item => ({ ...item })),
+        totalAmount: finalTotal,
+        userId: user?.id
+      }));
+
+      // Redirect user to SUMIT's payment page
+      window.location.href = redirectUrl;
+
+    } catch (err) {
+      const errMsg = err.response?.data?.UserErrorMessage ||
+                     err.response?.data?.TechnicalErrorMessage ||
+                     err.response?.data?.error ||
+                     (language === 'he' ? 'שגיאה בתהליך התשלום' : 'Payment initialization failed');
+      setError(errMsg);
+      setProcessing(false);
+    }
+  };
 
   const processOrderWithoutPayment = async () => {
     setProcessing(true);
@@ -284,30 +279,6 @@ const Checkout = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      {/* SUMIT Payment Modal */}
-      {showPaymentModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl">
-            <div className="flex justify-between items-center p-4 border-b">
-              <h2 className="text-lg font-bold text-gray-800">
-                {language === 'he' ? 'תשלום מאובטח' : 'Secure Payment'}
-              </h2>
-              <button
-                onClick={() => { setShowPaymentModal(false); setSumitUrl(''); }}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X size={24} />
-              </button>
-            </div>
-            <iframe
-              ref={iframeRef}
-              src={sumitUrl}
-              style={{ width: '100%', height: '500px', border: 'none' }}
-              title="SUMIT Payment"
-            />
-          </div>
-        </div>
-      )}
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-3xl font-bold text-gray-800 mb-8">{t('checkoutTitle')}</h1>

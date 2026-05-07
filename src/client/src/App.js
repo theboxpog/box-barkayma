@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { LanguageProvider } from './context/LanguageContext';
@@ -27,6 +27,23 @@ import ToolAvailability from './pages/ToolAvailability';
 import Contact from './pages/Contact';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 
+// Auto-redirect to payment callback if a pending payment exists in localStorage.
+// Handles the case where SUMIT doesn't redirect back (e.g. on localhost HTTP).
+const PaymentGuard = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.pathname === '/checkout/payment-callback') return;
+    const pending = localStorage.getItem('pendingBitOrder');
+    if (pending) {
+      navigate('/checkout/payment-callback?status=success', { replace: true });
+    }
+  }, [location.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return null;
+};
+
 function App() {
   const basename = window.location.hostname.includes('github.io') ? '/box-barkayma' : '/';
 
@@ -37,6 +54,7 @@ function App() {
           <CartProvider>
             <div className="App">
             <NavBar />
+            <PaymentGuard />
             <Routes>
               <Route path="/" element={<ToolsCatalog />} />
               <Route path="/login" element={<Login />} />

@@ -99,11 +99,11 @@ router.post('/bit-init', authenticateToken, async (req, res) => {
   }
 });
 
-// Get Sumit configuration for client
+// Get Sumit configuration for client-side beginredirect call
 router.get('/sumit-config', (req, res) => {
   res.json({
     companyId: process.env.SUMIT_COMPANY_ID,
-    publicKey: process.env.SUMIT_PUBLIC_KEY
+    apiKey: process.env.SUMIT_PRIVATE_KEY
   });
 });
 
