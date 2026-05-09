@@ -28,6 +28,20 @@ router.post('/bit-init', authenticateToken, async (req, res) => {
   const frontendUrl = req.headers.origin || process.env.FRONTEND_URL || 'https://the-box.top';
   const identifier = `order_${Date.now()}_${req.user.id}`;
 
+  // Save payment session server-side so cart data is available for reservation creation
+  try {
+    await new Promise((resolve, reject) => {
+      db.run(
+        'INSERT INTO payment_sessions (identifier, user_id, cart_data, total_amount) VALUES (?, ?, ?, ?)',
+        [identifier, req.user.id, JSON.stringify(cartItems || []), parseFloat(parseFloat(amount).toFixed(2))],
+        (err) => { if (err) reject(err); else resolve(); }
+      );
+    });
+  } catch (err) {
+    console.error('Failed to save payment session:', err);
+    return res.status(500).json({ success: false, error: 'Failed to initialize payment session.' });
+  }
+
   try {
     const redirectRequest = {
       Credentials: {
@@ -401,6 +415,78 @@ router.get('/test-sumit', async (req, res) => {
   }
 
   res.json(results);
+});
+
+// Complete a payment session — creates reservations from server-stored cart data.
+// The identifier is one-time use and tied to the authenticated user, so this is safe
+// to expose as a manual trigger (e.g. when SUMIT doesn't redirect to localhost in dev).
+router.post('/complete', authenticateToken, async (req, res) => {
+  const { identifier } = req.body;
+  const user_id = req.user.id;
+
+  if (!identifier) {
+    return res.status(400).json({ error: 'Payment identifier is required.' });
+  }
+
+  try {
+    // Find the pending session for this user
+    const session = await new Promise((resolve, reject) => {
+      db.get(
+        'SELECT * FROM payment_sessions WHERE identifier = ? AND user_id = ? AND status = ?',
+        [identifier, user_id, 'pending'],
+        (err, row) => { if (err) reject(err); else resolve(row); }
+      );
+    });
+
+    if (!session) {
+      return res.status(404).json({ error: 'Payment session not found, already processed, or does not belong to this account.' });
+    }
+
+    const cartItems = JSON.parse(session.cart_data || '[]');
+    if (!cartItems.length) {
+      return res.status(400).json({ error: 'No items in payment session.' });
+    }
+
+    // Mark as completed first to prevent duplicate processing
+    await new Promise((resolve, reject) => {
+      db.run('UPDATE payment_sessions SET status = ? WHERE identifier = ?', ['completed', identifier],
+        (err) => { if (err) reject(err); else resolve(); }
+      );
+    });
+
+    // Create reservations from the server-stored cart data
+    const createdReservations = [];
+    for (const item of cartItems) {
+      const reservationId = await new Promise((resolve, reject) => {
+        db.run(
+          'INSERT INTO reservations (user_id, tool_id, start_date, end_date, quantity, total_price, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          [user_id, item.toolId, item.startDate, item.endDate, item.quantity || 1, item.totalPrice, 'active'],
+          function (err) { if (err) reject(err); else resolve(this.lastID); }
+        );
+      });
+      createdReservations.push({
+        id: reservationId,
+        user_id,
+        tool_id: item.toolId,
+        start_date: item.startDate,
+        end_date: item.endDate,
+        quantity: item.quantity || 1,
+        total_price: item.totalPrice,
+        status: 'active'
+      });
+    }
+
+    res.json({
+      success: true,
+      reservations: createdReservations,
+      orderCount: createdReservations.length,
+      totalAmount: session.total_amount
+    });
+
+  } catch (error) {
+    console.error('Error completing payment session:', error);
+    res.status(500).json({ error: 'Failed to create reservations.' });
+  }
 });
 
 module.exports = router;

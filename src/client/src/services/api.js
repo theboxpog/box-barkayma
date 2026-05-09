@@ -96,7 +96,8 @@ export const paymentsAPI = {
   getSumitConfig: () => api.get('/payments/sumit-config'),
   getHistory: () => api.get('/payments/history'),
   getByReservation: (reservationId) => api.get(`/payments/reservation/${reservationId}`),
-  bitInit: (data) => api.post('/payments/bit-init', data)
+  bitInit: (data) => api.post('/payments/bit-init', data),
+  complete: (identifier) => api.post('/payments/complete', { identifier })
 };
 
 // Settings API

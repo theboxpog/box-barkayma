@@ -102,6 +102,20 @@ function initializeDatabase() {
       VALUES (1, 'contact@toolrental.com', '+972 50-123-4567', '123 Tool Street, Tel Aviv, Israel')
     `);
 
+    // Payment sessions — stores cart data server-side so reservations can be created
+    // after SUMIT redirects back (or via manual confirmation). One-time use per identifier.
+    db.run(`
+      CREATE TABLE IF NOT EXISTS payment_sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        identifier TEXT UNIQUE NOT NULL,
+        user_id INTEGER NOT NULL,
+        cart_data TEXT NOT NULL,
+        total_amount REAL NOT NULL,
+        status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'completed')),
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     console.log('Database tables initialized');
   });
 }

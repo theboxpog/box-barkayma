@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useCart } from '../context/CartContext';
-import { reservationsAPI } from '../services/api';
+import { paymentsAPI } from '../services/api';
 import { Loader, XCircle, CheckCircle } from 'lucide-react';
 
 const PaymentCallback = () => {
@@ -11,59 +11,62 @@ const PaymentCallback = () => {
   const { language } = useLanguage();
   const { clearCart } = useCart();
   const status = searchParams.get('status');
+  const identifier = searchParams.get('id');
   const [errorMsg, setErrorMsg] = useState('');
   const [done, setDone] = useState(false);
+  const didRun = useRef(false); // prevent React StrictMode double-invocation
 
   useEffect(() => {
-    // Payment was cancelled or failed — clear pending order so nothing is accidentally confirmed
+    if (didRun.current) return;
+    didRun.current = true;
+
+    // Payment was cancelled or failed — signal the original tab and clear pending order
     if (status !== 'success') {
       localStorage.removeItem('pendingBitOrder');
+      localStorage.setItem('paymentFailed', 'true');
       return;
     }
 
-    const pending = JSON.parse(localStorage.getItem('pendingBitOrder') || 'null');
-
-    if (!pending || !pending.cartItems || pending.cartItems.length === 0) {
-      navigate('/checkout/success', {
-        state: { orderCount: 0, totalAmount: 0, reservations: [] }
-      });
+    if (!identifier) {
+      setErrorMsg(language === 'he' ? 'מזהה תשלום חסר.' : 'Missing payment identifier.');
       return;
     }
 
-    const createReservations = async () => {
+    const confirmOrder = async () => {
       try {
-        const reservationsToCreate = pending.cartItems.map(item => ({
-          tool_id: item.toolId,
-          start_date: item.startDate,
-          end_date: item.endDate,
-          quantity: item.quantity,
-          total_price: item.totalPrice
-        }));
+        const response = await paymentsAPI.complete(identifier);
 
-        const batchResponse = await reservationsAPI.createBatch(reservationsToCreate);
-
-        if (pending.userId) localStorage.removeItem(`cart_${pending.userId}`);
+        const pending = JSON.parse(localStorage.getItem('pendingBitOrder') || 'null');
+        if (pending?.userId) localStorage.removeItem(`cart_${pending.userId}`);
         localStorage.removeItem('pendingBitOrder');
         clearCart();
-        setDone(true);
 
-        navigate('/checkout/success', {
-          state: {
-            orderCount: pending.cartItems.length,
-            totalAmount: pending.totalAmount,
-            reservations: batchResponse.data.reservations
-          }
-        });
+        const successData = {
+          orderCount: response.data.orderCount,
+          totalAmount: response.data.totalAmount,
+          reservations: response.data.reservations
+        };
+
+        // Signal the original checkout tab that payment is complete
+        localStorage.setItem('paymentComplete', JSON.stringify(successData));
+
+        setDone(true);
+        navigate('/checkout/success', { state: successData });
       } catch (err) {
-        console.error('Failed to create reservations:', err);
-        const msg = err.response?.data?.error ||
-          (language === 'he' ? 'שגיאה ביצירת ההזמנה. אנא צור קשר עם התמיכה.' : 'Failed to create reservation. Please contact support.');
+        console.error('Failed to confirm order:', err);
+        const serverMsg = err.response?.data?.error;
+        const networkMsg = err.message;
+        const msg = serverMsg ||
+          (language === 'he'
+            ? `שגיאה ביצירת ההזמנה: ${networkMsg || 'שגיאה לא ידועה'}. אנא צור קשר עם התמיכה.`
+            : `Failed to create reservation: ${networkMsg || 'Unknown error'}. Please contact support.`);
+        localStorage.setItem('paymentError', msg);
         setErrorMsg(msg);
       }
     };
 
-    createReservations();
-  }, [status]); // eslint-disable-line react-hooks/exhaustive-deps
+    confirmOrder();
+  }, [status, identifier]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (status !== 'success') {
     return (

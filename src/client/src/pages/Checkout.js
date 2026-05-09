@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { reservationsAPI, paymentsAPI, couponsAPI, authAPI } from '../services/api';
+import { paymentsAPI, couponsAPI, authAPI } from '../services/api';
 import { CreditCard, Package, Calendar, CheckCircle, Loader, Tag, X, Phone, Lock } from 'lucide-react';
 
 const Checkout = () => {
@@ -14,6 +14,62 @@ const Checkout = () => {
 
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
+  const [waitingForPayment, setWaitingForPayment] = useState(false);
+
+  // Poll localStorage every 500ms for payment completion signal from the SUMIT tab.
+  // Direct polling is more reliable than storage events (which some browsers miss cross-tab).
+  useEffect(() => {
+    if (!waitingForPayment) return;
+
+    const onSuccess = (rawValue) => {
+      try {
+        const data = JSON.parse(rawValue);
+        localStorage.removeItem('paymentComplete');
+        localStorage.removeItem('pendingBitOrder');
+        clearCart();
+        navigate('/checkout/success', { state: data });
+      } catch {}
+    };
+
+    const onFailure = () => {
+      localStorage.removeItem('paymentFailed');
+      localStorage.removeItem('pendingBitOrder');
+      setWaitingForPayment(false);
+      setProcessing(false);
+      setError(language === 'he' ? 'התשלום נכשל. אנא נסה שוב.' : 'Payment failed. Please try again.');
+    };
+
+    const poll = setInterval(() => {
+      const complete = localStorage.getItem('paymentComplete');
+      if (complete) { clearInterval(poll); onSuccess(complete); return; }
+      const failed = localStorage.getItem('paymentFailed');
+      if (failed) { clearInterval(poll); onFailure(); return; }
+      const errMsg = localStorage.getItem('paymentError');
+      if (errMsg) {
+        clearInterval(poll);
+        localStorage.removeItem('paymentError');
+        localStorage.removeItem('pendingBitOrder');
+        setWaitingForPayment(false);
+        setProcessing(false);
+        setError(language === 'he'
+          ? `שגיאה ביצירת ההזמנה: ${errMsg}`
+          : `Reservation error: ${errMsg}`);
+        return;
+      }
+    }, 500);
+
+    // Storage event as additional fast-path
+    const handleStorage = (e) => {
+      if (e.key === 'paymentComplete' && e.newValue) { clearInterval(poll); onSuccess(e.newValue); }
+      if (e.key === 'paymentFailed') { clearInterval(poll); onFailure(); }
+    };
+    window.addEventListener('storage', handleStorage);
+
+    return () => {
+      clearInterval(poll);
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, [waitingForPayment]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Phone number state
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -155,33 +211,39 @@ const Checkout = () => {
     setError('');
 
     try {
-      // Save pending order BEFORE calling server, so it's ready when we return
-      localStorage.setItem('pendingBitOrder', JSON.stringify({
-        cartItems: cartItems.map(item => ({ ...item })),
-        totalAmount: finalTotal,
-        userId: user?.id
-      }));
-
       const response = await paymentsAPI.bitInit({
         amount: finalTotal,
         description: `The Box - Tool Rental`,
+        cartItems: cartItems.map(item => ({ ...item })),
         customerName: user?.name || user?.email?.split('@')[0] || 'Customer',
         customerEmail: user?.email,
         customerPhone: phoneNumber
       });
 
       if (!response.data.success || !response.data.redirectUrl) {
-        localStorage.removeItem('pendingBitOrder');
         setError(response.data.error || (language === 'he' ? 'שגיאה באתחול תשלום' : 'Failed to initialize payment'));
         setProcessing(false);
         return;
       }
 
-      // Redirect user to SUMIT's payment page (full redirect — payment happens on SUMIT's site)
-      window.location.href = response.data.redirectUrl;
+      // Store identifier so the manual confirm button can use it
+      localStorage.setItem('pendingBitOrder', JSON.stringify({
+        identifier: response.data.identifier,
+        totalAmount: finalTotal,
+        userId: user?.id
+      }));
+
+      // Open SUMIT payment page in a new tab
+      const paymentTab = window.open(response.data.redirectUrl, '_blank');
+      if (!paymentTab) {
+        // Popup blocked — fall back to same-tab redirect
+        window.location.href = response.data.redirectUrl;
+        return;
+      }
+      setProcessing(false);
+      setWaitingForPayment(true);
 
     } catch (err) {
-      localStorage.removeItem('pendingBitOrder');
       const errMsg = err.response?.data?.error ||
                      (language === 'he' ? 'שגיאה בתהליך התשלום' : 'Payment initialization failed');
       setError(errMsg);
@@ -216,6 +278,34 @@ const Checkout = () => {
       setProcessing(false);
     }
   };
+
+  if (waitingForPayment) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white rounded-lg shadow-md p-10 text-center max-w-md">
+          <Loader size={64} className="mx-auto text-blue-600 mb-6 animate-spin" />
+          <h2 className="text-2xl font-bold text-gray-800 mb-3">
+            {language === 'he' ? 'ממתין לאישור תשלום...' : 'Waiting for payment...'}
+          </h2>
+          <p className="text-gray-600 mb-6">
+            {language === 'he'
+              ? 'השלם את התשלום בלשונית האחרת — ההזמנה תאושר אוטומטית.'
+              : 'Complete your payment in the other tab — your reservation will be confirmed automatically.'}
+          </p>
+          <button
+            onClick={() => {
+              localStorage.removeItem('pendingBitOrder');
+              setWaitingForPayment(false);
+              setError('');
+            }}
+            className="text-sm text-gray-500 underline hover:text-gray-700"
+          >
+            {language === 'he' ? 'ביטול' : 'Cancel'}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (cartItems.length === 0) {
     return (
