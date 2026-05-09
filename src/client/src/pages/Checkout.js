@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { paymentsAPI, couponsAPI, authAPI } from '../services/api';
+import { paymentsAPI, reservationsAPI, couponsAPI, authAPI } from '../services/api';
 import { CreditCard, Package, Calendar, CheckCircle, Loader, Tag, X, Phone, Lock } from 'lucide-react';
 
 const Checkout = () => {
