@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
-import { Wrench, User, LogOut, Package, ShoppingCart, Users, AlertCircle, Settings, Menu, X, Calendar, Mail, Globe } from 'lucide-react';
+import { User, LogOut, Package, ShoppingCart, Users, AlertCircle, Settings, Menu, X, Calendar, Mail, Globe } from 'lucide-react';
 
 const NavBar = () => {
   const { user, isAuthenticated, logout, isAdmin, isAdminOrSubadmin } = useAuth();
@@ -24,23 +24,26 @@ const NavBar = () => {
   };
 
   return (
-    <nav className="bg-blue-600 text-white shadow-lg relative">
+    <nav className="bg-brand-800 text-white shadow-lg relative">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 text-lg md:text-xl font-bold z-20" onClick={closeMobileMenu}>
-            <Wrench size={24} className="md:w-7 md:h-7" />
-            <span>{language === 'he' ? 'הקופסא' : 'the box'}</span>
+          <Link to="/" className="flex items-center z-20" onClick={closeMobileMenu}>
+            <img
+              src="/logo.png"
+              alt="הארגז"
+              className="h-10 w-auto brightness-0 invert"
+            />
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-4 xl:gap-6">
-            <Link to="/tools" className="flex items-center gap-1 hover:text-blue-200 transition">
+            <Link to="/tools" className="flex items-center gap-1 hover:text-brand-200 transition">
               <Package size={18} />
               <span>{t('tools')}</span>
             </Link>
 
-            <Link to="/cart" className="flex items-center gap-1 hover:text-blue-200 relative transition">
+            <Link to="/cart" className="flex items-center gap-1 hover:text-brand-200 relative transition">
               <ShoppingCart size={18} />
               <span>{t('cart')}</span>
               {getCartCount() > 0 && (
@@ -52,27 +55,23 @@ const NavBar = () => {
 
             {isAuthenticated ? (
               <>
-                <Link to="/dashboard" className="flex items-center gap-1 hover:text-blue-200 transition">
+                <Link to="/dashboard" className="flex items-center gap-1 hover:text-brand-200 transition">
                   <Calendar size={18} />
                   <span>{t('myRentals')}</span>
                 </Link>
 
-                {/* Admin-only button */}
-                {isAdmin() && (
-                  <Link
-                    to="/admin"
-                    className="flex items-center gap-1 bg-blue-700 px-3 py-1 rounded hover:bg-blue-800 transition"
-                  >
-                    <span>{t('admin')}</span>
-                  </Link>
-                )}
-
-                {/* Admin and Subadmin buttons */}
                 {isAdminOrSubadmin() && (
                   <>
                     <Link
+                      to="/admin"
+                      className="flex items-center gap-1 bg-brand-700 px-3 py-1 rounded hover:bg-brand-600 transition"
+                    >
+                      <Settings size={18} />
+                      <span>{isAdmin() ? t('admin') : 'Staff'}</span>
+                    </Link>
+                    <Link
                       to="/admin/users"
-                      className="flex items-center gap-1 bg-indigo-600 px-2 py-1 rounded hover:bg-indigo-700 transition"
+                      className="flex items-center gap-1 bg-brand-700 px-2 py-1 rounded hover:bg-brand-600 transition"
                     >
                       <Users size={18} />
                     </Link>
@@ -85,7 +84,7 @@ const NavBar = () => {
                   </>
                 )}
 
-                <Link to="/contact" className="flex items-center gap-1 hover:text-blue-200 transition">
+                <Link to="/contact" className="flex items-center gap-1 hover:text-brand-200 transition">
                   <Mail size={18} />
                   <span>{t('contactUs')}</span>
                 </Link>
@@ -97,7 +96,7 @@ const NavBar = () => {
                   </div>
                   <button
                     onClick={handleLogout}
-                    className="flex items-center gap-1 hover:text-blue-200 transition"
+                    className="flex items-center gap-1 hover:text-brand-200 transition"
                   >
                     <LogOut size={18} />
                     <span>{t('logout')}</span>
@@ -106,20 +105,20 @@ const NavBar = () => {
               </>
             ) : (
               <>
-                <Link to="/contact" className="flex items-center gap-1 hover:text-blue-200 transition">
+                <Link to="/contact" className="flex items-center gap-1 hover:text-brand-200 transition">
                   <Mail size={18} />
                   <span>{t('contactUs')}</span>
                 </Link>
 
                 <Link
                   to="/login"
-                  className="bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800 transition"
+                  className="bg-brand-700 text-white px-4 py-2 rounded hover:bg-brand-600 transition"
                 >
                   {t('login')}
                 </Link>
                 <Link
                   to="/signup"
-                  className="bg-white text-blue-600 px-4 py-2 rounded hover:bg-blue-50 transition"
+                  className="bg-white text-brand-800 px-4 py-2 rounded hover:bg-brand-50 transition font-semibold"
                 >
                   {t('signUp')}
                 </Link>
@@ -130,7 +129,7 @@ const NavBar = () => {
             <div className="relative">
               <button
                 onClick={() => setShowLangMenu(!showLangMenu)}
-                className="flex items-center gap-1 px-2 py-1 rounded hover:bg-blue-700 transition text-sm"
+                className="flex items-center gap-1 px-2 py-1 rounded hover:bg-brand-700 transition text-sm"
                 title="Change Language"
               >
                 <Globe size={16} />
@@ -140,13 +139,13 @@ const NavBar = () => {
                 <div className="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-lg z-50">
                   <button
                     onClick={() => { setLanguage('he'); setShowLangMenu(false); }}
-                    className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${language === 'he' ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700'}`}
+                    className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${language === 'he' ? 'bg-brand-50 text-brand-700 font-semibold' : 'text-gray-700'}`}
                   >
                     עברית
                   </button>
                   <button
                     onClick={() => { setLanguage('en'); setShowLangMenu(false); }}
-                    className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${language === 'en' ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700'}`}
+                    className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${language === 'en' ? 'bg-brand-50 text-brand-700 font-semibold' : 'text-gray-700'}`}
                   >
                     English
                   </button>
@@ -157,10 +156,9 @@ const NavBar = () => {
 
           {/* Mobile Cart Icon & Menu Button */}
           <div className="flex items-center gap-3 lg:hidden z-20">
-            {/* Mobile Language Selector */}
             <button
               onClick={() => setLanguage(language === 'he' ? 'en' : 'he')}
-              className="flex items-center gap-1 px-2 py-1 rounded hover:bg-blue-700 transition text-xs"
+              className="flex items-center gap-1 px-2 py-1 rounded hover:bg-brand-700 transition text-xs"
               title="Change Language"
             >
               <Globe size={16} />
@@ -176,7 +174,7 @@ const NavBar = () => {
             </Link>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-1 hover:bg-blue-700 rounded transition"
+              className="p-1 hover:bg-brand-700 rounded transition"
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
@@ -186,11 +184,11 @@ const NavBar = () => {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden absolute top-16 left-0 right-0 bg-blue-600 shadow-lg z-10 border-t border-blue-500">
+          <div className="lg:hidden absolute top-16 left-0 right-0 bg-brand-800 shadow-lg z-10 border-t border-brand-700">
             <div className="px-4 py-4 space-y-2">
               <Link
                 to="/tools"
-                className="flex items-center gap-2 py-3 px-3 hover:bg-blue-700 rounded transition"
+                className="flex items-center gap-2 py-3 px-3 hover:bg-brand-700 rounded transition"
                 onClick={closeMobileMenu}
               >
                 <Package size={20} />
@@ -201,7 +199,7 @@ const NavBar = () => {
                 <>
                   <Link
                     to="/dashboard"
-                    className="flex items-center gap-2 py-3 px-3 hover:bg-blue-700 rounded transition"
+                    className="flex items-center gap-2 py-3 px-3 hover:bg-brand-700 rounded transition"
                     onClick={closeMobileMenu}
                   >
                     <Calendar size={20} />
@@ -210,24 +208,22 @@ const NavBar = () => {
 
                   {isAdminOrSubadmin() && (
                     <>
-                      <div className="border-t border-blue-500 my-2 pt-2">
-                        <p className="text-xs text-blue-200 px-3 mb-2 font-semibold">
+                      <div className="border-t border-brand-700 my-2 pt-2">
+                        <p className="text-xs text-brand-300 px-3 mb-2 font-semibold">
                           {isAdmin() ? t('admin').toUpperCase() : 'STAFF'}
                         </p>
                       </div>
-                      {isAdmin() && (
-                        <Link
-                          to="/admin"
-                          className="flex items-center gap-2 py-3 px-3 bg-blue-700 rounded hover:bg-blue-800 transition"
-                          onClick={closeMobileMenu}
-                        >
-                          <Settings size={20} />
-                          <span>{t('adminPanel')}</span>
-                        </Link>
-                      )}
+                      <Link
+                        to="/admin"
+                        className="flex items-center gap-2 py-3 px-3 bg-brand-700 rounded hover:bg-brand-600 transition"
+                        onClick={closeMobileMenu}
+                      >
+                        <Settings size={20} />
+                        <span>{t('adminPanel')}</span>
+                      </Link>
                       <Link
                         to="/admin/users"
-                        className="flex items-center gap-2 py-3 px-3 bg-indigo-600 rounded hover:bg-indigo-700 transition"
+                        className="flex items-center gap-2 py-3 px-3 bg-brand-700 rounded hover:bg-brand-600 transition"
                         onClick={closeMobileMenu}
                       >
                         <Users size={20} />
@@ -246,21 +242,21 @@ const NavBar = () => {
 
                   <Link
                     to="/contact"
-                    className="flex items-center gap-2 py-3 px-3 hover:bg-blue-700 rounded transition"
+                    className="flex items-center gap-2 py-3 px-3 hover:bg-brand-700 rounded transition"
                     onClick={closeMobileMenu}
                   >
                     <Mail size={20} />
                     <span>{t('contactUs')}</span>
                   </Link>
 
-                  <div className="border-t border-blue-500 my-2 pt-2">
-                    <div className="flex items-center gap-2 py-3 px-3 text-blue-100">
+                  <div className="border-t border-brand-700 my-2 pt-2">
+                    <div className="flex items-center gap-2 py-3 px-3 text-brand-200">
                       <User size={20} />
                       <span>{user?.name}</span>
                     </div>
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-2 py-3 px-3 hover:bg-blue-700 rounded transition text-start"
+                      className="w-full flex items-center gap-2 py-3 px-3 hover:bg-brand-700 rounded transition text-start"
                     >
                       <LogOut size={20} />
                       <span>{t('logout')}</span>
@@ -271,7 +267,7 @@ const NavBar = () => {
                 <>
                   <Link
                     to="/contact"
-                    className="flex items-center gap-2 py-3 px-3 hover:bg-blue-700 rounded transition"
+                    className="flex items-center gap-2 py-3 px-3 hover:bg-brand-700 rounded transition"
                     onClick={closeMobileMenu}
                   >
                     <Mail size={20} />
@@ -280,7 +276,7 @@ const NavBar = () => {
 
                   <Link
                     to="/login"
-                    className="flex items-center gap-2 py-3 px-3 hover:bg-blue-700 rounded transition"
+                    className="flex items-center gap-2 py-3 px-3 hover:bg-brand-700 rounded transition"
                     onClick={closeMobileMenu}
                   >
                     <User size={20} />
@@ -288,7 +284,7 @@ const NavBar = () => {
                   </Link>
                   <Link
                     to="/signup"
-                    className="flex items-center gap-2 py-3 px-3 bg-white text-blue-600 rounded hover:bg-blue-50 transition font-semibold"
+                    className="flex items-center gap-2 py-3 px-3 bg-white text-brand-800 rounded hover:bg-brand-50 transition font-semibold"
                     onClick={closeMobileMenu}
                   >
                     <span>{t('signUp')}</span>

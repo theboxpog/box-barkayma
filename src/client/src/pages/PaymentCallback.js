@@ -81,7 +81,7 @@ const PaymentCallback = () => {
           </p>
           <button
             onClick={() => navigate('/checkout')}
-            className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 font-semibold"
+            className="bg-brand-600 text-white px-6 py-3 rounded-md hover:bg-brand-700 font-semibold"
           >
             {language === 'he' ? 'חזור לתשלום' : 'Back to Checkout'}
           </button>
@@ -111,7 +111,7 @@ const PaymentCallback = () => {
           </p>
           <button
             onClick={() => navigate('/')}
-            className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 font-semibold"
+            className="bg-brand-600 text-white px-6 py-3 rounded-md hover:bg-brand-700 font-semibold"
           >
             {language === 'he' ? 'חזור לדף הבית' : 'Back to Home'}
           </button>
@@ -126,7 +126,7 @@ const PaymentCallback = () => {
         {done ? (
           <CheckCircle size={64} className="mx-auto text-green-600 mb-4" />
         ) : (
-          <Loader size={64} className="mx-auto text-blue-600 mb-4 animate-spin" />
+          <Loader size={64} className="mx-auto text-brand-600 mb-4 animate-spin" />
         )}
         <p className="text-gray-700 font-medium">
           {language === 'he' ? 'מאשר את ההזמנה שלך...' : 'Confirming your order...'}

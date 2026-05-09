@@ -1,7 +1,8 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-const DB_PATH = path.join(__dirname, 'rental_database.db');
+// On Render: store DB on persistent disk (/var/data). Locally: store next to this file.
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'rental_database.db');
 
 const db = new sqlite3.Database(DB_PATH, (err) => {
   if (err) {

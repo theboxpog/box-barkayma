@@ -26,7 +26,7 @@ const PrivacyPolicy = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 py-12 px-4 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600"></div>
       </div>
     );
   }
@@ -37,7 +37,7 @@ const PrivacyPolicy = () => {
       <div className="min-h-screen bg-gray-50 py-12 px-4">
         <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-8">
           <div className="text-center mb-8">
-            <Shield className="mx-auto h-16 w-16 text-blue-600 mb-4" />
+            <Shield className="mx-auto h-16 w-16 text-brand-600 mb-4" />
             <h1 className="text-4xl font-bold text-gray-900 mb-2">Privacy Policy</h1>
           </div>
           <div className="prose max-w-none whitespace-pre-wrap text-gray-700">
@@ -54,7 +54,7 @@ const PrivacyPolicy = () => {
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <Shield className="mx-auto h-16 w-16 text-blue-600 mb-4" />
+          <Shield className="mx-auto h-16 w-16 text-brand-600 mb-4" />
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Privacy Policy</h1>
           <p className="text-gray-600">Last Updated: December 24, 2025</p>
         </div>
@@ -71,7 +71,7 @@ const PrivacyPolicy = () => {
         {/* Information We Collect */}
         <section className="mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <FileText className="text-blue-600" size={24} />
+            <FileText className="text-brand-600" size={24} />
             <h2 className="text-2xl font-bold text-gray-900">1. Information We Collect</h2>
           </div>
 
@@ -122,7 +122,7 @@ const PrivacyPolicy = () => {
         {/* How We Use Your Information */}
         <section className="mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <UserCheck className="text-blue-600" size={24} />
+            <UserCheck className="text-brand-600" size={24} />
             <h2 className="text-2xl font-bold text-gray-900">2. How We Use Your Information</h2>
           </div>
 
@@ -145,7 +145,7 @@ const PrivacyPolicy = () => {
         {/* Data Storage and Security */}
         <section className="mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <Lock className="text-blue-600" size={24} />
+            <Lock className="text-brand-600" size={24} />
             <h2 className="text-2xl font-bold text-gray-900">3. Data Storage and Security</h2>
           </div>
 
@@ -176,7 +176,7 @@ const PrivacyPolicy = () => {
         {/* Third-Party Services */}
         <section className="mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <Eye className="text-blue-600" size={24} />
+            <Eye className="text-brand-600" size={24} />
             <h2 className="text-2xl font-bold text-gray-900">4. Third-Party Services</h2>
           </div>
 
@@ -204,7 +204,7 @@ const PrivacyPolicy = () => {
         {/* Your Rights */}
         <section className="mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <Shield className="text-blue-600" size={24} />
+            <Shield className="text-brand-600" size={24} />
             <h2 className="text-2xl font-bold text-gray-900">5. Your Rights</h2>
           </div>
 
@@ -227,7 +227,7 @@ const PrivacyPolicy = () => {
         {/* Data Sharing */}
         <section className="mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <AlertCircle className="text-blue-600" size={24} />
+            <AlertCircle className="text-brand-600" size={24} />
             <h2 className="text-2xl font-bold text-gray-900">6. Information Sharing</h2>
           </div>
 
@@ -245,7 +245,7 @@ const PrivacyPolicy = () => {
         {/* Children's Privacy */}
         <section className="mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <UserCheck className="text-blue-600" size={24} />
+            <UserCheck className="text-brand-600" size={24} />
             <h2 className="text-2xl font-bold text-gray-900">7. Children's Privacy</h2>
           </div>
 
@@ -261,7 +261,7 @@ const PrivacyPolicy = () => {
         {/* Changes to Privacy Policy */}
         <section className="mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <FileText className="text-blue-600" size={24} />
+            <FileText className="text-brand-600" size={24} />
             <h2 className="text-2xl font-bold text-gray-900">8. Changes to This Policy</h2>
           </div>
 
@@ -277,7 +277,7 @@ const PrivacyPolicy = () => {
         {/* Contact Information */}
         <section className="mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <Shield className="text-blue-600" size={24} />
+            <Shield className="text-brand-600" size={24} />
             <h2 className="text-2xl font-bold text-gray-900">9. Contact Us</h2>
           </div>
 
@@ -285,7 +285,7 @@ const PrivacyPolicy = () => {
             <p className="text-gray-700 mb-3">
               If you have questions about this Privacy Policy or wish to exercise your rights, please contact us:
             </p>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="bg-brand-50 border border-brand-200 rounded-lg p-4">
               <p className="text-gray-700"><strong>Email:</strong> privacy@toolrental.com</p>
               <p className="text-gray-700"><strong>Phone:</strong> +972 50-123-4567</p>
               <p className="text-gray-700"><strong>Address:</strong> 123 Tool Street, Tel Aviv, Israel</p>

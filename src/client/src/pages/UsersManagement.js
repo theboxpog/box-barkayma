@@ -196,7 +196,7 @@ const UsersManagement = () => {
       case 'cancelled':
         return 'bg-red-100 text-red-800';
       case 'completed':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-brand-100 text-brand-800';
       case 'delivered':
         return 'bg-purple-100 text-purple-800';
       case 'returned':
@@ -218,10 +218,10 @@ const UsersManagement = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-blue-600 text-white py-8">
+      <div className="bg-brand-600 text-white py-8">
         <div className="container mx-auto px-4">
           <h1 className="text-4xl font-bold mb-2">Users Management</h1>
-          <p className="text-blue-100">View and manage all users</p>
+          <p className="text-brand-200">View and manage all users</p>
         </div>
       </div>
 
@@ -239,7 +239,7 @@ const UsersManagement = () => {
                 value={userSearchTerm}
                 onChange={(e) => setUserSearchTerm(e.target.value)}
                 placeholder="Enter name or phone number..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
 
@@ -337,7 +337,7 @@ const UsersManagement = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                           user.active_reservations_count > 0
-                            ? 'bg-blue-100 text-blue-800'
+                            ? 'bg-brand-100 text-brand-800'
                             : 'bg-gray-100 text-gray-800'
                         }`}>
                           {user.active_reservations_count || 0}
@@ -386,7 +386,7 @@ const UsersManagement = () => {
                     <p>No users match your search</p>
                     <button
                       onClick={() => setUserSearchTerm('')}
-                      className="mt-2 text-blue-600 hover:text-blue-800 text-sm"
+                      className="mt-2 text-brand-600 hover:text-brand-800 text-sm"
                     >
                       Clear search
                     </button>
@@ -404,13 +404,13 @@ const UsersManagement = () => {
                 setUserDetailsSortByDate(true);
                 setUserDetailsSearchDate('');
               }}
-              className="mb-4 text-blue-600 hover:text-blue-800 flex items-center"
+              className="mb-4 text-brand-600 hover:text-brand-800 flex items-center"
             >
               <span className="mr-2">←</span> Back to Users List
             </button>
 
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200 bg-blue-50">
+              <div className="px-6 py-4 border-b border-gray-200 bg-brand-50">
                 <h2 className="text-xl font-bold text-gray-800">{selectedUserForDetails.name}</h2>
                 <p className="text-sm text-gray-600">{selectedUserForDetails.email}</p>
                 <p className="text-sm text-gray-600">Phone: {selectedUserForDetails.phone_number || 'N/A'}</p>
@@ -425,7 +425,7 @@ const UsersManagement = () => {
                     onClick={() => setUserDetailsFilterStatus('all')}
                     className={`px-3 py-1 rounded text-sm font-semibold ${
                       userDetailsFilterStatus === 'all'
-                        ? 'bg-blue-600 text-white'
+                        ? 'bg-brand-600 text-white'
                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     }`}
                   >
@@ -511,7 +511,7 @@ const UsersManagement = () => {
                       type="date"
                       value={userDetailsSearchDate}
                       onChange={(e) => setUserDetailsSearchDate(e.target.value)}
-                      className="px-3 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="px-3 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-brand-500"
                     />
                     {userDetailsSearchDate && (
                       <button
@@ -608,7 +608,7 @@ const UsersManagement = () => {
                                 <>
                                   <button
                                     onClick={() => handleMarkAsReturned(reservation.id)}
-                                    className="text-blue-600 hover:text-blue-900 text-left"
+                                    className="text-brand-600 hover:text-brand-900 text-left"
                                   >
                                     Mark Returned
                                   </button>
@@ -642,7 +642,7 @@ const UsersManagement = () => {
                             <>
                               <button
                                 onClick={() => handleRestoreReservation(reservation.id)}
-                                className="text-blue-600 hover:text-blue-900 text-left"
+                                className="text-brand-600 hover:text-brand-900 text-left"
                               >
                                 Restore to Active
                               </button>

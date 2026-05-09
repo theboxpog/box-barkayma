@@ -52,7 +52,7 @@ const OverdueTools = () => {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading overdue tools...</p>
         </div>
       </div>
@@ -164,7 +164,7 @@ const OverdueTools = () => {
                       </div>
                       <button
                         onClick={() => handleMarkAsReturned(reservation.id)}
-                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+                        className="bg-brand-600 text-white px-4 py-2 rounded hover:bg-brand-700 transition-colors"
                       >
                         Mark as Returned
                       </button>

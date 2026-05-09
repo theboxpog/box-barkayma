@@ -108,7 +108,7 @@ const Login = () => {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
         <div className="text-center mb-8">
-          <LogIn className="mx-auto h-12 w-12 text-blue-600" />
+          <LogIn className="mx-auto h-12 w-12 text-brand-600" />
           <h2 className="mt-4 text-3xl font-bold text-gray-900">{t('login')}</h2>
           <p className="mt-2 text-gray-600">{t('signInToAccount')}</p>
         </div>
@@ -129,7 +129,7 @@ const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
               placeholder="you@example.com"
             />
           </div>
@@ -143,7 +143,7 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
               placeholder="••••••••"
             />
           </div>
@@ -151,7 +151,7 @@ const Login = () => {
           <div className="flex items-center justify-between">
             <Link
               to="/forgot-password"
-              className="text-sm text-blue-600 hover:text-blue-800"
+              className="text-sm text-brand-600 hover:text-brand-800"
             >
               {t('forgotPassword')}
             </Link>
@@ -160,7 +160,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+            className="w-full bg-brand-600 text-white py-2 px-4 rounded-md hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
           >
             {loading ? t('loggingIn') : t('login')}
           </button>
@@ -190,7 +190,7 @@ const Login = () => {
 
         <p className="mt-6 text-center text-gray-600">
           {t('dontHaveAccount')}{' '}
-          <Link to="/signup" className="text-blue-600 hover:text-blue-800 font-medium">
+          <Link to="/signup" className="text-brand-600 hover:text-brand-800 font-medium">
             {t('signUp')}
           </Link>
         </p>

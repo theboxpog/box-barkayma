@@ -135,7 +135,7 @@ const RentalSettings = () => {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading settings...</p>
         </div>
       </div>
@@ -146,7 +146,7 @@ const RentalSettings = () => {
     <div className="container mx-auto px-4 py-8 max-w-2xl">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-4">
-          <Calendar size={32} className="text-blue-600" />
+          <Calendar size={32} className="text-brand-600" />
           <h1 className="text-3xl font-bold text-gray-800">Rental Day Settings</h1>
         </div>
         <p className="text-gray-600">
@@ -183,7 +183,7 @@ const RentalSettings = () => {
                 type="checkbox"
                 checked={allowedDays.includes(day.value)}
                 onChange={() => handleDayToggle(day.value)}
-                className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+                className="w-5 h-5 text-brand-600 rounded focus:ring-brand-500"
               />
               <span className="ml-3 text-lg text-gray-800 font-medium">
                 {day.label}
@@ -195,8 +195,8 @@ const RentalSettings = () => {
           ))}
         </div>
 
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <p className="text-sm text-blue-800">
+        <div className="bg-brand-50 border border-brand-200 rounded-lg p-4 mb-6">
+          <p className="text-sm text-brand-800">
             <strong>Current selection:</strong> Rentals allowed on{' '}
             {allowedDays.length === 7 ? (
               <span className="font-semibold">all days of the week</span>
@@ -213,7 +213,7 @@ const RentalSettings = () => {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold"
+          className="w-full bg-brand-600 text-white px-6 py-3 rounded-lg hover:bg-brand-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold"
         >
           {saving ? 'Saving...' : 'Save Settings'}
         </button>
@@ -228,7 +228,7 @@ const RentalSettings = () => {
       {/* Contact Information Section */}
       <div className="mt-8 bg-white rounded-lg shadow-md p-6">
         <div className="flex items-center gap-3 mb-6">
-          <Mail size={24} className="text-blue-600" />
+          <Mail size={24} className="text-brand-600" />
           <h2 className="text-2xl font-bold text-gray-800">Contact Information</h2>
         </div>
         <p className="text-gray-600 mb-6">
@@ -259,7 +259,7 @@ const RentalSettings = () => {
               name="email"
               value={contactInfo.email}
               onChange={handleContactChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
               placeholder="contact@toolrental.com"
             />
           </div>
@@ -274,7 +274,7 @@ const RentalSettings = () => {
               name="phone"
               value={contactInfo.phone}
               onChange={handleContactChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
               placeholder="+972 50-123-4567"
             />
           </div>
@@ -289,7 +289,7 @@ const RentalSettings = () => {
               value={contactInfo.address}
               onChange={handleContactChange}
               rows={3}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
               placeholder="123 Tool Street, Tel Aviv, Israel"
             />
             <p className="text-sm text-gray-500 mt-1">
@@ -307,7 +307,7 @@ const RentalSettings = () => {
               value={contactInfo.signup_message}
               onChange={handleContactChange}
               rows={4}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
               placeholder="Welcome to our Tool Rental service! We are excited to have you on board."
             />
             <p className="text-sm text-gray-500 mt-1">
@@ -325,7 +325,7 @@ const RentalSettings = () => {
               value={contactInfo.privacy_policy || ''}
               onChange={handleContactChange}
               rows={10}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono text-sm"
               placeholder="Enter privacy policy in Markdown format..."
             />
             <p className="text-sm text-gray-500 mt-1">
@@ -349,7 +349,7 @@ const RentalSettings = () => {
                 value={contactInfo.email_important_message || ''}
                 onChange={handleContactChange}
                 rows={4}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                 placeholder="Enter an important message that will appear in reservation confirmation emails (e.g., special instructions, pickup hours, etc.)"
               />
               <p className="text-sm text-gray-500 mt-1">
@@ -381,7 +381,7 @@ const RentalSettings = () => {
                 value={contactInfo.checkout_success_message || ''}
                 onChange={handleContactChange}
                 rows={3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                 placeholder="Thank you for your order! We look forward to serving you..."
               />
               <p className="text-sm text-gray-500 mt-1">
@@ -399,7 +399,7 @@ const RentalSettings = () => {
                 onChange={handleContactChange}
                 rows={3}
                 dir="rtl"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                 placeholder="תודה על הזמנתך! נשמח לשרת אותך..."
               />
               <p className="text-sm text-gray-500 mt-1">
@@ -411,7 +411,7 @@ const RentalSettings = () => {
           <button
             onClick={handleSaveContact}
             disabled={savingContact}
-            className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold"
+            className="w-full bg-brand-600 text-white px-6 py-3 rounded-lg hover:bg-brand-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold"
           >
             {savingContact ? 'Saving...' : 'Save Contact Information'}
           </button>

@@ -43,7 +43,7 @@ const ForgotPassword = () => {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
         <div className="text-center mb-8">
-          <Mail className="mx-auto h-12 w-12 text-blue-600" />
+          <Mail className="mx-auto h-12 w-12 text-brand-600" />
           <h2 className="mt-4 text-3xl font-bold text-gray-900">Forgot Password</h2>
           <p className="mt-2 text-gray-600">
             Enter your email address and we'll send you a link to reset your password
@@ -63,14 +63,14 @@ const ForgotPassword = () => {
         )}
 
         {emailSent && (
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-800">
+          <div className="mb-6 p-4 bg-brand-50 border border-brand-200 rounded-lg">
+            <p className="text-sm text-brand-800">
               ✅ If your email is registered, you will receive a password reset link shortly.
             </p>
-            <p className="text-sm text-blue-800 mt-2">
+            <p className="text-sm text-brand-800 mt-2">
               📧 Please check your inbox and spam folder.
             </p>
-            <p className="text-sm text-blue-800 mt-2">
+            <p className="text-sm text-brand-800 mt-2">
               ⏱️ The link will expire in 1 hour.
             </p>
           </div>
@@ -86,7 +86,7 @@ const ForgotPassword = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
               placeholder="you@example.com"
               disabled={loading}
             />
@@ -95,7 +95,7 @@ const ForgotPassword = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+            className="w-full bg-brand-600 text-white py-2 px-4 rounded-md hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
           >
             {loading ? 'Sending...' : 'Send Reset Link'}
           </button>
@@ -104,7 +104,7 @@ const ForgotPassword = () => {
         <div className="mt-6">
           <Link
             to="/login"
-            className="flex items-center justify-center text-sm text-blue-600 hover:text-blue-800"
+            className="flex items-center justify-center text-sm text-brand-600 hover:text-brand-800"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Login

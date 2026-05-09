@@ -283,7 +283,7 @@ const Checkout = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-white rounded-lg shadow-md p-10 text-center max-w-md">
-          <Loader size={64} className="mx-auto text-blue-600 mb-6 animate-spin" />
+          <Loader size={64} className="mx-auto text-brand-600 mb-6 animate-spin" />
           <h2 className="text-2xl font-bold text-gray-800 mb-3">
             {language === 'he' ? 'ממתין לאישור תשלום...' : 'Waiting for payment...'}
           </h2>
@@ -317,7 +317,7 @@ const Checkout = () => {
             <p className="text-gray-600 mb-8">{t('cartEmptyMessage')}</p>
             <button
               onClick={() => navigate('/tools')}
-              className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 font-semibold"
+              className="bg-brand-600 text-white px-6 py-3 rounded-md hover:bg-brand-700 font-semibold"
             >
               {t('browseTools')}
             </button>
@@ -353,7 +353,7 @@ const Checkout = () => {
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold text-blue-600">₪{item.totalPrice.toFixed(2)}</p>
+                          <p className="font-bold text-brand-600">₪{item.totalPrice.toFixed(2)}</p>
                         </div>
                       </div>
                     </div>
@@ -427,14 +427,14 @@ const Checkout = () => {
                 )}
 
                 {getFinalTotal() > 0 && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="bg-brand-50 border border-brand-200 rounded-lg p-4">
                     <div className="flex items-center mb-2">
-                      <Lock className="text-blue-600 mr-2" size={20} />
-                      <span className="text-sm font-semibold text-blue-800">
+                      <Lock className="text-brand-600 mr-2" size={20} />
+                      <span className="text-sm font-semibold text-brand-800">
                         {language === 'he' ? 'תשלום מאובטח באמצעות SUMIT' : 'Secure payment powered by SUMIT'}
                       </span>
                     </div>
-                    <p className="text-xs text-blue-700">
+                    <p className="text-xs text-brand-700">
                       {language === 'he'
                         ? 'תועבר לדף תשלום מאובטח של SUMIT. ניתן לשלם בכרטיס אשראי או בביט.'
                         : 'You will be redirected to a secure SUMIT payment page. Pay by credit card or BIT.'}
@@ -471,13 +471,13 @@ const Checkout = () => {
                           onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                           onKeyPress={(e) => e.key === 'Enter' && handleApplyCoupon()}
                           placeholder={t('enterCode')}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
                         />
                         <button
                           type="button"
                           onClick={handleApplyCoupon}
                           disabled={validatingCoupon}
-                          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 text-sm font-semibold flex items-center"
+                          className="bg-brand-600 text-white px-4 py-2 rounded-md hover:bg-brand-700 disabled:opacity-50 text-sm font-semibold flex items-center"
                         >
                           {validatingCoupon ? (
                             <Loader className="animate-spin" size={16} />
@@ -539,7 +539,7 @@ const Checkout = () => {
                   <div className="border-t border-gray-200 pt-3">
                     <div className="flex justify-between items-center">
                       <span className="text-lg font-bold text-gray-800">{t('total')}</span>
-                      <span className="text-2xl font-bold text-blue-600">
+                      <span className="text-2xl font-bold text-brand-600">
                         ₪{getFinalTotal().toFixed(2)}
                       </span>
                     </div>

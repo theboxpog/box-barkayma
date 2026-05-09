@@ -37,7 +37,7 @@ const UserDashboard = () => {
       case 'cancelled':
         return 'bg-red-100 text-red-800';
       case 'completed':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-brand-100 text-brand-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -53,10 +53,10 @@ const UserDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-blue-600 text-white py-8">
+      <div className="bg-brand-600 text-white py-8">
         <div className="container mx-auto px-4">
           <h1 className="text-4xl font-bold mb-2">My Dashboard</h1>
-          <p className="text-blue-100">Manage your rentals and view payment history</p>
+          <p className="text-brand-200">Manage your rentals and view payment history</p>
         </div>
       </div>
 
@@ -68,7 +68,7 @@ const UserDashboard = () => {
               onClick={() => setActiveTab('reservations')}
               className={`flex items-center space-x-2 px-6 py-4 font-semibold ${
                 activeTab === 'reservations'
-                  ? 'border-b-2 border-blue-600 text-blue-600'
+                  ? 'border-b-2 border-brand-600 text-brand-600'
                   : 'text-gray-600 hover:text-gray-800'
               }`}
             >
@@ -79,7 +79,7 @@ const UserDashboard = () => {
               onClick={() => setActiveTab('payments')}
               className={`flex items-center space-x-2 px-6 py-4 font-semibold ${
                 activeTab === 'payments'
-                  ? 'border-b-2 border-blue-600 text-blue-600'
+                  ? 'border-b-2 border-brand-600 text-brand-600'
                   : 'text-gray-600 hover:text-gray-800'
               }`}
             >
@@ -96,7 +96,7 @@ const UserDashboard = () => {
               <div className="bg-white rounded-lg shadow-md p-12 text-center">
                 <Calendar className="mx-auto h-16 w-16 text-gray-400 mb-4" />
                 <p className="text-xl text-gray-600">No reservations yet</p>
-                <a href="/tools" className="text-blue-600 hover:text-blue-800 mt-2 inline-block">
+                <a href="/tools" className="text-brand-600 hover:text-brand-800 mt-2 inline-block">
                   Browse tools to get started
                 </a>
               </div>
@@ -144,7 +144,7 @@ const UserDashboard = () => {
                           <p className="flex items-center">
                             <DollarSign size={16} className="mr-2" />
                             <span className="font-medium">Total:</span>
-                            <span className="ml-2 text-xl font-bold text-blue-600">
+                            <span className="ml-2 text-xl font-bold text-brand-600">
                               ₪{reservation.total_price}
                             </span>
                           </p>

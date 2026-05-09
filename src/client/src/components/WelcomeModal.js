@@ -34,7 +34,7 @@ const WelcomeModal = ({ message, onClose }) => {
         {/* Close button at bottom */}
         <button
           onClick={onClose}
-          className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+          className="w-full bg-brand-600 text-white px-6 py-3 rounded-lg hover:bg-brand-700 transition-colors font-semibold"
         >
           Get Started
         </button>

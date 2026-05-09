@@ -248,7 +248,7 @@ const AccessibilityButton = () => {
       {/* Main accessibility button - fixed in bottom-right corner */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 bg-blue-600 text-white rounded-full p-4 shadow-lg hover:bg-blue-700 transition-all duration-200 z-50 focus:outline-none focus:ring-4 focus:ring-blue-300"
+        className="fixed bottom-6 right-6 bg-brand-600 text-white rounded-full p-4 shadow-lg hover:bg-brand-700 transition-all duration-200 z-50 focus:outline-none focus:ring-4 focus:ring-brand-300"
         aria-label="Accessibility options"
         title="Accessibility options"
       >
@@ -273,7 +273,7 @@ const AccessibilityButton = () => {
           {/* Text-to-Speech section */}
           <div className="border-t pt-4">
             <div className="flex items-center gap-2 mb-3">
-              <Volume2 size={20} className="text-blue-600" />
+              <Volume2 size={20} className="text-brand-600" />
               <h4 className="font-semibold text-gray-700">Text-to-Speech</h4>
             </div>
 
@@ -295,7 +295,7 @@ const AccessibilityButton = () => {
                 <button
                   onClick={startSpeaking}
                   disabled={!speechSupported}
-                  className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                 >
                   <Play size={16} />
                   Start Reading
@@ -344,7 +344,7 @@ const AccessibilityButton = () => {
           {/* Font Size Control */}
           <div className="border-t pt-4 mt-4">
             <div className="flex items-center gap-2 mb-3">
-              <Type size={20} className="text-blue-600" />
+              <Type size={20} className="text-brand-600" />
               <h4 className="font-semibold text-gray-700">Font Size</h4>
             </div>
             <div className="flex gap-2">
@@ -352,7 +352,7 @@ const AccessibilityButton = () => {
                 onClick={() => setFontSize('normal')}
                 className={`flex-1 px-3 py-2 rounded-lg transition-colors ${
                   fontSize === 'normal'
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-brand-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -362,7 +362,7 @@ const AccessibilityButton = () => {
                 onClick={() => setFontSize('large')}
                 className={`flex-1 px-3 py-2 rounded-lg transition-colors text-lg ${
                   fontSize === 'large'
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-brand-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -372,7 +372,7 @@ const AccessibilityButton = () => {
                 onClick={() => setFontSize('xlarge')}
                 className={`flex-1 px-3 py-2 rounded-lg transition-colors text-xl ${
                   fontSize === 'xlarge'
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-brand-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -388,11 +388,11 @@ const AccessibilityButton = () => {
               className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors"
             >
               <div className="flex items-center gap-2">
-                <Contrast size={20} className="text-blue-600" />
+                <Contrast size={20} className="text-brand-600" />
                 <span className="font-semibold text-gray-700">High Contrast</span>
               </div>
               <div className={`w-12 h-6 rounded-full transition-colors ${
-                highContrast ? 'bg-blue-600' : 'bg-gray-300'
+                highContrast ? 'bg-brand-600' : 'bg-gray-300'
               }`}>
                 <div className={`w-5 h-5 bg-white rounded-full mt-0.5 transition-transform ${
                   highContrast ? 'ml-6' : 'ml-0.5'
@@ -408,11 +408,11 @@ const AccessibilityButton = () => {
               className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors"
             >
               <div className="flex items-center gap-2">
-                <LinkIcon size={20} className="text-blue-600" />
+                <LinkIcon size={20} className="text-brand-600" />
                 <span className="font-semibold text-gray-700">Highlight Links</span>
               </div>
               <div className={`w-12 h-6 rounded-full transition-colors ${
-                highlightLinks ? 'bg-blue-600' : 'bg-gray-300'
+                highlightLinks ? 'bg-brand-600' : 'bg-gray-300'
               }`}>
                 <div className={`w-5 h-5 bg-white rounded-full mt-0.5 transition-transform ${
                   highlightLinks ? 'ml-6' : 'ml-0.5'
@@ -428,11 +428,11 @@ const AccessibilityButton = () => {
               className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors"
             >
               <div className="flex items-center gap-2">
-                <BookOpen size={20} className="text-blue-600" />
+                <BookOpen size={20} className="text-brand-600" />
                 <span className="font-semibold text-gray-700">Readable Font</span>
               </div>
               <div className={`w-12 h-6 rounded-full transition-colors ${
-                readableFont ? 'bg-blue-600' : 'bg-gray-300'
+                readableFont ? 'bg-brand-600' : 'bg-gray-300'
               }`}>
                 <div className={`w-5 h-5 bg-white rounded-full mt-0.5 transition-transform ${
                   readableFont ? 'ml-6' : 'ml-0.5'

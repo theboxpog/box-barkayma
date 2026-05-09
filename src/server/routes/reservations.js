@@ -294,10 +294,11 @@ router.get('/admin/all', authenticateToken, isAdminOrSubadmin, (req, res) => {
   autoMarkOverdue(() => {
     let query = `
       SELECT r.*, u.name as user_name, u.email as user_email,
-             t.name as tool_name, t.category
+             COALESCE(t.name, '[Deleted Tool]') as tool_name,
+             COALESCE(t.category, '') as category
       FROM reservations r
       JOIN users u ON r.user_id = u.id
-      JOIN tools t ON r.tool_id = t.id
+      LEFT JOIN tools t ON r.tool_id = t.id
       WHERE r.status != 'archived'
     `;
     const params = [];
@@ -619,32 +620,36 @@ router.post('/admin/mark-overdue', authenticateToken, isAdminOrSubadmin, (req, r
 
 // Admin/Subadmin: Get overdue reservations
 router.get('/admin/overdue', authenticateToken, isAdminOrSubadmin, (req, res) => {
-  db.all(
-    `SELECT r.*, u.name as user_name, u.email as user_email,
-            t.name as tool_name, t.category
-     FROM reservations r
-     JOIN users u ON r.user_id = u.id
-     JOIN tools t ON r.tool_id = t.id
-     WHERE r.status = 'overdue'
-     ORDER BY r.end_date ASC`,
-    [],
-    (err, reservations) => {
-      if (err) {
-        return res.status(500).json({ error: 'Failed to fetch overdue reservations' });
+  autoMarkOverdue(() => {
+    db.all(
+      `SELECT r.*, u.name as user_name, u.email as user_email,
+              COALESCE(t.name, '[Deleted Tool]') as tool_name,
+              COALESCE(t.category, '') as category
+       FROM reservations r
+       JOIN users u ON r.user_id = u.id
+       LEFT JOIN tools t ON r.tool_id = t.id
+       WHERE r.status = 'overdue'
+       ORDER BY r.end_date ASC`,
+      [],
+      (err, reservations) => {
+        if (err) {
+          return res.status(500).json({ error: 'Failed to fetch overdue reservations' });
+        }
+        res.json(reservations);
       }
-      res.json(reservations);
-    }
-  );
+    );
+  });
 });
 
 // Admin/Subadmin: Get active reservations
 router.get('/admin/active', authenticateToken, isAdminOrSubadmin, (req, res) => {
   db.all(
     `SELECT r.*, u.name as user_name, u.email as user_email,
-            t.name as tool_name, t.category
+            COALESCE(t.name, '[Deleted Tool]') as tool_name,
+            COALESCE(t.category, '') as category
      FROM reservations r
      JOIN users u ON r.user_id = u.id
-     JOIN tools t ON r.tool_id = t.id
+     LEFT JOIN tools t ON r.tool_id = t.id
      WHERE r.status = 'active'
      ORDER BY r.start_date ASC`,
     [],
@@ -691,10 +696,11 @@ router.post('/:id/archive', authenticateToken, isAdminOrSubadmin, (req, res) => 
 router.get('/admin/archived', authenticateToken, isAdminOrSubadmin, (req, res) => {
   db.all(
     `SELECT r.*, u.name as user_name, u.email as user_email,
-            t.name as tool_name, t.category
+            COALESCE(t.name, '[Deleted Tool]') as tool_name,
+            COALESCE(t.category, '') as category
      FROM reservations r
      JOIN users u ON r.user_id = u.id
-     JOIN tools t ON r.tool_id = t.id
+     LEFT JOIN tools t ON r.tool_id = t.id
      WHERE r.status = 'archived'
      ORDER BY r.created_at DESC`,
     [],

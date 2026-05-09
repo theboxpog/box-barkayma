@@ -63,17 +63,17 @@ const CheckoutSuccess = () => {
               </div>
             )}
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+            <div className="bg-brand-50 border border-brand-200 rounded-lg p-6 mb-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">{t('orderItems')}</p>
-                  <p className="text-2xl font-bold text-blue-600">
+                  <p className="text-2xl font-bold text-brand-600">
                     {orderData.orderCount || 0} {orderData.orderCount === 1 ? t('item') : t('itemPlural')}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600 mb-1">{t('totalAmount')}</p>
-                  <p className="text-2xl font-bold text-blue-600">
+                  <p className="text-2xl font-bold text-brand-600">
                     ₪{(orderData.totalAmount || 0).toFixed(2)}
                   </p>
                 </div>
@@ -84,8 +84,8 @@ const CheckoutSuccess = () => {
               <h2 className="text-xl font-bold text-gray-800 mb-4">{t('whatsNext')}</h2>
 
               <div className="flex items-start space-x-3">
-                <div className="bg-blue-100 rounded-full p-2 mt-1">
-                  <CheckCircle size={20} className="text-blue-600" />
+                <div className="bg-brand-100 rounded-full p-2 mt-1">
+                  <CheckCircle size={20} className="text-brand-600" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-800">{t('confirmationEmail')}</h3>
@@ -96,8 +96,8 @@ const CheckoutSuccess = () => {
               </div>
 
               <div className="flex items-start space-x-3">
-                <div className="bg-blue-100 rounded-full p-2 mt-1">
-                  <Calendar size={20} className="text-blue-600" />
+                <div className="bg-brand-100 rounded-full p-2 mt-1">
+                  <Calendar size={20} className="text-brand-600" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-800">{t('pickupInstructions')}</h3>
@@ -108,8 +108,8 @@ const CheckoutSuccess = () => {
               </div>
 
               <div className="flex items-start space-x-3">
-                <div className="bg-blue-100 rounded-full p-2 mt-1">
-                  <Package size={20} className="text-blue-600" />
+                <div className="bg-brand-100 rounded-full p-2 mt-1">
+                  <Package size={20} className="text-brand-600" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-800">{t('returnPolicy')}</h3>
@@ -146,7 +146,7 @@ const CheckoutSuccess = () => {
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-lg font-bold text-blue-600">
+                        <p className="text-lg font-bold text-brand-600">
                           ₪{reservation.total_price.toFixed(2)}
                         </p>
                       </div>
@@ -161,7 +161,7 @@ const CheckoutSuccess = () => {
           <div className="flex flex-col sm:flex-row gap-4">
             <button
               onClick={() => navigate('/dashboard')}
-              className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-md hover:bg-blue-700 font-semibold flex items-center justify-center space-x-2"
+              className="flex-1 bg-brand-600 text-white py-3 px-6 rounded-md hover:bg-brand-700 font-semibold flex items-center justify-center space-x-2"
             >
               <Calendar size={20} />
               <span>{t('viewMyRentals')}</span>

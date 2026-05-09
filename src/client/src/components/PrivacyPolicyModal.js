@@ -57,8 +57,8 @@ If you have any questions about this Privacy Policy, please contact us.`;
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <div className="bg-blue-100 rounded-full p-2">
-              <Shield size={24} className="text-blue-600" />
+            <div className="bg-brand-100 rounded-full p-2">
+              <Shield size={24} className="text-brand-600" />
             </div>
             <h2 className="text-xl font-bold text-gray-800">Privacy Policy</h2>
           </div>
@@ -75,7 +75,7 @@ If you have any questions about this Privacy Policy, please contact us.`;
         <div className="flex-1 overflow-y-auto p-6">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600"></div>
             </div>
           ) : (
             <div className="prose prose-sm max-w-none whitespace-pre-wrap text-gray-700">
@@ -97,7 +97,7 @@ If you have any questions about this Privacy Policy, please contact us.`;
           >
             <div className="mt-0.5 flex-shrink-0">
               {accepted ? (
-                <CheckSquare size={24} className="text-blue-600" />
+                <CheckSquare size={24} className="text-brand-600" />
               ) : (
                 <Square size={24} className="text-gray-400" />
               )}
@@ -120,7 +120,7 @@ If you have any questions about this Privacy Policy, please contact us.`;
               disabled={!accepted}
               className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
                 accepted
-                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  ? 'bg-brand-600 text-white hover:bg-brand-700'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
             >

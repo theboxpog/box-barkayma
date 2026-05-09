@@ -78,7 +78,7 @@ const ResetPassword = () => {
             <div className="mt-6">
               <Link
                 to="/login"
-                className="text-blue-600 hover:text-blue-800 font-medium"
+                className="text-brand-600 hover:text-brand-800 font-medium"
               >
                 Click here if not redirected
               </Link>
@@ -93,7 +93,7 @@ const ResetPassword = () => {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
         <div className="text-center mb-8">
-          <Lock className="mx-auto h-12 w-12 text-blue-600" />
+          <Lock className="mx-auto h-12 w-12 text-brand-600" />
           <h2 className="mt-4 text-3xl font-bold text-gray-900">Reset Password</h2>
           <p className="mt-2 text-gray-600">
             Enter your new password below
@@ -131,7 +131,7 @@ const ResetPassword = () => {
               onChange={(e) => setNewPassword(e.target.value)}
               required
               minLength="6"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
               placeholder="Enter new password (min 6 characters)"
               disabled={loading || !token}
             />
@@ -147,7 +147,7 @@ const ResetPassword = () => {
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               minLength="6"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
               placeholder="Confirm new password"
               disabled={loading || !token}
             />
@@ -156,7 +156,7 @@ const ResetPassword = () => {
           <button
             type="submit"
             disabled={loading || !token}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+            className="w-full bg-brand-600 text-white py-2 px-4 rounded-md hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
           >
             {loading ? 'Resetting Password...' : 'Reset Password'}
           </button>
@@ -165,7 +165,7 @@ const ResetPassword = () => {
         <div className="mt-6">
           <Link
             to="/login"
-            className="flex items-center justify-center text-sm text-blue-600 hover:text-blue-800"
+            className="flex items-center justify-center text-sm text-brand-600 hover:text-brand-800"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Login

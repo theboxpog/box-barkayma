@@ -52,14 +52,14 @@ const Contact = () => {
 
             <div className="space-y-6">
               <div className="flex items-start space-x-4">
-                <div className="bg-blue-100 rounded-full p-3">
-                  <Mail className="text-blue-600" size={24} />
+                <div className="bg-brand-100 rounded-full p-3">
+                  <Mail className="text-brand-600" size={24} />
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-800 mb-1">Email</h3>
                   <a
                     href={`mailto:${contactInfo.email}`}
-                    className="text-blue-600 hover:text-blue-800"
+                    className="text-brand-600 hover:text-brand-800"
                   >
                     {contactInfo.email}
                   </a>
@@ -67,14 +67,14 @@ const Contact = () => {
               </div>
 
               <div className="flex items-start space-x-4">
-                <div className="bg-blue-100 rounded-full p-3">
-                  <Phone className="text-blue-600" size={24} />
+                <div className="bg-brand-100 rounded-full p-3">
+                  <Phone className="text-brand-600" size={24} />
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-800 mb-1">Phone</h3>
                   <a
                     href={`tel:${contactInfo.phone.replace(/\s/g, '')}`}
-                    className="text-blue-600 hover:text-blue-800"
+                    className="text-brand-600 hover:text-brand-800"
                   >
                     {contactInfo.phone}
                   </a>
@@ -82,8 +82,8 @@ const Contact = () => {
               </div>
 
               <div className="flex items-start space-x-4">
-                <div className="bg-blue-100 rounded-full p-3">
-                  <MapPin className="text-blue-600" size={24} />
+                <div className="bg-brand-100 rounded-full p-3">
+                  <MapPin className="text-brand-600" size={24} />
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-800 mb-1">Address</h3>
@@ -98,7 +98,7 @@ const Contact = () => {
             <div className="mt-8 pt-6 border-t border-gray-200 text-center">
               <Link
                 to="/privacy-policy"
-                className="text-blue-600 hover:text-blue-800 text-sm underline"
+                className="text-brand-600 hover:text-brand-800 text-sm underline"
               >
                 View Our Privacy Policy
               </Link>

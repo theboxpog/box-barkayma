@@ -119,7 +119,7 @@ const Signup = () => {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
         <div className="text-center mb-8">
-          <UserPlus className="mx-auto h-12 w-12 text-blue-600" />
+          <UserPlus className="mx-auto h-12 w-12 text-brand-600" />
           <h2 className="mt-4 text-3xl font-bold text-gray-900">{t('signUp')}</h2>
           <p className="mt-2 text-gray-600">{t('createYourAccount')}</p>
         </div>
@@ -141,7 +141,7 @@ const Signup = () => {
               value={formData.name}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
               placeholder="John Doe"
             />
           </div>
@@ -156,7 +156,7 @@ const Signup = () => {
               value={formData.email}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
               placeholder="you@example.com"
             />
           </div>
@@ -171,7 +171,7 @@ const Signup = () => {
               value={formData.phone_number}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
               placeholder="0501234567"
             />
             <p className="text-xs text-gray-500 mt-1">Enter 10-15 digits</p>
@@ -187,7 +187,7 @@ const Signup = () => {
               value={formData.password}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
               placeholder="••••••••"
             />
           </div>
@@ -202,7 +202,7 @@ const Signup = () => {
               value={formData.confirmPassword}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
               placeholder="••••••••"
             />
           </div>
@@ -210,7 +210,7 @@ const Signup = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+            className="w-full bg-brand-600 text-white py-2 px-4 rounded-md hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
           >
             {loading ? t('creatingAccount') : t('signUp')}
           </button>
@@ -240,14 +240,14 @@ const Signup = () => {
 
         <p className="mt-6 text-center text-gray-600">
           {t('alreadyHaveAccount')}{' '}
-          <Link to="/login" className="text-blue-600 hover:text-blue-800 font-medium">
+          <Link to="/login" className="text-brand-600 hover:text-brand-800 font-medium">
             {t('login')}
           </Link>
         </p>
 
         <p className="mt-4 text-center text-xs text-gray-500">
           {t('bySigningUp')}{' '}
-          <Link to="/privacy-policy" className="text-blue-600 hover:text-blue-800 underline">
+          <Link to="/privacy-policy" className="text-brand-600 hover:text-brand-800 underline">
             {t('privacyPolicy')}
           </Link>
         </p>

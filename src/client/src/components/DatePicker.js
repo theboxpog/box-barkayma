@@ -142,7 +142,7 @@ const DatePicker = ({ value, onChange, minDate, allowedDays = [0, 1, 2, 3, 4, 5,
         className={`w-full px-3 py-2 border rounded-md text-left flex items-center justify-between focus:outline-none focus:ring-2 ${
           value && !allowedDays.includes(new Date(value + 'T00:00:00').getDay())
             ? 'border-red-400 bg-red-50 focus:ring-red-500'
-            : 'border-gray-300 bg-white focus:ring-blue-500'
+            : 'border-gray-300 bg-white focus:ring-brand-500'
         }`}
       >
         <span className={value ? 'text-gray-900' : 'text-gray-400'}>
@@ -152,7 +152,7 @@ const DatePicker = ({ value, onChange, minDate, allowedDays = [0, 1, 2, 3, 4, 5,
       </button>
 
       {allowedDays.length < 7 && (
-        <p className="text-xs text-blue-600 mt-1 font-medium">
+        <p className="text-xs text-brand-600 mt-1 font-medium">
           ✓ {t('allowedDays')}: {allowedDays.map(d => dayNamesFull[d]).join(', ')}
         </p>
       )}
@@ -211,14 +211,14 @@ const DatePicker = ({ value, onChange, minDate, allowedDays = [0, 1, 2, 3, 4, 5,
                     transition-colors
                     ${disabled
                       ? 'text-gray-300 bg-gray-50 cursor-not-allowed opacity-40'
-                      : 'text-gray-900 hover:bg-blue-100 cursor-pointer'
+                      : 'text-gray-900 hover:bg-brand-100 cursor-pointer'
                     }
                     ${selected
-                      ? 'bg-blue-600 text-white font-bold hover:bg-blue-700'
+                      ? 'bg-brand-600 text-white font-bold hover:bg-brand-700'
                       : ''
                     }
                     ${today && !selected
-                      ? 'border border-blue-600 font-semibold'
+                      ? 'border border-brand-600 font-semibold'
                       : ''
                     }
                   `}

@@ -425,7 +425,7 @@ const AdminDashboard = () => {
       case 'cancelled':
         return 'bg-red-100 text-red-800';
       case 'completed':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-brand-100 text-brand-800';
       case 'delivered':
         return 'bg-purple-100 text-purple-800';
       case 'returned':
@@ -485,10 +485,10 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-blue-600 text-white py-8">
+      <div className="bg-brand-600 text-white py-8">
         <div className="container mx-auto px-4">
           <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
-          <p className="text-blue-100">Manage tools and reservations</p>
+          <p className="text-brand-200">Manage tools and reservations</p>
         </div>
       </div>
 
@@ -500,7 +500,7 @@ const AdminDashboard = () => {
               onClick={() => setActiveTab('tools')}
               className={`flex items-center space-x-2 px-6 py-4 font-semibold ${
                 activeTab === 'tools'
-                  ? 'border-b-2 border-blue-600 text-blue-600'
+                  ? 'border-b-2 border-brand-600 text-brand-600'
                   : 'text-gray-600 hover:text-gray-800'
               }`}
             >
@@ -511,7 +511,7 @@ const AdminDashboard = () => {
               onClick={() => setActiveTab('reservations')}
               className={`flex items-center space-x-2 px-6 py-4 font-semibold ${
                 activeTab === 'reservations'
-                  ? 'border-b-2 border-blue-600 text-blue-600'
+                  ? 'border-b-2 border-brand-600 text-brand-600'
                   : 'text-gray-600 hover:text-gray-800'
               }`}
             >
@@ -522,7 +522,7 @@ const AdminDashboard = () => {
               onClick={() => setActiveTab('archived')}
               className={`flex items-center space-x-2 px-6 py-4 font-semibold ${
                 activeTab === 'archived'
-                  ? 'border-b-2 border-blue-600 text-blue-600'
+                  ? 'border-b-2 border-brand-600 text-brand-600'
                   : 'text-gray-600 hover:text-gray-800'
               }`}
             >
@@ -533,7 +533,7 @@ const AdminDashboard = () => {
               onClick={() => setActiveTab('coupons')}
               className={`flex items-center space-x-2 px-6 py-4 font-semibold ${
                 activeTab === 'coupons'
-                  ? 'border-b-2 border-blue-600 text-blue-600'
+                  ? 'border-b-2 border-brand-600 text-brand-600'
                   : 'text-gray-600 hover:text-gray-800'
               }`}
             >
@@ -569,7 +569,7 @@ const AdminDashboard = () => {
                   });
                   clearImageFile();
                 }}
-                className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                className="flex items-center space-x-2 bg-brand-600 text-white px-4 py-2 rounded hover:bg-brand-700"
               >
                 <Plus size={20} />
                 <span>Add New Tool</span>
@@ -603,7 +603,7 @@ const AdminDashboard = () => {
                         value={toolForm.name}
                         onChange={handleToolFormChange}
                         required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                       />
                     </div>
 
@@ -617,7 +617,7 @@ const AdminDashboard = () => {
                         value={toolForm.category}
                         onChange={handleToolFormChange}
                         required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                         placeholder="e.g., Power Tools, Hand Tools, etc."
                       />
                     </div>
@@ -634,7 +634,7 @@ const AdminDashboard = () => {
                         required
                         min="0"
                         step="0.01"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                       />
                     </div>
 
@@ -649,7 +649,7 @@ const AdminDashboard = () => {
                         onChange={handleToolFormChange}
                         required
                         min="0"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                       />
                       <p className="text-xs text-gray-500 mt-1">
                         Total number of this tool available for rent
@@ -665,7 +665,7 @@ const AdminDashboard = () => {
                         value={toolForm.description}
                         onChange={handleToolFormChange}
                         rows="3"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                       />
                     </div>
 
@@ -676,7 +676,7 @@ const AdminDashboard = () => {
 
                       {/* File Upload Option */}
                       <div className="mb-3">
-                        <label className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
+                        <label className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-brand-500 hover:bg-brand-50 transition-colors">
                           <Upload size={20} className="mr-2 text-gray-500" />
                           <span className="text-gray-600">
                             {imageFile ? imageFile.name : 'Click to browse image from device'}
@@ -736,7 +736,7 @@ const AdminDashboard = () => {
                           }
                         }}
                         disabled={!!imageFile}
-                        className="w-full mt-3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        className="w-full mt-3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                         placeholder="https://example.com/image.jpg"
                       />
                     </div>
@@ -747,7 +747,7 @@ const AdminDashboard = () => {
                         name="is_available"
                         checked={toolForm.is_available}
                         onChange={handleToolFormChange}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-brand-600 focus:ring-brand-500 border-gray-300 rounded"
                       />
                       <label className="ml-2 block text-sm text-gray-900">
                         Tool is available (uncheck for maintenance)
@@ -758,7 +758,7 @@ const AdminDashboard = () => {
                       <button
                         type="submit"
                         disabled={uploadingImage}
-                        className="flex-1 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed"
+                        className="flex-1 bg-brand-600 text-white py-2 px-4 rounded hover:bg-brand-700 disabled:bg-brand-400 disabled:cursor-not-allowed"
                       >
                         {uploadingImage ? 'Uploading image...' : (editingTool ? 'Update Tool' : 'Create Tool')}
                       </button>
@@ -844,7 +844,7 @@ const AdminDashboard = () => {
                         </button>
                         <button
                           onClick={() => handleEditTool(tool)}
-                          className="text-blue-600 hover:text-blue-900 inline-flex items-center"
+                          className="text-brand-600 hover:text-brand-900 inline-flex items-center"
                         >
                           <Edit size={16} className="mr-1" />
                           Edit
@@ -883,7 +883,7 @@ const AdminDashboard = () => {
                       type="date"
                       value={userListSearchDate}
                       onChange={(e) => setUserListSearchDate(e.target.value)}
-                      className="px-3 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="px-3 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-brand-500"
                     />
                     {userListSearchDate && (
                       <button
@@ -910,7 +910,7 @@ const AdminDashboard = () => {
                           <div className="text-sm text-gray-600">{userGroup.userEmail}</div>
                         </div>
                         <div className="text-right">
-                          <div className="text-2xl font-bold text-blue-600">
+                          <div className="text-2xl font-bold text-brand-600">
                             {userGroup.reservations.length}
                           </div>
                           <div className="text-xs text-gray-500">
@@ -932,13 +932,13 @@ const AdminDashboard = () => {
               <div>
                 <button
                   onClick={() => setSelectedUser(null)}
-                  className="mb-4 text-blue-600 hover:text-blue-800 flex items-center"
+                  className="mb-4 text-brand-600 hover:text-brand-800 flex items-center"
                 >
                   <span className="mr-2">←</span> Back to Users List
                 </button>
 
                 <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                  <div className="px-6 py-4 border-b border-gray-200 bg-blue-50">
+                  <div className="px-6 py-4 border-b border-gray-200 bg-brand-50">
                     <h2 className="text-xl font-bold text-gray-800">{selectedUser.userName}</h2>
                     <p className="text-sm text-gray-600">{selectedUser.userEmail}</p>
                     <p className="text-sm text-gray-600 mt-2">
@@ -952,7 +952,7 @@ const AdminDashboard = () => {
                         onClick={() => setFilterStatus('all')}
                         className={`px-3 py-1 rounded text-sm font-semibold ${
                           filterStatus === 'all'
-                            ? 'bg-blue-600 text-white'
+                            ? 'bg-brand-600 text-white'
                             : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                         }`}
                       >
@@ -998,7 +998,7 @@ const AdminDashboard = () => {
                           type="date"
                           value={searchDate}
                           onChange={(e) => setSearchDate(e.target.value)}
-                          className="px-3 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="px-3 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-brand-500"
                         />
                         {searchDate && (
                           <button
@@ -1112,7 +1112,7 @@ const AdminDashboard = () => {
                                 <>
                                   <button
                                     onClick={() => handleMarkAsReturned(reservation.id)}
-                                    className="text-blue-600 hover:text-blue-900 text-left"
+                                    className="text-brand-600 hover:text-brand-900 text-left"
                                   >
                                     Mark Returned
                                   </button>
@@ -1159,7 +1159,7 @@ const AdminDashboard = () => {
             <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
               <h2 className="text-xl font-bold text-gray-800">Past Reservations</h2>
               <p className="text-sm text-gray-600">Archived reservations that have been removed from active view</p>
-              <p className="text-sm text-blue-600 mt-2">Total: {archivedReservations.length} archived reservation(s)</p>
+              <p className="text-sm text-brand-600 mt-2">Total: {archivedReservations.length} archived reservation(s)</p>
             </div>
 
             {archivedReservations.length === 0 ? (
@@ -1221,7 +1221,7 @@ const AdminDashboard = () => {
                           <div className="flex flex-col space-y-1">
                             <button
                               onClick={() => handleRestoreReservation(reservation.id)}
-                              className="text-blue-600 hover:text-blue-900 text-left"
+                              className="text-brand-600 hover:text-brand-900 text-left"
                             >
                               Restore to Active
                             </button>
@@ -1262,7 +1262,7 @@ const AdminDashboard = () => {
                     allowed_tools: ''
                   });
                 }}
-                className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                className="flex items-center space-x-2 bg-brand-600 text-white px-4 py-2 rounded hover:bg-brand-700"
               >
                 <Plus size={20} />
                 <span>Add New Coupon</span>
@@ -1293,7 +1293,7 @@ const AdminDashboard = () => {
                         value={couponForm.code}
                         onChange={handleCouponFormChange}
                         required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 uppercase"
                         placeholder="SUMMER2024"
                       />
                     </div>
@@ -1307,7 +1307,7 @@ const AdminDashboard = () => {
                         value={couponForm.discount_type}
                         onChange={handleCouponFormChange}
                         required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                       >
                         <option value="percentage">Percentage</option>
                         <option value="fixed">Fixed Amount</option>
@@ -1327,7 +1327,7 @@ const AdminDashboard = () => {
                         min="0"
                         max={couponForm.discount_type === 'percentage' ? 100 : undefined}
                         step="0.01"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                       />
                     </div>
 
@@ -1342,7 +1342,7 @@ const AdminDashboard = () => {
                         onChange={handleCouponFormChange}
                         min="0"
                         step="0.01"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                       />
                     </div>
 
@@ -1356,7 +1356,7 @@ const AdminDashboard = () => {
                         value={couponForm.max_uses}
                         onChange={handleCouponFormChange}
                         min="1"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                       />
                     </div>
 
@@ -1369,7 +1369,7 @@ const AdminDashboard = () => {
                         name="expiry_date"
                         value={couponForm.expiry_date}
                         onChange={handleCouponFormChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                       />
                     </div>
 
@@ -1379,7 +1379,7 @@ const AdminDashboard = () => {
                         name="is_active"
                         checked={couponForm.is_active}
                         onChange={handleCouponFormChange}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-brand-600 focus:ring-brand-500 border-gray-300 rounded"
                       />
                       <label className="ml-2 block text-sm text-gray-900">
                         Coupon is active
@@ -1418,7 +1418,7 @@ const AdminDashboard = () => {
                               allowed_tools: newAllowedTools
                             });
                           }}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                           size="4"
                         >
                           {getUniqueCategories().map(category => (
@@ -1447,7 +1447,7 @@ const AdminDashboard = () => {
                               allowed_tools: selectedOptions.join(',')
                             });
                           }}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                           size="6"
                         >
                           {tools
@@ -1480,7 +1480,7 @@ const AdminDashboard = () => {
                     <div className="flex space-x-3 pt-4">
                       <button
                         type="submit"
-                        className="flex-1 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+                        className="flex-1 bg-brand-600 text-white py-2 px-4 rounded hover:bg-brand-700"
                       >
                         {editingCoupon ? 'Update Coupon' : 'Create Coupon'}
                       </button>
@@ -1562,7 +1562,7 @@ const AdminDashboard = () => {
                           : `₪${coupon.discount_value}`}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500 max-w-xs">
-                        <div className={hasRestrictions ? 'text-blue-600 font-medium' : 'text-gray-500'}>
+                        <div className={hasRestrictions ? 'text-brand-600 font-medium' : 'text-gray-500'}>
                           {restrictionText}
                         </div>
                       </td>
@@ -1592,7 +1592,7 @@ const AdminDashboard = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                         <button
                           onClick={() => handleEditCoupon(coupon)}
-                          className="text-blue-600 hover:text-blue-900 inline-flex items-center"
+                          className="text-brand-600 hover:text-brand-900 inline-flex items-center"
                         >
                           <Edit size={16} className="mr-1" />
                           Edit

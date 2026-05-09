@@ -48,7 +48,7 @@ const ToolReservations = () => {
       case 'cancelled':
         return 'bg-red-100 text-red-800';
       case 'completed':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-brand-100 text-brand-800';
       case 'delivered':
         return 'bg-purple-100 text-purple-800';
       case 'returned':
@@ -76,7 +76,7 @@ const ToolReservations = () => {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading reservations...</p>
         </div>
       </div>
@@ -104,7 +104,7 @@ const ToolReservations = () => {
       <div className="mb-6">
         <button
           onClick={() => navigate('/admin')}
-          className="flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-4"
+          className="flex items-center gap-2 text-brand-600 hover:text-brand-800 mb-4"
         >
           <ArrowLeft size={20} />
           <span>Back to Admin Panel</span>
@@ -113,8 +113,8 @@ const ToolReservations = () => {
         {tool && (
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-start gap-4">
-              <div className="bg-blue-100 rounded-lg p-3">
-                <Package size={32} className="text-blue-600" />
+              <div className="bg-brand-100 rounded-lg p-3">
+                <Package size={32} className="text-brand-600" />
               </div>
               <div className="flex-1">
                 <h1 className="text-3xl font-bold text-gray-800 mb-2">
@@ -144,7 +144,7 @@ const ToolReservations = () => {
             onClick={() => setFilterStatus('all')}
             className={`px-4 py-2 rounded font-semibold transition-colors ${
               filterStatus === 'all'
-                ? 'bg-blue-600 text-white'
+                ? 'bg-brand-600 text-white'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
@@ -194,7 +194,7 @@ const ToolReservations = () => {
             onClick={() => setFilterStatus('completed')}
             className={`px-4 py-2 rounded font-semibold transition-colors ${
               filterStatus === 'completed'
-                ? 'bg-blue-600 text-white'
+                ? 'bg-brand-600 text-white'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >

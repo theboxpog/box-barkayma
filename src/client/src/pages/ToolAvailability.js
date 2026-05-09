@@ -126,7 +126,7 @@ const ToolAvailability = () => {
         {/* Search Form */}
         <div className="bg-white rounded-lg shadow-md p-4 md:p-6 mb-6 md:mb-8">
           <div className="flex items-center gap-2 mb-4">
-            <Search size={20} className="text-blue-600 md:w-6 md:h-6" />
+            <Search size={20} className="text-brand-600 md:w-6 md:h-6" />
             <h2 className="text-lg md:text-xl font-semibold text-gray-800">{t('selectRentalPeriod')}</h2>
           </div>
 
@@ -163,8 +163,8 @@ const ToolAvailability = () => {
           </div>
 
           {startDate && endDate && (
-            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
-              <p className="text-sm text-blue-800">
+            <div className="mb-4 p-3 bg-brand-50 border border-brand-200 rounded">
+              <p className="text-sm text-brand-800">
                 <strong>{t('rentalPeriod')}:</strong> {days} {days !== 1 ? t('days') : t('day')} ({startDate} - {endDate})
               </p>
             </div>
@@ -173,7 +173,7 @@ const ToolAvailability = () => {
           <button
             onClick={handleSearch}
             disabled={loading || !startDate || !endDate}
-            className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center justify-center gap-2"
+            className="w-full bg-brand-600 text-white py-3 px-4 rounded-md hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center justify-center gap-2"
           >
             <Search size={20} />
             {loading ? t('searching') : t('searchAvailableTools')}
@@ -183,7 +183,7 @@ const ToolAvailability = () => {
         {/* Results */}
         {loading && (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600 mx-auto mb-4"></div>
             <p className="text-gray-600">{t('checkingAvailability')}</p>
           </div>
         )}
@@ -229,14 +229,14 @@ const ToolAvailability = () => {
                     </div>
 
                     <div className="p-4">
-                      <span className="inline-block text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded mb-2">
+                      <span className="inline-block text-xs font-semibold text-brand-600 bg-brand-100 px-2 py-1 rounded mb-2">
                         {tool.category}
                       </span>
                       <h3 className="text-lg font-bold text-gray-800 mb-2">{tool.name}</h3>
 
                       <div className="flex items-center text-gray-700 mb-2">
-                        <DollarSign size={18} className="text-blue-600" />
-                        <span className="text-xl font-bold text-blue-600">
+                        <DollarSign size={18} className="text-brand-600" />
+                        <span className="text-xl font-bold text-brand-600">
                           ₪{tool.price_per_day}
                           <span className="text-sm text-gray-600 font-normal">/{t('day')}</span>
                         </span>
@@ -255,7 +255,7 @@ const ToolAvailability = () => {
 
                       <Link
                         to={`/tools/${tool.id}`}
-                        className="block w-full text-center bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors font-semibold"
+                        className="block w-full text-center bg-brand-600 text-white py-2 px-4 rounded hover:bg-brand-700 transition-colors font-semibold"
                       >
                         {t('viewDetailsBook')}
                       </Link>

@@ -298,7 +298,7 @@ router.get('/users', authenticateToken, isAdminOrSubadmin, (req, res) => {
       u.email,
       u.role,
       u.created_at,
-      COUNT(CASE WHEN r.status != 'archived' THEN 1 END) as active_reservations_count
+      COUNT(CASE WHEN r.status IN ('active', 'delivered', 'overdue') THEN 1 END) as active_reservations_count
     FROM users u
     LEFT JOIN reservations r ON u.id = r.user_id
     GROUP BY u.id

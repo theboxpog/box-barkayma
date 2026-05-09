@@ -44,10 +44,10 @@ const ToolsCatalog = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-blue-600 text-white py-8">
+      <div className="bg-brand-600 text-white py-8">
         <div className="container mx-auto px-4">
           <h1 className="text-4xl font-bold mb-2">{t('toolCatalog')}</h1>
-          <p className="text-blue-100">{t('browseAndRent')}</p>
+          <p className="text-brand-200">{t('browseAndRent')}</p>
         </div>
       </div>
 
@@ -62,14 +62,14 @@ const ToolsCatalog = () => {
                 placeholder={t('searchTools')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
 
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
             >
               <option value="">{t('allCategories')}</option>
               {categories.map(cat => (
@@ -82,14 +82,14 @@ const ToolsCatalog = () => {
         {/* Availability Search Button */}
         <Link
           to="/availability"
-          className="block bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 md:p-6 rounded-lg shadow-lg mb-8 hover:from-blue-700 hover:to-blue-800 transition-all active:scale-98"
+          className="block bg-gradient-to-r from-brand-600 to-brand-700 text-white p-4 md:p-6 rounded-lg shadow-lg mb-8 hover:from-brand-700 hover:to-brand-800 transition-all active:scale-98"
         >
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center space-x-2 md:space-x-3 flex-1">
               <Calendar size={28} className="text-white flex-shrink-0 md:w-8 md:h-8" />
               <div className="min-w-0">
                 <h2 className="text-base md:text-xl font-bold leading-tight">{t('checkAvailability')}</h2>
-                <p className="text-blue-100 text-xs md:text-sm mt-1">{t('searchAvailableDates')}</p>
+                <p className="text-brand-200 text-xs md:text-sm mt-1">{t('searchAvailableDates')}</p>
               </div>
             </div>
             <span className="text-white font-semibold text-sm md:text-base flex-shrink-0">{t('search')} →</span>
@@ -123,7 +123,7 @@ const ToolsCatalog = () => {
                 </div>
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded">
+                    <span className="text-xs font-semibold text-brand-600 bg-brand-100 px-2 py-1 rounded">
                       {tool.category}
                     </span>
                     {!tool.is_available && (
@@ -137,11 +137,11 @@ const ToolsCatalog = () => {
                     {tool.description || t('noDescription')}
                   </p>
                   <div className="flex items-center justify-between">
-                    <span className="text-2xl font-bold text-blue-600">
+                    <span className="text-2xl font-bold text-brand-600">
                       ₪{tool.price_per_day}
                       <span className="text-sm text-gray-600 font-normal">/{t('day')}</span>
                     </span>
-                    <span className="text-blue-600 font-medium hover:text-blue-800">
+                    <span className="text-brand-600 font-medium hover:text-brand-800">
                       {t('viewDetails')} →
                     </span>
                   </div>

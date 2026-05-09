@@ -47,7 +47,7 @@ const Cart = () => {
             </p>
             <button
               onClick={() => navigate('/tools')}
-              className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 font-semibold w-full sm:w-auto"
+              className="bg-brand-600 text-white px-6 py-3 rounded-md hover:bg-brand-700 font-semibold w-full sm:w-auto"
             >
               {t('browseTools')}
             </button>
@@ -62,12 +62,12 @@ const Cart = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="bg-blue-600 text-white py-4 md:py-6 px-4 md:px-8">
+            <div className="bg-brand-600 text-white py-4 md:py-6 px-4 md:px-8">
               <div className="flex items-center space-x-3">
                 <ShoppingCart size={28} className="md:w-8 md:h-8" />
                 <div>
                   <h1 className="text-xl md:text-3xl font-bold">{t('shoppingCart')}</h1>
-                  <p className="text-sm md:text-base text-blue-100">
+                  <p className="text-sm md:text-base text-brand-200">
                     {cartItems.length} {cartItems.length === 1 ? t('itemInCart') : t('itemsInCart')}
                   </p>
                 </div>
@@ -131,7 +131,7 @@ const Cart = () => {
                       </div>
 
                       <div className="flex md:flex-col items-center md:items-end justify-between md:justify-start md:ml-6 md:text-right pt-3 md:pt-0 border-t md:border-t-0">
-                        <div className="text-xl md:text-2xl font-bold text-blue-600 md:mb-4">
+                        <div className="text-xl md:text-2xl font-bold text-brand-600 md:mb-4">
                           ₪{item.totalPrice.toFixed(2)}
                         </div>
                         <button
@@ -150,7 +150,7 @@ const Cart = () => {
               <div className="border-t border-gray-200 mt-6 md:mt-8 pt-4 md:pt-6">
                 <div className="flex items-center justify-between mb-4 md:mb-6">
                   <div className="text-xl md:text-2xl font-bold text-gray-800">{t('total')}</div>
-                  <div className="text-2xl md:text-3xl font-bold text-blue-600">
+                  <div className="text-2xl md:text-3xl font-bold text-brand-600">
                     ₪{getCartTotal().toFixed(2)}
                   </div>
                 </div>
@@ -164,7 +164,7 @@ const Cart = () => {
                   </button>
                   <button
                     onClick={handleCheckout}
-                    className="flex-1 bg-blue-600 text-white py-3 px-4 md:px-6 rounded-md hover:bg-blue-700 font-semibold flex items-center justify-center space-x-2"
+                    className="flex-1 bg-brand-600 text-white py-3 px-4 md:px-6 rounded-md hover:bg-brand-700 font-semibold flex items-center justify-center space-x-2"
                   >
                     <ArrowRight size={20} />
                     <span>{t('proceedToCheckout')}</span>
