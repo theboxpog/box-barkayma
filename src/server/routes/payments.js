@@ -70,10 +70,12 @@ router.post('/bit-init', authenticateToken, async (req, res) => {
       FailureRedirectUrl: failureUrl
     };
 
+    console.log('Calling SUMIT via:', SUMIT_BEGINREDIRECT_URL);
     const sumitResponse = await axios.post(SUMIT_BEGINREDIRECT_URL, redirectRequest, {
       headers: { 'Content-Type': 'application/json' }
     });
 
+    console.log('SUMIT raw response:', JSON.stringify(sumitResponse.data).substring(0, 500));
     const data = sumitResponse.data;
     const redirectUrl = data?.Data?.RedirectURL || data?.Data?.RedirectUrl || data?.Data?.Url;
 
