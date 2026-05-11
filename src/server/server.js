@@ -49,7 +49,13 @@ app.use('/api/contact-info', contactInfoRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Tool Rental API is running' });
+  res.json({
+    status: 'ok',
+    message: 'Tool Rental API is running',
+    db: process.env.TURSO_URL ? 'turso' : 'local-file',
+    turso_url_set: !!process.env.TURSO_URL,
+    turso_token_set: !!process.env.TURSO_TOKEN,
+  });
 });
 
 // Serve uploaded images (if you implement file upload later)
