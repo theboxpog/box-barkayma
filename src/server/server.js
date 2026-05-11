@@ -51,10 +51,9 @@ app.use('/api/contact-info', contactInfoRoutes);
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
-    message: 'Tool Rental API is running',
     db: process.env.TURSO_URL ? 'turso' : 'local-file',
-    turso_url_set: !!process.env.TURSO_URL,
-    turso_token_set: !!process.env.TURSO_TOKEN,
+    sumit_payment_page_url_set: !!process.env.SUMIT_PAYMENT_PAGE_URL,
+    sumit_proxy_url: process.env.SUMIT_PROXY_URL || null,
   });
 });
 
