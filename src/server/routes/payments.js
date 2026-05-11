@@ -45,24 +45,7 @@ router.post('/bit-init', authenticateToken, async (req, res) => {
   const successUrl = `${frontendUrl}/checkout/payment-callback?status=success&id=${identifier}`;
   const failureUrl = `${frontendUrl}/checkout/payment-callback?status=failure`;
 
-  // If payment page URL is configured, use it directly (no server-side API call — avoids WAF)
-  if (process.env.SUMIT_PAYMENT_PAGE_URL) {
-    const params = new URLSearchParams({
-      Amount: amountFixed,
-      Currency: 'ILS',
-      DocumentDescription: description || 'The Box - Tool Rental',
-      SuccessRedirectUrl: successUrl,
-      FailureRedirectUrl: failureUrl,
-      CustomerName: customerName || req.user.name || 'Customer',
-      CustomerEmail: customerEmail || req.user.email || '',
-      CustomerPhone: customerPhone || ''
-    });
-    const redirectUrl = `${process.env.SUMIT_PAYMENT_PAGE_URL}?${params.toString()}`;
-    console.log('Using SUMIT payment page URL:', redirectUrl);
-    return res.json({ success: true, redirectUrl, identifier });
-  }
-
-  // Fallback: call SUMIT BeginRedirect API server-side
+  // Call SUMIT BeginRedirect API (via proxy if SUMIT_PROXY_URL is set)
   try {
     const redirectRequest = {
       Credentials: {
