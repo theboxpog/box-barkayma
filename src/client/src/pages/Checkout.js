@@ -220,24 +220,61 @@ const Checkout = () => {
         customerPhone: phoneNumber
       });
 
-      if (!response.data.success || !response.data.redirectUrl) {
+      if (!response.data.success) {
         setError(response.data.error || (language === 'he' ? 'שגיאה באתחול תשלום' : 'Failed to initialize payment'));
         setProcessing(false);
         return;
       }
 
-      // Store identifier so the manual confirm button can use it
+      const { identifier, sumitConfig } = response.data;
+
       localStorage.setItem('pendingBitOrder', JSON.stringify({
-        identifier: response.data.identifier,
+        identifier,
         totalAmount: finalTotal,
         userId: user?.id
       }));
 
+      // If server returned credentials, call SUMIT BeginRedirect from the browser
+      // (bypasses AWS WAF that blocks server-to-server cloud requests)
+      let redirectUrl = response.data.redirectUrl;
+      if (sumitConfig) {
+        const sumitRes = await fetch('https://api.sumit.co.il/billing/payments/beginredirect/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            Credentials: { CompanyID: sumitConfig.companyId, APIKey: sumitConfig.apiKey },
+            Items: [{
+              Item: { ExternalIdentifier: '1', Name: sumitConfig.description, SKU: 'THEBOX', SearchMode: 'Automatic' },
+              Quantity: 1,
+              UnitPrice: sumitConfig.amount,
+              Currency: 'ILS'
+            }],
+            Customer: { Name: sumitConfig.customerName, Email: sumitConfig.customerEmail, Phone: sumitConfig.customerPhone },
+            DocumentDescription: sumitConfig.description,
+            SuccessRedirectUrl: sumitConfig.successUrl,
+            FailureRedirectUrl: sumitConfig.failureUrl
+          })
+        });
+        const sumitData = await sumitRes.json();
+        redirectUrl = sumitData?.Data?.RedirectURL || sumitData?.Data?.RedirectUrl || sumitData?.Data?.Url;
+        if (!redirectUrl) {
+          const errMsg = sumitData?.UserErrorMessage || sumitData?.TechnicalErrorMessage || (language === 'he' ? 'שגיאה באתחול תשלום' : 'Failed to initialize payment');
+          setError(errMsg);
+          setProcessing(false);
+          return;
+        }
+      }
+
+      if (!redirectUrl) {
+        setError(language === 'he' ? 'שגיאה באתחול תשלום' : 'Failed to initialize payment');
+        setProcessing(false);
+        return;
+      }
+
       // Open SUMIT payment page in a new tab
-      const paymentTab = window.open(response.data.redirectUrl, '_blank');
+      const paymentTab = window.open(redirectUrl, '_blank');
       if (!paymentTab) {
-        // Popup blocked — fall back to same-tab redirect
-        window.location.href = response.data.redirectUrl;
+        window.location.href = redirectUrl;
         return;
       }
       setProcessing(false);

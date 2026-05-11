@@ -45,56 +45,24 @@ router.post('/bit-init', authenticateToken, async (req, res) => {
   const successUrl = `${frontendUrl}/checkout/payment-callback?status=success&id=${identifier}`;
   const failureUrl = `${frontendUrl}/checkout/payment-callback?status=failure`;
 
-  // Call SUMIT BeginRedirect API (via proxy if SUMIT_PROXY_URL is set)
-  try {
-    const redirectRequest = {
-      Credentials: {
-        CompanyID: parseInt(SUMIT_COMPANY_ID),
-        APIKey: SUMIT_PRIVATE_KEY
-      },
-      Items: [
-        {
-          Item: { ExternalIdentifier: '1', Name: description || 'The Box - Tool Rental', SKU: 'THEBOX', SearchMode: 'Automatic' },
-          Quantity: 1,
-          UnitPrice: amountFixed,
-          Currency: 'ILS'
-        }
-      ],
-      Customer: {
-        Name: customerName || req.user.name || 'Customer',
-        Email: customerEmail || req.user.email || '',
-        Phone: customerPhone || ''
-      },
-      DocumentDescription: description || 'The Box - Tool Rental',
-      SuccessRedirectUrl: successUrl,
-      FailureRedirectUrl: failureUrl
-    };
-
-    console.log('Calling SUMIT via:', SUMIT_BEGINREDIRECT_URL);
-    const sumitResponse = await axios.post(SUMIT_BEGINREDIRECT_URL, redirectRequest, {
-      headers: { 'Content-Type': 'application/json' }
-    });
-
-    console.log('SUMIT raw response:', JSON.stringify(sumitResponse.data).substring(0, 500));
-    const data = sumitResponse.data;
-    const redirectUrl = data?.Data?.RedirectURL || data?.Data?.RedirectUrl || data?.Data?.Url;
-
-    if (data?.Status === 0 && redirectUrl) {
-      res.json({ success: true, redirectUrl, identifier });
-    } else {
-      const errorMsg = data?.UserErrorMessage || data?.TechnicalErrorMessage ||
-                       `SUMIT error (status ${data?.Status}): ${JSON.stringify(data?.Data)}`;
-      console.error('SUMIT beginredirect failed:', errorMsg);
-      res.status(400).json({ success: false, error: errorMsg });
+  // Return session info + SUMIT credentials so the browser can call SUMIT directly.
+  // This bypasses the AWS WAF that blocks server-to-server requests from cloud IPs.
+  res.json({
+    success: true,
+    identifier,
+    clientSide: true,
+    sumitConfig: {
+      companyId: parseInt(SUMIT_COMPANY_ID),
+      apiKey: SUMIT_PRIVATE_KEY,
+      amount: amountFixed,
+      description: description || 'The Box - Tool Rental',
+      successUrl,
+      failureUrl,
+      customerName: customerName || req.user.name || 'Customer',
+      customerEmail: customerEmail || req.user.email || '',
+      customerPhone: customerPhone || ''
     }
-  } catch (error) {
-    const sumitData = error.response?.data;
-    const errorMsg = (typeof sumitData === 'object' && sumitData?.UserErrorMessage) ||
-                     (typeof sumitData === 'object' && sumitData?.TechnicalErrorMessage) ||
-                     error.message || 'Failed to initialize payment';
-    console.error('SUMIT beginredirect error:', error.message);
-    res.status(500).json({ success: false, error: errorMsg });
-  }
+  });
 });
 
 // Get Sumit configuration for client-side beginredirect call
