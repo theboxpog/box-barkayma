@@ -24,16 +24,16 @@ router.post('/bit-init', authenticateToken, async (req, res) => {
     return res.status(500).json({ success: false, error: 'Payment system not configured. Contact support.' });
   }
 
-  // Use the Origin header from the request so it works on both localhost and production
   const frontendUrl = req.headers.origin || process.env.FRONTEND_URL || 'https://the-box.top';
   const identifier = `order_${Date.now()}_${req.user.id}`;
+  const amountFixed = parseFloat(parseFloat(amount).toFixed(2));
 
-  // Save payment session server-side so cart data is available for reservation creation
+  // Save payment session server-side so cart data is available after redirect
   try {
     await new Promise((resolve, reject) => {
       db.run(
         'INSERT INTO payment_sessions (identifier, user_id, cart_data, total_amount) VALUES (?, ?, ?, ?)',
-        [identifier, req.user.id, JSON.stringify(cartItems || []), parseFloat(parseFloat(amount).toFixed(2))],
+        [identifier, req.user.id, JSON.stringify(cartItems || []), amountFixed],
         (err) => { if (err) reject(err); else resolve(); }
       );
     });
@@ -42,6 +42,27 @@ router.post('/bit-init', authenticateToken, async (req, res) => {
     return res.status(500).json({ success: false, error: 'Failed to initialize payment session.' });
   }
 
+  const successUrl = `${frontendUrl}/checkout/payment-callback?status=success&id=${identifier}`;
+  const failureUrl = `${frontendUrl}/checkout/payment-callback?status=failure`;
+
+  // If payment page URL is configured, use it directly (no server-side API call — avoids WAF)
+  if (process.env.SUMIT_PAYMENT_PAGE_URL) {
+    const params = new URLSearchParams({
+      Amount: amountFixed,
+      Currency: 'ILS',
+      DocumentDescription: description || 'The Box - Tool Rental',
+      SuccessRedirectUrl: successUrl,
+      FailureRedirectUrl: failureUrl,
+      CustomerName: customerName || req.user.name || 'Customer',
+      CustomerEmail: customerEmail || req.user.email || '',
+      CustomerPhone: customerPhone || ''
+    });
+    const redirectUrl = `${process.env.SUMIT_PAYMENT_PAGE_URL}?${params.toString()}`;
+    console.log('Using SUMIT payment page URL:', redirectUrl);
+    return res.json({ success: true, redirectUrl, identifier });
+  }
+
+  // Fallback: call SUMIT BeginRedirect API server-side
   try {
     const redirectRequest = {
       Credentials: {
@@ -50,14 +71,9 @@ router.post('/bit-init', authenticateToken, async (req, res) => {
       },
       Items: [
         {
-          Item: {
-            ExternalIdentifier: '1',
-            Name: description || 'The Box - Tool Rental',
-            SKU: 'THEBOX',
-            SearchMode: 'Automatic'
-          },
+          Item: { ExternalIdentifier: '1', Name: description || 'The Box - Tool Rental', SKU: 'THEBOX', SearchMode: 'Automatic' },
           Quantity: 1,
-          UnitPrice: parseFloat(parseFloat(amount).toFixed(2)),
+          UnitPrice: amountFixed,
           Currency: 'ILS'
         }
       ],
@@ -67,24 +83,13 @@ router.post('/bit-init', authenticateToken, async (req, res) => {
         Phone: customerPhone || ''
       },
       DocumentDescription: description || 'The Box - Tool Rental',
-      SuccessRedirectUrl: `${frontendUrl}/checkout/payment-callback?status=success&id=${identifier}`,
-      FailureRedirectUrl: `${frontendUrl}/checkout/payment-callback?status=failure`
+      SuccessRedirectUrl: successUrl,
+      FailureRedirectUrl: failureUrl
     };
 
-    console.log('Sending to SUMIT:', JSON.stringify({ ...redirectRequest, Credentials: { CompanyID: redirectRequest.Credentials.CompanyID, APIKey: '***' } }, null, 2));
-
-    const sumitResponse = await axios.post(
-      SUMIT_BEGINREDIRECT_URL,
-      redirectRequest,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        }
-      }
-    );
-
-    console.log('SUMIT beginredirect response:', JSON.stringify(sumitResponse.data, null, 2));
+    const sumitResponse = await axios.post(SUMIT_BEGINREDIRECT_URL, redirectRequest, {
+      headers: { 'Content-Type': 'application/json' }
+    });
 
     const data = sumitResponse.data;
     const redirectUrl = data?.Data?.RedirectURL || data?.Data?.RedirectUrl || data?.Data?.Url;
@@ -92,21 +97,17 @@ router.post('/bit-init', authenticateToken, async (req, res) => {
     if (data?.Status === 0 && redirectUrl) {
       res.json({ success: true, redirectUrl, identifier });
     } else {
-      const errorMsg = data?.UserErrorMessage ||
-                       data?.TechnicalErrorMessage ||
+      const errorMsg = data?.UserErrorMessage || data?.TechnicalErrorMessage ||
                        `SUMIT error (status ${data?.Status}): ${JSON.stringify(data?.Data)}`;
       console.error('SUMIT beginredirect failed:', errorMsg);
-      res.status(400).json({ success: false, error: errorMsg, sumitResponse: data });
+      res.status(400).json({ success: false, error: errorMsg });
     }
   } catch (error) {
     const sumitData = error.response?.data;
-
-    console.error('SUMIT beginredirect error:', error.message);
-    console.error('SUMIT status code:', error.response?.status);
-    console.error('SUMIT response body:', JSON.stringify(error.response?.data, null, 2));
     const errorMsg = (typeof sumitData === 'object' && sumitData?.UserErrorMessage) ||
                      (typeof sumitData === 'object' && sumitData?.TechnicalErrorMessage) ||
                      error.message || 'Failed to initialize payment';
+    console.error('SUMIT beginredirect error:', error.message);
     res.status(500).json({ success: false, error: errorMsg });
   }
 });
