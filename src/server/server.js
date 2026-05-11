@@ -105,18 +105,11 @@ app.listen(PORT, () => {
   console.log(`   - POST /api/payments/create-payment-intent`);
   console.log(`   - POST /api/payments/confirm`);
   console.log(`   - GET  /api/payments/history`);
-  console.log(`\n📝 Note: Data persists in rental_database.db\n`);
+  console.log(`\n📝 Note: Data stored in Turso cloud database\n`);
 });
 
 // Graceful shutdown
 process.on('SIGINT', () => {
   console.log('\n\n👋 Shutting down server...');
-  db.close((err) => {
-    if (err) {
-      console.error('Error closing database:', err);
-    } else {
-      console.log('✅ Database connection closed');
-    }
-    process.exit(0);
-  });
+  process.exit(0);
 });

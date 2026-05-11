@@ -1,7 +1,10 @@
 const { createClient } = require('@libsql/client');
 
+const dbUrl = process.env.TURSO_URL || 'file:rental_database.db';
+console.log('🗄️  DB connecting to:', dbUrl);
+
 const client = createClient({
-  url: process.env.TURSO_URL || 'file:rental_database.db',
+  url: dbUrl,
   authToken: process.env.TURSO_TOKEN,
 });
 
