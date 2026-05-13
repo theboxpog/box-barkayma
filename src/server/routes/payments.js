@@ -2,6 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const db = require('../database');
 const { authenticateToken } = require('../middleware/auth');
+const { sendReservationConfirmation } = require('../utils/emailService');
 
 const router = express.Router();
 
@@ -411,6 +412,7 @@ router.post('/complete', authenticateToken, async (req, res) => {
 
     // Create reservations from the server-stored cart data
     const createdReservations = [];
+    const reservationDetails = [];
     for (const item of cartItems) {
       const reservationId = await new Promise((resolve, reject) => {
         db.run(
@@ -419,6 +421,13 @@ router.post('/complete', authenticateToken, async (req, res) => {
           function (err) { if (err) reject(err); else resolve(this.lastID); }
         );
       });
+
+      const tool = await new Promise((resolve, reject) => {
+        db.get('SELECT name FROM tools WHERE id = ?', [item.toolId], (err, row) => {
+          if (err) reject(err); else resolve(row);
+        });
+      });
+
       createdReservations.push({
         id: reservationId,
         user_id,
@@ -429,7 +438,31 @@ router.post('/complete', authenticateToken, async (req, res) => {
         total_price: item.totalPrice,
         status: 'active'
       });
+
+      reservationDetails.push({
+        toolName: tool?.name || 'Tool',
+        quantity: item.quantity || 1,
+        startDate: item.startDate,
+        endDate: item.endDate,
+        totalPrice: item.totalPrice
+      });
     }
+
+    // Send confirmation email (same as createBatch flow)
+    db.get('SELECT name, email FROM users WHERE id = ?', [user_id], async (err, user) => {
+      if (!err && user) {
+        try {
+          const emailResult = await sendReservationConfirmation(user.email, user.name, reservationDetails);
+          if (emailResult.success) {
+            console.log('✅ Reservation confirmation email sent to:', user.email);
+          } else {
+            console.error('⚠️ Failed to send reservation email:', emailResult.error);
+          }
+        } catch (emailErr) {
+          console.error('⚠️ Error sending reservation confirmation email:', emailErr);
+        }
+      }
+    });
 
     res.json({
       success: true,
