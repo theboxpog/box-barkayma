@@ -24,7 +24,7 @@ router.post('/bit-init', authenticateToken, async (req, res) => {
     return res.status(500).json({ success: false, error: 'Payment system not configured. Contact support.' });
   }
 
-  const frontendUrl = req.headers.origin || process.env.FRONTEND_URL || 'https://the-box.top';
+  const frontendUrl = (process.env.FRONTEND_URL || req.headers.origin || 'https://the-box.top').replace(/\/$/, '');
   const identifier = `order_${Date.now()}_${req.user.id}`;
   const amountFixed = parseFloat(parseFloat(amount).toFixed(2));
 
@@ -56,6 +56,7 @@ router.post('/bit-init', authenticateToken, async (req, res) => {
       apiKey: SUMIT_PRIVATE_KEY,
       amount: amountFixed,
       description: description || 'The Box - Tool Rental',
+      redirectUrl: successUrl,
       successUrl,
       failureUrl,
       customerName: customerName || req.user.name || 'Customer',
@@ -351,8 +352,8 @@ router.get('/test-sumit', async (req, res) => {
           Items: [{ Item: { ExternalIdentifier: '1', Name: 'Test', SKU: 'TEST', SearchMode: 'Automatic' }, Quantity: 1, UnitPrice: 1, Currency: 'ILS' }],
           Customer: { Name: 'Test', Email: 'test@test.com', Phone: '0500000000' },
           DocumentDescription: 'Test',
-          SuccessRedirectUrl: 'https://the-box.top/checkout/payment-callback?status=success',
-          FailureRedirectUrl: 'https://the-box.top/checkout/payment-callback?status=failure'
+          SuccessURL: 'https://the-box.top/checkout/payment-callback?status=success',
+          FailureURL: 'https://the-box.top/checkout/payment-callback?status=failure'
         },
         validateStatus: () => true
       });

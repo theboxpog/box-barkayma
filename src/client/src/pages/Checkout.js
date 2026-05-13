@@ -251,8 +251,9 @@ const Checkout = () => {
             }],
             Customer: { Name: sumitConfig.customerName, Email: sumitConfig.customerEmail, Phone: sumitConfig.customerPhone },
             DocumentDescription: sumitConfig.description,
-            SuccessRedirectUrl: sumitConfig.successUrl,
-            FailureRedirectUrl: sumitConfig.failureUrl
+            RedirectURL: sumitConfig.redirectUrl || sumitConfig.successUrl,
+            SuccessURL: sumitConfig.successUrl,
+            FailureURL: sumitConfig.failureUrl
           })
         });
         const sumitData = await sumitRes.json();
