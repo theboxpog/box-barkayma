@@ -272,6 +272,11 @@ const Checkout = () => {
         return;
       }
 
+      // Clear any stale payment signals from previous sessions before polling starts
+      localStorage.removeItem('paymentComplete');
+      localStorage.removeItem('paymentFailed');
+      localStorage.removeItem('paymentError');
+
       // Open SUMIT payment page in a new tab
       const paymentTab = window.open(redirectUrl, '_blank');
       if (!paymentTab) {
