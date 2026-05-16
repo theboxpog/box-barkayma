@@ -128,34 +128,47 @@ const ToolDetails = () => {
   };
 
   const handleAddToCart = () => {
+    if (tool.rental_type === 'fixed_price') {
+      if (!availability?.available) { setError('Please check availability first'); return; }
+      setError('');
+      addToCart(tool, null, null, quantity);
+      setShowAddedMessage(true);
+      setTimeout(() => setShowAddedMessage(false), 5000);
+      setQuantity(1);
+      setAvailability(null);
+      return;
+    }
+
     if (!startDate || !endDate) {
       setError('Please select both start and end dates');
       return;
     }
-
     if (!availability?.available) {
       setError('Please check availability first');
       return;
     }
-
     setError('');
-
-    // Add to cart
     addToCart(tool, startDate, endDate, quantity);
-
-    // Show success message
     setShowAddedMessage(true);
-
-    // Hide message after 5 seconds (gives time to click View Cart)
-    setTimeout(() => {
-      setShowAddedMessage(false);
-    }, 5000);
-
-    // Reset form
+    setTimeout(() => setShowAddedMessage(false), 5000);
     setStartDate('');
     setEndDate('');
     setQuantity(1);
     setAvailability(null);
+  };
+
+  const checkFixedPriceAvailability = async () => {
+    setChecking(true);
+    setError('');
+    try {
+      const cartQuantity = cartItems.filter(i => i.toolId === parseInt(id) && i.isFixedPrice).reduce((s, i) => s + i.quantity, 0);
+      const response = await toolsAPI.checkAvailability(id, null, null, quantity, cartQuantity);
+      setAvailability(response.data);
+    } catch {
+      setError('Failed to check availability');
+    } finally {
+      setChecking(false);
+    }
   };
 
   if (loading) {
@@ -203,10 +216,17 @@ const ToolDetails = () => {
               </span>
               <h1 className="text-3xl font-bold mb-4">{tool.name}</h1>
               <div className="flex items-center space-x-2 mb-2">
-                <span className="text-3xl font-bold text-brand-600">
-                  ₪{tool.price_per_day}
-                  <span className="text-lg text-gray-600 font-normal">/{t('day')}</span>
-                </span>
+                {tool.rental_type === 'fixed_price' ? (
+                  <span className="text-3xl font-bold text-brand-600">
+                    ₪{tool.fixed_price}
+                    <span className="text-lg text-gray-600 font-normal ml-2">fixed price</span>
+                  </span>
+                ) : (
+                  <span className="text-3xl font-bold text-brand-600">
+                    ₪{tool.price_per_day}
+                    <span className="text-lg text-gray-600 font-normal">/{t('day')}</span>
+                  </span>
+                )}
               </div>
 
               {tool.stock !== undefined && (
@@ -234,7 +254,7 @@ const ToolDetails = () => {
               {tool.is_available && (
                 <div className="border-t pt-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center">
-                    <Calendar className="mr-2" size={20} />
+                    <ShoppingCart className="mr-2" size={20} />
                     {t('bookThisTool')}
                   </h3>
 
@@ -245,29 +265,24 @@ const ToolDetails = () => {
                   )}
 
                   <div className="space-y-4">
-                    <DatePicker
-                      label={t('startDate')}
-                      value={startDate}
-                      onChange={(date) => {
-                        setStartDate(date);
-                        setAvailability(null);
-                        setError('');
-                      }}
-                      minDate={new Date().toISOString().split('T')[0]}
-                      allowedDays={allowedDays}
-                    />
-
-                    <DatePicker
-                      label={t('endDate')}
-                      value={endDate}
-                      onChange={(date) => {
-                        setEndDate(date);
-                        setAvailability(null);
-                        setError('');
-                      }}
-                      minDate={startDate || new Date().toISOString().split('T')[0]}
-                      allowedDays={allowedDays}
-                    />
+                    {tool.rental_type !== 'fixed_price' && (
+                      <>
+                        <DatePicker
+                          label={t('startDate')}
+                          value={startDate}
+                          onChange={(date) => { setStartDate(date); setAvailability(null); setError(''); }}
+                          minDate={new Date().toISOString().split('T')[0]}
+                          allowedDays={allowedDays}
+                        />
+                        <DatePicker
+                          label={t('endDate')}
+                          value={endDate}
+                          onChange={(date) => { setEndDate(date); setAvailability(null); setError(''); }}
+                          minDate={startDate || new Date().toISOString().split('T')[0]}
+                          allowedDays={allowedDays}
+                        />
+                      </>
+                    )}
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -276,37 +291,43 @@ const ToolDetails = () => {
                       <input
                         type="number"
                         value={quantity}
-                        onChange={(e) => {
-                          const value = parseInt(e.target.value);
-                          if (value >= 1) {
-                            setQuantity(value);
-                          }
-                        }}
+                        onChange={(e) => { const v = parseInt(e.target.value); if (v >= 1) { setQuantity(v); setAvailability(null); } }}
                         min="1"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                       />
-                      <p className="text-xs text-gray-500 mt-1">
-                        {t('howManyTools')}
-                      </p>
                     </div>
 
-                    {startDate && endDate && (
+                    {tool.rental_type === 'fixed_price' && (
                       <div className="bg-brand-50 p-4 rounded">
                         <div className="flex justify-between items-center">
                           <span className="font-semibold">{t('totalPrice')}:</span>
                           <span className="text-2xl font-bold text-brand-600">
-                            ₪{totalPrice.toFixed(2)}
+                            ₪{(tool.fixed_price * quantity).toFixed(2)}
                           </span>
                         </div>
+                        {quantity > 1 && (
+                          <p className="text-sm text-gray-600 mt-1">
+                            {quantity} × ₪{tool.fixed_price}
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {tool.rental_type !== 'fixed_price' && startDate && endDate && (
+                      <div className="bg-brand-50 p-4 rounded">
+                        <div className="flex justify-between items-center">
+                          <span className="font-semibold">{t('totalPrice')}:</span>
+                          <span className="text-2xl font-bold text-brand-600">₪{totalPrice.toFixed(2)}</span>
+                        </div>
                         <p className="text-sm text-gray-600 mt-1">
-                          {Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24))} {t('days')} × {quantity} {quantity === 1 ? t('tool') : t('toolsLower')} × ₪{tool.price_per_day}/{t('day')}
+                          {Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24))} {t('days')} × {quantity} × ₪{tool.price_per_day}/{t('day')}
                         </p>
                       </div>
                     )}
 
                     <button
-                      onClick={checkAvailability}
-                      disabled={checking || !startDate || !endDate}
+                      onClick={tool.rental_type === 'fixed_price' ? checkFixedPriceAvailability : checkAvailability}
+                      disabled={checking || (tool.rental_type !== 'fixed_price' && (!startDate || !endDate))}
                       className="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 disabled:opacity-50"
                     >
                       {checking ? t('checking') : t('checkAvailabilityBtn')}

@@ -298,12 +298,14 @@ const Checkout = () => {
     setProcessing(true);
     setError('');
     try {
+      const today = new Date().toISOString().split('T')[0];
       const reservationsToCreate = cartItems.map(item => ({
         tool_id: item.toolId,
-        start_date: item.startDate,
-        end_date: item.endDate,
+        start_date: item.isFixedPrice ? today : item.startDate,
+        end_date: item.isFixedPrice ? today : item.endDate,
         quantity: item.quantity,
-        total_price: item.totalPrice
+        total_price: item.totalPrice,
+        is_fixed_price: item.isFixedPrice || false
       }));
       const batchResponse = await reservationsAPI.createBatch(reservationsToCreate);
       const createdReservations = batchResponse.data.reservations;
@@ -387,13 +389,21 @@ const Checkout = () => {
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <h3 className="font-semibold text-gray-800">{item.toolName}</h3>
-                          <p className="text-sm text-gray-600 mt-1">
-                            <Calendar className="inline mr-1" size={14} />
-                            {formatDate(item.startDate)} - {formatDate(item.endDate)}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            {item.days} {item.days === 1 ? t('day') : t('days')} × {item.quantity} {item.quantity === 1 ? t('tool') : t('toolsLower')} × ₪{item.pricePerDay}/{t('day')}
-                          </p>
+                          {item.isFixedPrice ? (
+                            <p className="text-sm text-gray-600 mt-1">
+                              Fixed price × {item.quantity} {item.quantity === 1 ? t('tool') : t('toolsLower')}
+                            </p>
+                          ) : (
+                            <>
+                              <p className="text-sm text-gray-600 mt-1">
+                                <Calendar className="inline mr-1" size={14} />
+                                {formatDate(item.startDate)} - {formatDate(item.endDate)}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                {item.days} {item.days === 1 ? t('day') : t('days')} × {item.quantity} {item.quantity === 1 ? t('tool') : t('toolsLower')} × ₪{item.pricePerDay}/{t('day')}
+                              </p>
+                            </>
+                          )}
                         </div>
                         <div className="text-right">
                           <p className="font-bold text-brand-600">₪{item.totalPrice.toFixed(2)}</p>

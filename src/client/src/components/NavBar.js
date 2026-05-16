@@ -26,13 +26,13 @@ const NavBar = () => {
   return (
     <nav className="bg-brand-800 text-white shadow-lg relative">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center z-20" onClick={closeMobileMenu}>
+          <Link to="/" className="flex items-center z-20 -mt-1" onClick={closeMobileMenu}>
             <img
               src="/logo.png"
               alt="הארגז"
-              className="h-10 w-auto brightness-0 invert"
+              className="h-[62px] w-auto brightness-0 invert"
             />
           </Link>
 
@@ -184,7 +184,7 @@ const NavBar = () => {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden absolute top-16 left-0 right-0 bg-brand-800 shadow-lg z-10 border-t border-brand-700">
+          <div className="lg:hidden absolute top-20 left-0 right-0 bg-brand-800 shadow-lg z-10 border-t border-brand-700">
             <div className="px-4 py-4 space-y-2">
               <Link
                 to="/tools"

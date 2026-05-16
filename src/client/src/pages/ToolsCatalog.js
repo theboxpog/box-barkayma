@@ -138,8 +138,11 @@ const ToolsCatalog = () => {
                   </p>
                   <div className="flex items-center justify-between">
                     <span className="text-2xl font-bold text-brand-600">
-                      ₪{tool.price_per_day}
-                      <span className="text-sm text-gray-600 font-normal">/{t('day')}</span>
+                      {tool.rental_type === 'fixed_price' ? (
+                        <>₪{tool.fixed_price}</>
+                      ) : (
+                        <>₪{tool.price_per_day}<span className="text-sm text-gray-600 font-normal">/{t('day')}</span></>
+                      )}
                     </span>
                     <span className="text-brand-600 font-medium hover:text-brand-800">
                       {t('viewDetails')} →

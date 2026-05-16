@@ -544,6 +544,9 @@ const UsersManagement = () => {
                       Price
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      Payment
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                       Status
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
@@ -578,6 +581,22 @@ const UsersManagement = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
                         ₪{reservation.total_price}
+                      </td>
+                      <td className="px-6 py-4 text-sm">
+                        {(() => {
+                          const paid = reservation.paid_amount;
+                          const original = reservation.total_price;
+                          if (paid === null || paid === undefined) return <span className="text-gray-400">—</span>;
+                          if (paid === 0) return <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">Coupon (Free)</span>;
+                          if (paid < original) return (
+                            <div className="space-y-0.5">
+                              <p className="text-gray-400 line-through text-xs">₪{original.toFixed(2)}</p>
+                              <p className="text-green-600 text-xs">-₪{(original - paid).toFixed(2)} coupon</p>
+                              <p className="font-bold text-gray-900">₪{paid.toFixed(2)}</p>
+                            </div>
+                          );
+                          return <span className="font-semibold text-gray-900">₪{paid.toFixed(2)}</span>;
+                        })()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(reservation.status)}`}>

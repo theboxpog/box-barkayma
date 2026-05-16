@@ -155,6 +155,11 @@ async function initializeDatabase() {
      VALUES (1, 'contact@toolrental.com', '+972 50-123-4567', '123 Tool Street, Tel Aviv, Israel')`
   );
 
+  // Migrations for new columns (ignore error if column already exists)
+  try { await client.execute('ALTER TABLE reservations ADD COLUMN paid_amount REAL'); } catch (_) {}
+  try { await client.execute("ALTER TABLE tools ADD COLUMN rental_type TEXT NOT NULL DEFAULT 'by_date'"); } catch (_) {}
+  try { await client.execute('ALTER TABLE tools ADD COLUMN fixed_price REAL'); } catch (_) {}
+
   console.log('Database tables initialized (Turso)');
 }
 

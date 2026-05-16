@@ -98,8 +98,8 @@ oik'
 <!-- הרשמה יקפוץ חלון עם הסבר על המיזם -->
 
 <!-- מייל אישור מסמיט על כל הזמנה -->
-תיאור של הקניה בסמיט פירוט על מה ההשכרה
-לחבר לביט
+<!-- תיאור של הקניה בסמיט פירוט על מה ההשכרה -->
+<!-- לחבר לביט -->
 <!-- ?לבדוק למה שעושים רפרש לאתר הוא קורס לפעמים -->
 <!-- לשים לוגו -->
 <!-- להעביא את האתר לצבע בז ירוק -->
@@ -108,6 +108,10 @@ oik'
 
 <!-- http://localhost:5001/admin/users -> active reservation  לא מראה את המספר הנכון -->
 
-כל פעם שעושים דפלוי הדאטה בייס גם משתנה
+<!-- כל פעם שעושים דפלוי הדאטה בייס גם משתנה -->
 
 eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3Nzg0ODcwNTgsImlkIjoiMDE5ZTE2MTEtZmQwMS03YWQzLWJiNmItMWVmODA4MGNmN2U5IiwicmlkIjoiZWE4Njk3YzYtOThhZS00N2Q5LTkwMDgtZmYxYTlhNWY5ZjE0In0.5T5OD89Rpv3kLsj6fGdCSS9UhvjQak2NLEPP9ZTLggBGl7oxIS9-9yFHLklV5DtrI-3MoTlPxE_lM5623ReDCw
+
+לא מקבךים מייל אישור אחרי התשלום
+<!-- לבדוק מה זה payment history -->
+<!-- לסדר את העמוד של ההשכרות שלי -->

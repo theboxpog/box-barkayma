@@ -410,14 +410,22 @@ router.post('/complete', authenticateToken, async (req, res) => {
       );
     });
 
+    // Calculate how much each item actually cost after coupon discount
+    const originalTotal = cartItems.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
+    const paidFraction = originalTotal > 0 ? session.total_amount / originalTotal : 0;
+
     // Create reservations from the server-stored cart data
+    const today = new Date().toISOString().split('T')[0];
     const createdReservations = [];
     const reservationDetails = [];
     for (const item of cartItems) {
+      const itemPaidAmount = parseFloat((item.totalPrice * paidFraction).toFixed(2));
+      const startDate = item.isFixedPrice ? today : item.startDate;
+      const endDate = item.isFixedPrice ? today : item.endDate;
       const reservationId = await new Promise((resolve, reject) => {
         db.run(
-          'INSERT INTO reservations (user_id, tool_id, start_date, end_date, quantity, total_price, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
-          [user_id, item.toolId, item.startDate, item.endDate, item.quantity || 1, item.totalPrice, 'active'],
+          'INSERT INTO reservations (user_id, tool_id, start_date, end_date, quantity, total_price, paid_amount, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+          [user_id, item.toolId, startDate, endDate, item.quantity || 1, item.totalPrice, itemPaidAmount, 'active'],
           function (err) { if (err) reject(err); else resolve(this.lastID); }
         );
       });
@@ -432,8 +440,8 @@ router.post('/complete', authenticateToken, async (req, res) => {
         id: reservationId,
         user_id,
         tool_id: item.toolId,
-        start_date: item.startDate,
-        end_date: item.endDate,
+        start_date: startDate,
+        end_date: endDate,
         quantity: item.quantity || 1,
         total_price: item.totalPrice,
         status: 'active'
@@ -442,9 +450,10 @@ router.post('/complete', authenticateToken, async (req, res) => {
       reservationDetails.push({
         toolName: tool?.name || 'Tool',
         quantity: item.quantity || 1,
-        startDate: item.startDate,
-        endDate: item.endDate,
-        totalPrice: item.totalPrice
+        startDate,
+        endDate,
+        totalPrice: item.totalPrice,
+        isFixedPrice: item.isFixedPrice || false
       });
     }
 
@@ -452,7 +461,7 @@ router.post('/complete', authenticateToken, async (req, res) => {
     db.get('SELECT name, email FROM users WHERE id = ?', [user_id], async (err, user) => {
       if (!err && user) {
         try {
-          const emailResult = await sendReservationConfirmation(user.email, user.name, reservationDetails);
+          const emailResult = await sendReservationConfirmation(user.email, user.name, reservationDetails, session.total_amount);
           if (emailResult.success) {
             console.log('✅ Reservation confirmation email sent to:', user.email);
           } else {

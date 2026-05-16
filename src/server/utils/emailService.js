@@ -260,13 +260,15 @@ const sendPasswordReset = async (userEmail, userName, resetToken) => {
 };
 
 // Send reservation confirmation email
-const sendReservationConfirmation = async (userEmail, userName, reservationDetails) => {
+const sendReservationConfirmation = async (userEmail, userName, reservationDetails, totalPaid) => {
   try {
     const transporter = createTransporter();
     const contactInfo = await getContactInfo();
 
     // Calculate total price
     const totalPrice = reservationDetails.reduce((sum, item) => sum + item.totalPrice, 0);
+    const hasCoupon = totalPaid !== undefined && totalPaid !== null && totalPaid < totalPrice;
+    const isFree = totalPaid !== undefined && totalPaid !== null && totalPaid === 0;
 
     // Format reservation items
     const itemsHtml = reservationDetails.map(item => `
@@ -278,10 +280,10 @@ const sendReservationConfirmation = async (userEmail, userName, reservationDetai
           ${item.quantity}
         </td>
         <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: center;">
-          ${new Date(item.startDate).toLocaleDateString('en-GB')}
+          ${item.isFixedPrice ? '—' : new Date(item.startDate).toLocaleDateString('en-GB')}
         </td>
         <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: center;">
-          ${new Date(item.endDate).toLocaleDateString('en-GB')}
+          ${item.isFixedPrice ? 'Fixed Price' : new Date(item.endDate).toLocaleDateString('en-GB')}
         </td>
         <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right;">
           ₪${item.totalPrice.toFixed(2)}
@@ -386,12 +388,31 @@ const sendReservationConfirmation = async (userEmail, userName, reservationDetai
                 </thead>
                 <tbody>
                   ${itemsHtml}
+                  ${hasCoupon ? `
+                  <tr style="background-color: #f9fafb;">
+                    <td colspan="4" style="padding: 10px 12px; text-align: right; color: #6b7280;">
+                      Original Price:
+                    </td>
+                    <td style="padding: 10px 12px; text-align: right; color: #6b7280; text-decoration: line-through;">
+                      ₪${totalPrice.toFixed(2)}
+                    </td>
+                  </tr>
+                  <tr style="background-color: #f9fafb;">
+                    <td colspan="4" style="padding: 10px 12px; text-align: right; color: #059669;">
+                      Coupon Discount:
+                    </td>
+                    <td style="padding: 10px 12px; text-align: right; color: #059669;">
+                      -₪${(totalPrice - totalPaid).toFixed(2)}
+                    </td>
+                  </tr>` : ''}
                   <tr class="total-row">
                     <td colspan="4" style="padding: 12px; text-align: right;">
-                      <strong>Total:</strong>
+                      <strong>${isFree ? 'Total Paid:' : 'Total:'}</strong>
                     </td>
                     <td style="padding: 12px; text-align: right;">
-                      <strong>₪${totalPrice.toFixed(2)}</strong>
+                      ${isFree
+                        ? '<strong style="color: #059669;">FREE 🎉</strong>'
+                        : `<strong>₪${(totalPaid !== undefined && totalPaid !== null ? totalPaid : totalPrice).toFixed(2)}</strong>`}
                     </td>
                   </tr>
                 </tbody>

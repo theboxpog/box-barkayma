@@ -107,23 +107,30 @@ const Cart = () => {
                             </p>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3 text-sm">
-                              <div className="flex items-center text-gray-700">
-                                <Calendar className="mr-2" size={16} />
-                                <span>
-                                  {formatDate(item.startDate)} - {formatDate(item.endDate)}
-                                </span>
-                              </div>
-                              <div className="text-gray-700">
-                                <span className="font-medium">{t('duration')}:</span> {item.days}{' '}
-                                {item.days === 1 ? t('day') : t('days')}
-                              </div>
+                              {!item.isFixedPrice && (
+                                <>
+                                  <div className="flex items-center text-gray-700">
+                                    <Calendar className="mr-2" size={16} />
+                                    <span>
+                                      {formatDate(item.startDate)} - {formatDate(item.endDate)}
+                                    </span>
+                                  </div>
+                                  <div className="text-gray-700">
+                                    <span className="font-medium">{t('duration')}:</span> {item.days}{' '}
+                                    {item.days === 1 ? t('day') : t('days')}
+                                  </div>
+                                </>
+                              )}
                               <div className="text-gray-700">
                                 <span className="font-medium">{t('quantity')}:</span> {item.quantity}{' '}
                                 {item.quantity === 1 ? t('tool') : t('toolsLower')}
                               </div>
                               <div className="text-gray-700">
-                                <span className="font-medium">{t('pricePerDay')}:</span> ₪
-                                {item.pricePerDay}
+                                {item.isFixedPrice ? (
+                                  <><span className="font-medium">Price:</span> ₪{item.fixedPrice} fixed</>
+                                ) : (
+                                  <><span className="font-medium">{t('pricePerDay')}:</span> ₪{item.pricePerDay}</>
+                                )}
                               </div>
                             </div>
                           </div>

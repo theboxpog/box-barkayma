@@ -63,21 +63,28 @@ export const CartProvider = ({ children }) => {
   }, [cartItems, user, loading]);
 
   const addToCart = (tool, startDate, endDate, quantity) => {
+    const isFixedPrice = tool.rental_type === 'fixed_price';
+    const days = isFixedPrice
+      ? 0
+      : Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24));
+
     const cartItem = {
-      id: Date.now(), // Unique cart item ID
+      id: Date.now(),
       toolId: tool.id,
       toolName: tool.name,
       toolCategory: tool.category,
       pricePerDay: tool.price_per_day,
+      fixedPrice: tool.fixed_price || null,
       imageUrl: tool.image_url,
       startDate,
       endDate,
       quantity,
-      days: Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)),
-      totalPrice: 0
+      isFixedPrice,
+      days,
+      totalPrice: isFixedPrice
+        ? (tool.fixed_price || 0) * quantity
+        : days * (tool.price_per_day || 0) * quantity
     };
-
-    cartItem.totalPrice = cartItem.days * cartItem.pricePerDay * cartItem.quantity;
 
     setCartItems([...cartItems, cartItem]);
     return true;

@@ -93,25 +93,32 @@ router.get('/:id', (req, res) => {
 
 // Create new tool (admin only)
 router.post('/', authenticateToken, isAdmin, (req, res) => {
-  const { name, category, price_per_day, description, image_url, stock, is_available } = req.body;
+  const { name, category, price_per_day, description, image_url, stock, is_available, rental_type, fixed_price } = req.body;
+  const rType = rental_type || 'by_date';
 
-  if (!name || !category || !price_per_day) {
-    return res.status(400).json({ error: 'Name, category, and price are required' });
+  if (!name || !category) {
+    return res.status(400).json({ error: 'Name and category are required' });
+  }
+  if (rType === 'by_date' && !price_per_day) {
+    return res.status(400).json({ error: 'Price per day is required for date-based tools' });
+  }
+  if (rType === 'fixed_price' && !fixed_price) {
+    return res.status(400).json({ error: 'Fixed price is required for fixed-price tools' });
   }
 
   const toolStock = stock !== undefined ? stock : 5;
   const toolAvailable = is_available !== undefined ? (is_available ? 1 : 0) : 1;
 
   db.run(
-    'INSERT INTO tools (name, category, price_per_day, description, image_url, stock, is_available) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    [name, category, price_per_day, description, image_url, toolStock, toolAvailable],
+    'INSERT INTO tools (name, category, price_per_day, description, image_url, stock, is_available, rental_type, fixed_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [name, category, price_per_day || 0, description, image_url, toolStock, toolAvailable, rType, fixed_price || null],
     function (err) {
       if (err) {
         return res.status(500).json({ error: 'Failed to create tool' });
       }
       res.status(201).json({
         message: 'Tool created successfully',
-        tool: { id: this.lastID, name, category, price_per_day, description, image_url, stock: toolStock, is_available: toolAvailable }
+        tool: { id: this.lastID, name, category, price_per_day, description, image_url, stock: toolStock, is_available: toolAvailable, rental_type: rType, fixed_price: fixed_price || null }
       });
     }
   );
@@ -119,7 +126,7 @@ router.post('/', authenticateToken, isAdmin, (req, res) => {
 
 // Update tool (admin only)
 router.put('/:id', authenticateToken, isAdmin, (req, res) => {
-  const { name, category, price_per_day, description, image_url, stock, is_available } = req.body;
+  const { name, category, price_per_day, description, image_url, stock, is_available, rental_type, fixed_price } = req.body;
 
   const updates = [];
   const params = [];
@@ -151,6 +158,14 @@ router.put('/:id', authenticateToken, isAdmin, (req, res) => {
   if (is_available !== undefined) {
     updates.push('is_available = ?');
     params.push(is_available ? 1 : 0);
+  }
+  if (rental_type !== undefined) {
+    updates.push('rental_type = ?');
+    params.push(rental_type);
+  }
+  if (fixed_price !== undefined) {
+    updates.push('fixed_price = ?');
+    params.push(fixed_price || null);
   }
 
   if (updates.length === 0) {
@@ -194,12 +209,8 @@ router.get('/:id/availability', (req, res) => {
   const requestedQuantity = parseInt(quantity) || 1;
   const alreadyInCart = parseInt(cartQuantity) || 0;
 
-  if (!start || !end) {
-    return res.status(400).json({ error: 'Start and end dates required' });
-  }
-
   // Check if tool exists and get total stock
-  db.get('SELECT is_available, stock FROM tools WHERE id = ?', [toolId], (err, tool) => {
+  db.get('SELECT is_available, stock, rental_type FROM tools WHERE id = ?', [toolId], (err, tool) => {
     if (err) {
       return res.status(500).json({ error: 'Server error' });
     }
@@ -214,7 +225,6 @@ router.get('/:id/availability', (req, res) => {
       });
     }
 
-    // Get all overlapping active and overdue reservations with their quantities
     const today = new Date().toISOString().split('T')[0];
 
     db.all(
@@ -227,31 +237,27 @@ router.get('/:id/availability', (req, res) => {
           return res.status(500).json({ error: 'Server error' });
         }
 
-        // Calculate reserved quantity for this date range
-        // Note: cancelled and returned reservations are excluded and don't reduce availability
-        const reservedQuantity = allReservations.reduce((sum, r) => {
-          if (r.status === 'active') {
-            // Active reservations: check normal date overlap
-            if (r.start_date <= end && r.end_date >= start) {
-              return sum + (r.quantity || 1);
-            }
-          } else if (r.status === 'delivered') {
-            // Delivered reservations: tool is with customer, always block
-            if (r.start_date <= end && r.end_date >= start) {
-              return sum + (r.quantity || 1);
-            }
-          } else if (r.status === 'overdue') {
-            // Overdue reservations: only block dates from start_date to today
-            // They don't block future dates beyond today
-            const overdueEndDate = today;
-            if (r.start_date <= end && overdueEndDate >= start) {
-              return sum + (r.quantity || 1);
-            }
+        let reservedQuantity;
+        if (tool.rental_type === 'fixed_price') {
+          // Fixed-price tools: count ALL active/delivered reservations regardless of date
+          reservedQuantity = allReservations.reduce((sum, r) => sum + (r.quantity || 1), 0);
+        } else {
+          // Date-based tools: only count overlapping reservations
+          if (!start || !end) {
+            return res.status(400).json({ error: 'Start and end dates required for date-based tools' });
           }
-          return sum;
-        }, 0);
+          reservedQuantity = allReservations.reduce((sum, r) => {
+            if (r.status === 'active') {
+              if (r.start_date <= end && r.end_date >= start) return sum + (r.quantity || 1);
+            } else if (r.status === 'delivered') {
+              if (r.start_date <= end && r.end_date >= start) return sum + (r.quantity || 1);
+            } else if (r.status === 'overdue') {
+              if (r.start_date <= end && today >= start) return sum + (r.quantity || 1);
+            }
+            return sum;
+          }, 0);
+        }
 
-        // Calculate available stock: total - reserved - already in cart
         const availableStock = tool.stock - reservedQuantity - alreadyInCart;
 
         res.json({
@@ -263,7 +269,7 @@ router.get('/:id/availability', (req, res) => {
           requestedQuantity: requestedQuantity,
           reason: availableStock >= requestedQuantity
             ? null
-            : `Only ${availableStock} tool(s) available for these dates (${reservedQuantity} reserved${alreadyInCart > 0 ? `, ${alreadyInCart} in cart` : ''})`
+            : `Only ${availableStock} unit(s) available (${reservedQuantity} rented out${alreadyInCart > 0 ? `, ${alreadyInCart} in cart` : ''})`
         });
       }
     );

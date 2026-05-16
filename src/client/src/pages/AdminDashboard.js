@@ -24,7 +24,9 @@ const AdminDashboard = () => {
   const [toolForm, setToolForm] = useState({
     name: '',
     category: '',
+    rental_type: 'by_date',
     price_per_day: '',
+    fixed_price: '',
     description: '',
     image_url: '',
     stock: 5,
@@ -157,7 +159,9 @@ const AdminDashboard = () => {
     setToolForm({
       name: tool.name,
       category: tool.category,
-      price_per_day: tool.price_per_day,
+      rental_type: tool.rental_type || 'by_date',
+      price_per_day: tool.price_per_day || '',
+      fixed_price: tool.fixed_price || '',
       description: tool.description || '',
       image_url: tool.image_url || '',
       stock: tool.stock || 5,
@@ -561,7 +565,9 @@ const AdminDashboard = () => {
                   setToolForm({
                     name: '',
                     category: '',
+                    rental_type: 'by_date',
                     price_per_day: '',
+                    fixed_price: '',
                     description: '',
                     image_url: '',
                     stock: 5,
@@ -624,6 +630,37 @@ const AdminDashboard = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Rental Type *
+                      </label>
+                      <div className="flex gap-4">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="rental_type"
+                            value="by_date"
+                            checked={toolForm.rental_type === 'by_date'}
+                            onChange={handleToolFormChange}
+                            className="text-brand-600"
+                          />
+                          <span className="text-sm">By Date (price per day)</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="rental_type"
+                            value="fixed_price"
+                            checked={toolForm.rental_type === 'fixed_price'}
+                            onChange={handleToolFormChange}
+                            className="text-brand-600"
+                          />
+                          <span className="text-sm">Fixed Price (no dates)</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    {toolForm.rental_type === 'by_date' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
                         Price per Day *
                       </label>
                       <input
@@ -631,12 +668,31 @@ const AdminDashboard = () => {
                         name="price_per_day"
                         value={toolForm.price_per_day}
                         onChange={handleToolFormChange}
-                        required
                         min="0"
                         step="0.01"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                       />
                     </div>
+                    )}
+
+                    {toolForm.rental_type === 'fixed_price' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Fixed Price *
+                      </label>
+                      <input
+                        type="number"
+                        name="fixed_price"
+                        value={toolForm.fixed_price}
+                        onChange={handleToolFormChange}
+                        min="0"
+                        step="0.01"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
+                        placeholder="Total price for renting this item"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">One-time price — no date range needed</p>
+                    </div>
+                    )}
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -790,7 +846,7 @@ const AdminDashboard = () => {
                       Category
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Price/Day
+                      Price
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                       Stock
@@ -813,7 +869,10 @@ const AdminDashboard = () => {
                         {tool.category}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        ₪{tool.price_per_day}
+                        {tool.rental_type === 'fixed_price'
+                          ? <><span className="text-xs bg-purple-100 text-purple-700 rounded px-1 mr-1">Fixed</span>₪{tool.fixed_price}</>
+                          : <>₪{tool.price_per_day}<span className="text-gray-400">/day</span></>
+                        }
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {tool.stock || 0}

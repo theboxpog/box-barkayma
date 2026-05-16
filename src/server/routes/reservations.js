@@ -216,13 +216,13 @@ router.post('/batch', authenticateToken, async (req, res) => {
     const reservationDetails = [];
 
     for (const item of reservations) {
-      const { tool_id, start_date, end_date, quantity, total_price } = item;
+      const { tool_id, start_date, end_date, quantity, total_price, is_fixed_price } = item;
 
       // Create reservation synchronously
       const reservationId = await new Promise((resolve, reject) => {
         db.run(
-          'INSERT INTO reservations (user_id, tool_id, start_date, end_date, quantity, total_price, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
-          [user_id, tool_id, start_date, end_date, quantity || 1, total_price, 'active'],
+          'INSERT INTO reservations (user_id, tool_id, start_date, end_date, quantity, total_price, paid_amount, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+          [user_id, tool_id, start_date, end_date, quantity || 1, total_price, 0, 'active'],
           function (err) {
             if (err) reject(err);
             else resolve(this.lastID);
@@ -254,7 +254,8 @@ router.post('/batch', authenticateToken, async (req, res) => {
         quantity: quantity || 1,
         startDate: start_date,
         endDate: end_date,
-        totalPrice: total_price
+        totalPrice: total_price,
+        isFixedPrice: is_fixed_price || false
       });
     }
 
@@ -263,7 +264,7 @@ router.post('/batch', authenticateToken, async (req, res) => {
       if (!err && user) {
         // Send ONE reservation confirmation email for ALL items
         try {
-          const emailResult = await sendReservationConfirmation(user.email, user.name, reservationDetails);
+          const emailResult = await sendReservationConfirmation(user.email, user.name, reservationDetails, 0);
           if (emailResult.success) {
             console.log('✅ Reservation confirmation email sent to:', user.email);
           } else {
