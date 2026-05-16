@@ -146,9 +146,19 @@ const CheckoutSuccess = () => {
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-lg font-bold text-brand-600">
-                          ₪{reservation.total_price.toFixed(2)}
-                        </p>
+                        {reservation.paid_amount !== undefined && reservation.paid_amount !== null && reservation.paid_amount < reservation.total_price ? (
+                          <div className="space-y-0.5">
+                            <p className="text-sm text-gray-400 line-through">₪{reservation.total_price.toFixed(2)}</p>
+                            <p className="text-sm text-green-600">-₪{(reservation.total_price - reservation.paid_amount).toFixed(2)}</p>
+                            <p className="text-lg font-bold text-brand-600">
+                              {reservation.paid_amount === 0 ? <span className="text-green-600">FREE 🎉</span> : `₪${reservation.paid_amount.toFixed(2)}`}
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-lg font-bold text-brand-600">
+                            ₪{reservation.total_price.toFixed(2)}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>

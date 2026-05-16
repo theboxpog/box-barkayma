@@ -246,6 +246,7 @@ router.post('/batch', authenticateToken, async (req, res) => {
         end_date,
         quantity: quantity || 1,
         total_price,
+        paid_amount: 0,
         status: 'active'
       });
 

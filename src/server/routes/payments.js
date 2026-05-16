@@ -444,6 +444,7 @@ router.post('/complete', authenticateToken, async (req, res) => {
         end_date: endDate,
         quantity: item.quantity || 1,
         total_price: item.totalPrice,
+        paid_amount: itemPaidAmount,
         status: 'active'
       });
 
