@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { UserPlus } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
-import axios from 'axios';
+import { contactInfoAPI } from '../services/api';
 import WelcomeModal from '../components/WelcomeModal';
 import PrivacyPolicyModal from '../components/PrivacyPolicyModal';
 
@@ -30,7 +30,7 @@ const Signup = () => {
     // Fetch signup message from API
     const fetchSignupMessage = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/contact-info');
+        const response = await contactInfoAPI.get();
         setSignupMessage(response.data.signup_message);
       } catch (err) {
         console.error('Failed to fetch signup message:', err);

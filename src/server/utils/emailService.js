@@ -28,14 +28,17 @@ const getContactInfo = () => {
 
 // Create email transporter
 const createTransporter = () => {
+  const user = process.env.EMAIL_USER?.trim();
+  const pass = process.env.EMAIL_PASSWORD?.trim().replace(/\s+/g, '');
+  if (!user || !pass) {
+    console.error('⚠️  EMAIL_USER or EMAIL_PASSWORD not set in environment');
+  }
   return nodemailer.createTransport({
     host: process.env.EMAIL_HOST?.trim() || 'smtp.gmail.com',
     port: parseInt(process.env.EMAIL_PORT) || 587,
-    secure: false, // true for 465, false for other ports
-    auth: {
-      user: process.env.EMAIL_USER?.trim(),
-      pass: process.env.EMAIL_PASSWORD?.trim()
-    }
+    secure: false,
+    auth: { user, pass },
+    tls: { rejectUnauthorized: false }
   });
 };
 
@@ -471,6 +474,87 @@ const sendReservationConfirmation = async (userEmail, userName, reservationDetai
   }
 };
 
+// Send new reservation notification to all admins
+const sendAdminReservationNotification = async (userName, userEmail, reservationDetails, totalPaid) => {
+  try {
+    const adminRows = await new Promise((resolve, reject) => {
+      db.all("SELECT email FROM users WHERE role IN ('admin', 'subadmin')", [], (err, rows) => {
+        if (err) reject(err); else resolve(rows || []);
+      });
+    });
+
+    if (!adminRows.length) return { success: true, skipped: true };
+
+    const transporter = createTransporter();
+    const totalPrice = reservationDetails.reduce((sum, item) => sum + item.totalPrice, 0);
+    const isFree = totalPaid !== undefined && totalPaid !== null && totalPaid === 0;
+    const hasCoupon = totalPaid !== undefined && totalPaid !== null && totalPaid < totalPrice;
+
+    const itemsHtml = reservationDetails.map(item => `
+      <tr>
+        <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;">${item.toolName}</td>
+        <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;text-align:center;">${item.quantity}</td>
+        <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;text-align:center;">
+          ${item.isFixedPrice ? 'Fixed Price' : `${new Date(item.startDate).toLocaleDateString('en-GB')} → ${new Date(item.endDate).toLocaleDateString('en-GB')}`}
+        </td>
+        <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;text-align:right;">₪${item.totalPrice.toFixed(2)}</td>
+      </tr>
+    `).join('');
+
+    const paymentLine = isFree
+      ? '<strong style="color:#059669;">FREE (Coupon)</strong>'
+      : hasCoupon
+        ? `<span style="text-decoration:line-through;color:#9ca3af;">₪${totalPrice.toFixed(2)}</span> &rarr; <strong style="color:#059669;">₪${totalPaid.toFixed(2)}</strong>`
+        : `<strong>₪${totalPaid !== undefined && totalPaid !== null ? totalPaid.toFixed(2) : totalPrice.toFixed(2)}</strong>`;
+
+    const adminEmails = adminRows.map(r => r.email);
+
+    const mailOptions = {
+      from: `"The Box - Reservations" <${process.env.EMAIL_USER}>`,
+      to: adminEmails.join(', '),
+      subject: `New Reservation — ${userName}`,
+      html: `
+        <!DOCTYPE html><html><body style="font-family:Arial,sans-serif;color:#333;">
+          <div style="max-width:600px;margin:0 auto;padding:20px;">
+            <div style="background-color:#2563eb;color:white;padding:20px;border-radius:8px 8px 0 0;text-align:center;">
+              <h2 style="margin:0;">📦 New Reservation</h2>
+            </div>
+            <div style="background:#f9fafb;padding:24px;border-radius:0 0 8px 8px;">
+              <p><strong>Customer:</strong> ${userName} (${userEmail})</p>
+              <table style="width:100%;border-collapse:collapse;background:white;border-radius:8px;margin:16px 0;">
+                <thead>
+                  <tr style="background:#f3f4f6;">
+                    <th style="padding:10px 12px;text-align:left;border-bottom:2px solid #e5e7eb;">Tool</th>
+                    <th style="padding:10px 12px;text-align:center;border-bottom:2px solid #e5e7eb;">Qty</th>
+                    <th style="padding:10px 12px;text-align:center;border-bottom:2px solid #e5e7eb;">Period</th>
+                    <th style="padding:10px 12px;text-align:right;border-bottom:2px solid #e5e7eb;">Price</th>
+                  </tr>
+                </thead>
+                <tbody>${itemsHtml}</tbody>
+              </table>
+              <p style="text-align:right;font-size:16px;">
+                <strong>Paid:</strong> ${paymentLine}
+              </p>
+              <div style="text-align:center;margin-top:20px;">
+                <a href="${process.env.FRONTEND_URL}/admin" style="background:#2563eb;color:white;padding:10px 24px;border-radius:5px;text-decoration:none;font-weight:bold;">
+                  Open Admin Dashboard
+                </a>
+              </div>
+            </div>
+          </div>
+        </body></html>
+      `
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log('✅ Admin reservation notification sent to:', adminEmails.join(', '));
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('⚠️ Failed to send admin reservation notification:', error);
+    return { success: false, error: error.message };
+  }
+};
+
 // Send contact form email
 const sendContactEmail = async (name, email, subject, message) => {
   try {
@@ -573,5 +657,6 @@ module.exports = {
   sendSignupConfirmation,
   sendPasswordReset,
   sendReservationConfirmation,
+  sendAdminReservationNotification,
   sendContactEmail
 };

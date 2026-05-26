@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Shield, CheckSquare, Square } from 'lucide-react';
-import axios from 'axios';
+import { contactInfoAPI } from '../services/api';
 
 const PrivacyPolicyModal = ({ onAccept, onDecline }) => {
   const [privacyPolicy, setPrivacyPolicy] = useState('');
@@ -10,7 +10,7 @@ const PrivacyPolicyModal = ({ onAccept, onDecline }) => {
   useEffect(() => {
     const fetchPrivacyPolicy = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/contact-info');
+        const response = await contactInfoAPI.get();
         setPrivacyPolicy(response.data.privacy_policy || getDefaultPrivacyPolicy());
       } catch (err) {
         console.error('Failed to fetch privacy policy:', err);

@@ -1,7 +1,7 @@
 const express = require('express');
 const db = require('../database');
 const { authenticateToken, isAdmin, isAdminOrSubadmin } = require('../middleware/auth');
-const { sendReservationConfirmation } = require('../utils/emailService');
+const { sendReservationConfirmation, sendAdminReservationNotification } = require('../utils/emailService');
 
 const router = express.Router();
 
@@ -263,7 +263,6 @@ router.post('/batch', authenticateToken, async (req, res) => {
     // Get user details for email
     db.get('SELECT name, email FROM users WHERE id = ?', [user_id], async (err, user) => {
       if (!err && user) {
-        // Send ONE reservation confirmation email for ALL items
         try {
           const emailResult = await sendReservationConfirmation(user.email, user.name, reservationDetails, 0);
           if (emailResult.success) {
@@ -273,7 +272,11 @@ router.post('/batch', authenticateToken, async (req, res) => {
           }
         } catch (emailErr) {
           console.error('⚠️ Error sending reservation confirmation email:', emailErr);
-          // Don't fail the checkout if email fails
+        }
+        try {
+          await sendAdminReservationNotification(user.name, user.email, reservationDetails, 0);
+        } catch (adminEmailErr) {
+          console.error('⚠️ Error sending admin reservation notification:', adminEmailErr);
         }
       }
     });

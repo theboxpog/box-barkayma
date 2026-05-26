@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { CheckCircle, Package, Calendar, Home } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
-import axios from 'axios';
+import { contactInfoAPI } from '../services/api';
 
 const CheckoutSuccess = () => {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ const CheckoutSuccess = () => {
     // Fetch custom checkout success message
     const fetchCustomMessage = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/contact-info');
+        const response = await contactInfoAPI.get();
         const message = language === 'he'
           ? response.data.checkout_success_message_he
           : response.data.checkout_success_message;

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toolsAPI, reservationsAPI, couponsAPI } from '../services/api';
+import { toolsAPI, reservationsAPI, couponsAPI, SERVER_BASE_URL } from '../services/api';
 import { Package, Calendar, Plus, Edit, Trash2, X, List, Tag, Settings, Upload } from 'lucide-react';
-import axios from 'axios';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -111,18 +110,8 @@ const AdminDashboard = () => {
         const formData = new FormData();
         formData.append('image', imageFile);
 
-        const token = localStorage.getItem('token');
-        const uploadResponse = await axios.post(
-          'http://localhost:5000/api/tools/upload-image',
-          formData,
-          {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-              Authorization: `Bearer ${token}`
-            }
-          }
-        );
-        finalImageUrl = `http://localhost:5000${uploadResponse.data.imageUrl}`;
+        const uploadResponse = await toolsAPI.uploadImage(formData);
+        finalImageUrl = `${SERVER_BASE_URL}${uploadResponse.data.imageUrl}`;
         setUploadingImage(false);
       }
 

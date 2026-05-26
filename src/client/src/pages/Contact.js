@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin } from 'lucide-react';
-import axios from 'axios';
+import { contactInfoAPI } from '../services/api';
 
 const Contact = () => {
   const [contactInfo, setContactInfo] = useState({
@@ -17,7 +17,7 @@ const Contact = () => {
 
   const fetchContactInfo = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/contact-info');
+      const response = await contactInfoAPI.get();
       setContactInfo(response.data);
     } catch (error) {
       console.error('Error fetching contact info:', error);

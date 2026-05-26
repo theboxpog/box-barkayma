@@ -2,7 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const db = require('../database');
 const { authenticateToken } = require('../middleware/auth');
-const { sendReservationConfirmation } = require('../utils/emailService');
+const { sendReservationConfirmation, sendAdminReservationNotification } = require('../utils/emailService');
 
 const router = express.Router();
 
@@ -458,7 +458,7 @@ router.post('/complete', authenticateToken, async (req, res) => {
       });
     }
 
-    // Send confirmation email (same as createBatch flow)
+    // Send confirmation email to user and notification to admins
     db.get('SELECT name, email FROM users WHERE id = ?', [user_id], async (err, user) => {
       if (!err && user) {
         try {
@@ -470,6 +470,11 @@ router.post('/complete', authenticateToken, async (req, res) => {
           }
         } catch (emailErr) {
           console.error('⚠️ Error sending reservation confirmation email:', emailErr);
+        }
+        try {
+          await sendAdminReservationNotification(user.name, user.email, reservationDetails, session.total_amount);
+        } catch (adminEmailErr) {
+          console.error('⚠️ Error sending admin reservation notification:', adminEmailErr);
         }
       }
     });

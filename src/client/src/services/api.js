@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+export const SERVER_BASE_URL = API_BASE_URL.replace(/\/api$/, '');
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -60,7 +61,9 @@ export const toolsAPI = {
   checkAvailability: (id, start, end, quantity, cartQuantity = 0) =>
     api.get(`/tools/${id}/availability`, { params: { start, end, quantity, cartQuantity } }),
   getAvailabilityByDate: (date) =>
-    api.get('/tools/availability/date', { params: { date } })
+    api.get('/tools/availability/date', { params: { date } }),
+  uploadImage: (formData) =>
+    api.post('/tools/upload-image', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
 };
 
 // Reservations API
@@ -114,6 +117,12 @@ export const couponsAPI = {
   create: (data) => api.post('/coupons/admin', data),
   update: (id, data) => api.put(`/coupons/admin/${id}`, data),
   delete: (id) => api.delete(`/coupons/admin/${id}`)
+};
+
+// Contact Info API
+export const contactInfoAPI = {
+  get: () => api.get('/contact-info'),
+  update: (data) => api.put('/contact-info', data)
 };
 
 export default api;

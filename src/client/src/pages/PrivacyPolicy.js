@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Lock, Eye, UserCheck, FileText, AlertCircle } from 'lucide-react';
-import axios from 'axios';
+import { contactInfoAPI } from '../services/api';
 
 const PrivacyPolicy = () => {
   const [customPolicy, setCustomPolicy] = useState(null);
@@ -12,7 +12,7 @@ const PrivacyPolicy = () => {
 
   const fetchPrivacyPolicy = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/contact-info');
+      const response = await contactInfoAPI.get();
       if (response.data.privacy_policy) {
         setCustomPolicy(response.data.privacy_policy);
       }

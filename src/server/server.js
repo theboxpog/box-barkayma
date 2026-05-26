@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+console.log('📧 Email config:', process.env.EMAIL_USER, '| pass set:', !!process.env.EMAIL_PASSWORD, '| pass length:', process.env.EMAIL_PASSWORD?.replace(/\s+/g,'').length);
 const cors = require('cors');
 const path = require('path');
 

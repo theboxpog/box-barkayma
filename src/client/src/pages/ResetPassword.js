@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Lock, ArrowLeft, CheckCircle } from 'lucide-react';
-import axios from 'axios';
+import { authAPI } from '../services/api';
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();
@@ -43,10 +43,7 @@ const ResetPassword = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/reset-password', {
-        token,
-        newPassword
-      });
+      const response = await authAPI.resetPassword(token, newPassword);
 
       setMessage(response.data.message);
       setSuccess(true);

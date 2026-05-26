@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { settingsAPI } from '../services/api';
+import { settingsAPI, contactInfoAPI } from '../services/api';
 import { Calendar, Check, Mail, Phone, MapPin } from 'lucide-react';
-import axios from 'axios';
 
 const RentalSettings = () => {
   const [allowedDays, setAllowedDays] = useState([]);
@@ -56,7 +55,7 @@ const RentalSettings = () => {
 
   const fetchContactInfo = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/contact-info');
+      const response = await contactInfoAPI.get();
       setContactInfo(response.data);
     } catch (err) {
       console.error('Failed to fetch contact info:', err);
@@ -85,10 +84,7 @@ const RentalSettings = () => {
 
     try {
       setSavingContact(true);
-      const token = localStorage.getItem('token');
-      await axios.put('http://localhost:5000/api/contact-info', contactInfo, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await contactInfoAPI.update(contactInfo);
       setContactSuccess('Contact information updated successfully!');
       setContactError('');
 
