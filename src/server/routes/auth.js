@@ -349,7 +349,7 @@ router.put('/users/:id/role', authenticateToken, isAdmin, (req, res) => {
 });
 
 // Delete User (Admin Only)
-router.delete('/users/:id', authenticateToken, isAdmin, (req, res) => {
+router.delete('/users/:id', authenticateToken, isAdminOrSubadmin, (req, res) => {
   const userId = parseInt(req.params.id);
 
   // Prevent admin from deleting themselves

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { authAPI, reservationsAPI, toolsAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { Users, Trash2, Calendar, Shield } from 'lucide-react';
 
 const UsersManagement = () => {
+  const { t } = useLanguage();
   const { user: currentUser, isAdmin } = useAuth();
   const [users, setUsers] = useState([]);
   const [reservations, setReservations] = useState([]);
@@ -211,7 +213,7 @@ const UsersManagement = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">Loading...</div>
+        <div className="text-xl">{t('loading')}</div>
       </div>
     );
   }
@@ -220,8 +222,8 @@ const UsersManagement = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-brand-600 text-white py-8">
         <div className="container mx-auto px-4">
-          <h1 className="text-4xl font-bold mb-2">Users Management</h1>
-          <p className="text-brand-200">View and manage all users</p>
+          <h1 className="text-4xl font-bold mb-2">{t('usersManagement')}</h1>
+          <p className="text-brand-200">{t('viewAndManageUsers')}</p>
         </div>
       </div>
 
@@ -232,47 +234,47 @@ const UsersManagement = () => {
             {/* Search Bar */}
             <div className="mb-6 bg-white rounded-lg shadow-md p-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Search by Name or Phone Number
+                {t('searchByNamePhone')}
               </label>
               <input
                 type="text"
                 value={userSearchTerm}
                 onChange={(e) => setUserSearchTerm(e.target.value)}
-                placeholder="Enter name or phone number..."
+                placeholder={t('enterNameOrPhone')}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
 
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                <p className="text-sm text-gray-600">Click on a user to view all their reservations</p>
+                <p className="text-sm text-gray-600">{t('clickUserAllReservations')}</p>
               </div>
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      ID
+                      {t('idHeader')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Name
+                      {t('nameHeader')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Email
+                      {t('email')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Phone Number
+                      {t('phoneNumber')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Role
+                      {t('roleHeader')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Active Reservations
+                      {t('activeReservationsHeader')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Created At
+                      {t('createdAtHeader')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
+                      {t('actionsHeader')}
                     </th>
                   </tr>
                 </thead>
@@ -302,7 +304,7 @@ const UsersManagement = () => {
                         {user.email}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {user.phone_number || 'N/A'}
+                        {user.phone_number || t('notAvailableText')}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                         {isAdmin() && user.id !== currentUser?.id ? (
@@ -317,9 +319,9 @@ const UsersManagement = () => {
                                 : 'bg-green-100 text-green-800'
                             }`}
                           >
-                            <option value="user">User</option>
-                            <option value="subadmin">Sub-Admin</option>
-                            <option value="admin">Admin</option>
+                            <option value="user">{t('userRoleLabel')}</option>
+                            <option value="subadmin">{t('subAdminRoleLabel')}</option>
+                            <option value="admin">{t('adminRoleLabel')}</option>
                           </select>
                         ) : (
                           <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -329,8 +331,8 @@ const UsersManagement = () => {
                               ? 'bg-indigo-100 text-indigo-800'
                               : 'bg-green-100 text-green-800'
                           }`}>
-                            {user.role === 'subadmin' ? 'Sub-Admin' : user.role}
-                            {user.id === currentUser?.id && ' (You)'}
+                            {user.role === 'subadmin' ? t('subAdminRoleLabel') : user.role === 'admin' ? t('adminRoleLabel') : t('userRoleLabel')}
+                            {user.id === currentUser?.id && ` ${t('youSuffix')}`}
                           </span>
                         )}
                       </td>
@@ -353,12 +355,12 @@ const UsersManagement = () => {
                             className="text-red-600 hover:text-red-800 flex items-center space-x-1"
                           >
                             <Trash2 size={16} />
-                            <span>Delete</span>
+                            <span>{t('delete')}</span>
                           </button>
                         ) : (
                           <span className="text-gray-400 flex items-center space-x-1" title="Cannot delete user with active reservations">
                             <Trash2 size={16} />
-                            <span>Delete</span>
+                            <span>{t('delete')}</span>
                           </span>
                         )}
                       </td>
@@ -369,7 +371,7 @@ const UsersManagement = () => {
               {users.length === 0 && (
                 <div className="text-center py-12 text-gray-500">
                   <Users className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                  <p>No users found</p>
+                  <p>{t('noUsersFound')}</p>
                 </div>
               )}
               {users.length > 0 &&
@@ -383,12 +385,12 @@ const UsersManagement = () => {
                 }).length === 0 && (
                   <div className="text-center py-12 text-gray-500">
                     <Users className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                    <p>No users match your search</p>
+                    <p>{t('noUsersMatchSearch')}</p>
                     <button
                       onClick={() => setUserSearchTerm('')}
                       className="mt-2 text-brand-600 hover:text-brand-800 text-sm"
                     >
-                      Clear search
+                      {t('clearSearch')}
                     </button>
                   </div>
                 )}
@@ -406,16 +408,16 @@ const UsersManagement = () => {
               }}
               className="mb-4 text-brand-600 hover:text-brand-800 flex items-center"
             >
-              <span className="mr-2">←</span> Back to Users List
+              <span className="mr-2">←</span> {t('backToUsersList')}
             </button>
 
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200 bg-brand-50">
                 <h2 className="text-xl font-bold text-gray-800">{selectedUserForDetails.name}</h2>
                 <p className="text-sm text-gray-600">{selectedUserForDetails.email}</p>
-                <p className="text-sm text-gray-600">Phone: {selectedUserForDetails.phone_number || 'N/A'}</p>
+                <p className="text-sm text-gray-600">{t('phoneColon')} {selectedUserForDetails.phone_number || t('notAvailableText')}</p>
                 <p className="text-sm text-gray-600 mt-2">
-                  Total Reservations: {getAllUserReservations(selectedUserForDetails.id).length}
+                  {t('totalReservationsColon')} {getAllUserReservations(selectedUserForDetails.id).length}
                 </p>
               </div>
 
@@ -429,7 +431,7 @@ const UsersManagement = () => {
                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     }`}
                   >
-                    All ({getAllUserReservations(selectedUserForDetails.id).length})
+                    {t('filterAll')} ({getAllUserReservations(selectedUserForDetails.id).length})
                   </button>
                   <button
                     onClick={() => setUserDetailsFilterStatus('active')}
@@ -439,7 +441,7 @@ const UsersManagement = () => {
                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     }`}
                   >
-                    Active ({getAllUserReservations(selectedUserForDetails.id).filter(r => r.status === 'active').length})
+                    {t('statusActive')} ({getAllUserReservations(selectedUserForDetails.id).filter(r => r.status === 'active').length})
                   </button>
                   <button
                     onClick={() => setUserDetailsFilterStatus('delivered')}
@@ -449,7 +451,7 @@ const UsersManagement = () => {
                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     }`}
                   >
-                    Delivered ({getAllUserReservations(selectedUserForDetails.id).filter(r => r.status === 'delivered').length})
+                    {t('statusDelivered')} ({getAllUserReservations(selectedUserForDetails.id).filter(r => r.status === 'delivered').length})
                   </button>
                   <button
                     onClick={() => setUserDetailsFilterStatus('overdue')}
@@ -459,7 +461,7 @@ const UsersManagement = () => {
                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     }`}
                   >
-                    Overdue ({getAllUserReservations(selectedUserForDetails.id).filter(r => r.status === 'overdue').length})
+                    {t('statusOverdue')} ({getAllUserReservations(selectedUserForDetails.id).filter(r => r.status === 'overdue').length})
                   </button>
                   <button
                     onClick={() => setUserDetailsFilterStatus('returned')}
@@ -469,7 +471,7 @@ const UsersManagement = () => {
                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     }`}
                   >
-                    Returned ({getAllUserReservations(selectedUserForDetails.id).filter(r => r.status === 'returned').length})
+                    {t('statusReturned')} ({getAllUserReservations(selectedUserForDetails.id).filter(r => r.status === 'returned').length})
                   </button>
                   <button
                     onClick={() => setUserDetailsFilterStatus('cancelled')}
@@ -479,7 +481,7 @@ const UsersManagement = () => {
                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     }`}
                   >
-                    Cancelled ({getAllUserReservations(selectedUserForDetails.id).filter(r => r.status === 'cancelled').length})
+                    {t('statusCancelled')} ({getAllUserReservations(selectedUserForDetails.id).filter(r => r.status === 'cancelled').length})
                   </button>
                   <button
                     onClick={() => setUserDetailsFilterStatus('archived')}
@@ -489,7 +491,7 @@ const UsersManagement = () => {
                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     }`}
                   >
-                    Archived ({getAllUserReservations(selectedUserForDetails.id).filter(r => r.status === 'archived').length})
+                    {t('statusArchived')} ({getAllUserReservations(selectedUserForDetails.id).filter(r => r.status === 'archived').length})
                   </button>
                 </div>
                 <div className="flex flex-wrap items-center gap-4">
@@ -500,11 +502,11 @@ const UsersManagement = () => {
                       onChange={(e) => setUserDetailsSortByDate(e.target.checked)}
                       className="rounded"
                     />
-                    <span>Sort by Start Date</span>
+                    <span>{t('sortByStartDate')}</span>
                   </label>
                   <div className="flex items-center space-x-2 text-sm">
                     <label htmlFor="userDetailsSearchDate" className="font-medium">
-                      Filter by Start Date:
+                      {t('filterByStartDate')}
                     </label>
                     <input
                       id="userDetailsSearchDate"
@@ -518,7 +520,7 @@ const UsersManagement = () => {
                         onClick={() => setUserDetailsSearchDate('')}
                         className="text-xs text-red-600 hover:text-red-800 underline"
                       >
-                        Clear
+                        {t('clearBtn')}
                       </button>
                     )}
                   </div>
@@ -529,28 +531,28 @@ const UsersManagement = () => {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Tool
+                      {t('toolHeader')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Quantity
+                      {t('quantityHeader')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Available
+                      {t('availableHeader')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Dates
+                      {t('datesHeader')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Price
+                      {t('priceHeader')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Payment
+                      {t('paymentHeader')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Status
+                      {t('statusHeader')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Actions
+                      {t('actionsHeader')}
                     </th>
                   </tr>
                 </thead>
@@ -572,7 +574,7 @@ const UsersManagement = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm text-gray-600">
-                          {getAvailableQuantity(reservation.tool_id, toolStock)} / {toolStock} in stock
+                          {getAvailableQuantity(reservation.tool_id, toolStock)} / {toolStock} {t('inStockShort')}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -587,11 +589,11 @@ const UsersManagement = () => {
                           const paid = reservation.paid_amount;
                           const original = reservation.total_price;
                           if (paid === null || paid === undefined) return <span className="text-gray-400">—</span>;
-                          if (paid === 0) return <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">Coupon (Free)</span>;
+                          if (paid === 0) return <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">{t('couponFreeLabel')}</span>;
                           if (paid < original) return (
                             <div className="space-y-0.5">
                               <p className="text-gray-400 line-through text-xs">₪{original.toFixed(2)}</p>
-                              <p className="text-green-600 text-xs">-₪{(original - paid).toFixed(2)} coupon</p>
+                              <p className="text-green-600 text-xs">-₪{(original - paid).toFixed(2)} {t('couponLabel')}</p>
                               <p className="font-bold text-gray-900">₪{paid.toFixed(2)}</p>
                             </div>
                           );
@@ -613,13 +615,13 @@ const UsersManagement = () => {
                                     onClick={() => handleMarkAsDelivered(reservation.id)}
                                     className="text-green-600 hover:text-green-900 text-left"
                                   >
-                                    Mark Delivered
+                                    {t('markDelivered')}
                                   </button>
                                   <button
                                     onClick={() => handleArchiveReservation(reservation.id)}
                                     className="text-gray-600 hover:text-gray-900 text-left"
                                   >
-                                    Move to Past
+                                    {t('moveToPast')}
                                   </button>
                                 </>
                               )}
@@ -629,13 +631,13 @@ const UsersManagement = () => {
                                     onClick={() => handleMarkAsReturned(reservation.id)}
                                     className="text-brand-600 hover:text-brand-900 text-left"
                                   >
-                                    Mark Returned
+                                    {t('markReturned')}
                                   </button>
                                   <button
                                     onClick={() => handleArchiveReservation(reservation.id)}
                                     className="text-gray-600 hover:text-gray-900 text-left"
                                   >
-                                    Move to Past
+                                    {t('moveToPast')}
                                   </button>
                                 </>
                               )}
@@ -644,7 +646,7 @@ const UsersManagement = () => {
                                   onClick={() => handleArchiveReservation(reservation.id)}
                                   className="text-gray-600 hover:text-gray-900 text-left"
                                 >
-                                  Move to Past
+                                  {t('moveToPast')}
                                 </button>
                               )}
                               {reservation.status === 'returned' && (
@@ -652,7 +654,7 @@ const UsersManagement = () => {
                                   onClick={() => handleArchiveReservation(reservation.id)}
                                   className="text-gray-600 hover:text-gray-900 text-left"
                                 >
-                                  Move to Past
+                                  {t('moveToPast')}
                                 </button>
                               )}
                             </>
@@ -663,13 +665,13 @@ const UsersManagement = () => {
                                 onClick={() => handleRestoreReservation(reservation.id)}
                                 className="text-brand-600 hover:text-brand-900 text-left"
                               >
-                                Restore to Active
+                                {t('restoreToActive')}
                               </button>
                               <button
                                 onClick={() => handleDeleteReservation(reservation.id)}
                                 className="text-red-600 hover:text-red-900 text-left"
                               >
-                                Delete Permanently
+                                {t('deletePermanently')}
                               </button>
                             </>
                           )}
@@ -683,7 +685,7 @@ const UsersManagement = () => {
               {getSortedUserDetailsReservations(getAllUserReservations(selectedUserForDetails.id)).length === 0 && (
                 <div className="px-6 py-12 text-center text-gray-500">
                   <Calendar className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-                  <p className="text-xl">No reservations found</p>
+                  <p className="text-xl">{t('noReservations')}</p>
                 </div>
               )}
             </div>

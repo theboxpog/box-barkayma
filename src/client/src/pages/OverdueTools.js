@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { reservationsAPI } from '../services/api';
 import { AlertCircle, Package, User, Calendar, Clock } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const OverdueTools = () => {
+  const { t } = useLanguage();
   const [overdueReservations, setOverdueReservations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -53,7 +55,7 @@ const OverdueTools = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading overdue tools...</p>
+          <p className="mt-4 text-gray-600">{t('loading')}</p>
         </div>
       </div>
     );
@@ -74,10 +76,10 @@ const OverdueTools = () => {
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-4">
           <AlertCircle size={32} className="text-orange-600" />
-          <h1 className="text-3xl font-bold text-gray-800">Overdue Tools</h1>
+          <h1 className="text-3xl font-bold text-gray-800">{t('overdueToolsTitle')}</h1>
         </div>
         <p className="text-gray-600">
-          Tools that were not returned on time and need immediate attention.
+          {t('overdueToolsDesc')}
         </p>
       </div>
 
@@ -88,9 +90,9 @@ const OverdueTools = () => {
               <Package size={48} className="text-green-600" />
             </div>
           </div>
-          <h3 className="text-xl font-semibold text-gray-800 mb-2">All Clear!</h3>
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">{t('allClear')}</h3>
           <p className="text-gray-600">
-            No overdue tools at the moment. All tools have been returned on time.
+            {t('noOverdueToolsDesc')}
           </p>
         </div>
       ) : (
@@ -99,7 +101,7 @@ const OverdueTools = () => {
             <div className="flex items-center gap-2">
               <AlertCircle className="text-orange-600" size={20} />
               <p className="text-orange-800 font-semibold">
-                {overdueReservations.length} tool(s) currently overdue
+                {t('toolsCurrentlyOverdue').replace('{count}', overdueReservations.length)}
               </p>
             </div>
           </div>
@@ -139,20 +141,20 @@ const OverdueTools = () => {
                         <div className="flex items-center gap-2 text-gray-700">
                           <Calendar size={16} className="text-gray-500" />
                           <span className="text-sm">
-                            Due: {new Date(reservation.end_date).toLocaleDateString('en-GB')}
+                            {t('dueLabel')}: {new Date(reservation.end_date).toLocaleDateString('en-GB')}
                           </span>
                         </div>
 
                         <div className="flex items-center gap-2">
                           <Clock size={16} className="text-orange-600" />
                           <span className="text-sm font-bold text-orange-600">
-                            {daysOverdue} day{daysOverdue !== 1 ? 's' : ''} overdue
+                            {daysOverdue} {daysOverdue !== 1 ? t('daysOverdueLabel') : t('dayOverdueLabel')}
                           </span>
                         </div>
 
                         <div className="flex items-center gap-2 text-gray-700">
                           <span className="text-sm">
-                            Quantity: <span className="font-semibold">{reservation.quantity || 1}</span>
+                            {t('quantity')}: <span className="font-semibold">{reservation.quantity || 1}</span>
                           </span>
                         </div>
                       </div>
@@ -160,21 +162,21 @@ const OverdueTools = () => {
 
                     <div className="flex flex-col gap-2">
                       <div className="bg-orange-100 text-orange-800 px-4 py-2 rounded-lg text-center font-bold">
-                        OVERDUE
+                        {t('overdueStatusLabel')}
                       </div>
                       <button
                         onClick={() => handleMarkAsReturned(reservation.id)}
                         className="bg-brand-600 text-white px-4 py-2 rounded hover:bg-brand-700 transition-colors"
                       >
-                        Mark as Returned
+                        {t('markAsReturnedBtn')}
                       </button>
                     </div>
                   </div>
 
                   <div className="mt-4 pt-4 border-t border-gray-200">
                     <div className="flex items-center justify-between text-sm text-gray-600">
-                      <span>Reservation #{reservation.id}</span>
-                      <span>Total Price: ₪{reservation.total_price.toFixed(2)}</span>
+                      <span>{t('reservationNumLabel')} {reservation.id}</span>
+                      <span>{t('totalPriceLabel')}: ₪{reservation.total_price.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>

@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin } from 'lucide-react';
 import { contactInfoAPI } from '../services/api';
+import { useLanguage } from '../context/LanguageContext';
 
 const Contact = () => {
+  const { t } = useLanguage();
   const [contactInfo, setContactInfo] = useState({
     email: 'contact@toolrental.com',
     phone: '+972 50-123-4567',
@@ -29,7 +31,7 @@ const Contact = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 py-12 flex items-center justify-center">
-        <div className="text-gray-600">Loading...</div>
+        <div className="text-gray-600">{t('loading')}</div>
       </div>
     );
   }
@@ -40,15 +42,15 @@ const Contact = () => {
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-gray-800 mb-4">Contact Us</h1>
+            <h1 className="text-4xl font-bold text-gray-800 mb-4">{t('contactUs')}</h1>
             <p className="text-lg text-gray-600">
-              Have a question or need assistance? We're here to help!
+              {t('contactUsSubtitle')}
             </p>
           </div>
 
           {/* Contact Information */}
           <div className="bg-white rounded-lg shadow-md p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Get in Touch</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">{t('getInTouch')}</h2>
 
             <div className="space-y-6">
               <div className="flex items-start space-x-4">
@@ -56,7 +58,7 @@ const Contact = () => {
                   <Mail className="text-brand-600" size={24} />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-800 mb-1">Email</h3>
+                  <h3 className="font-semibold text-gray-800 mb-1">{t('email')}</h3>
                   <a
                     href={`mailto:${contactInfo.email}`}
                     className="text-brand-600 hover:text-brand-800"
@@ -71,7 +73,7 @@ const Contact = () => {
                   <Phone className="text-brand-600" size={24} />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-800 mb-1">Phone</h3>
+                  <h3 className="font-semibold text-gray-800 mb-1">{t('phone')}</h3>
                   <a
                     href={`tel:${contactInfo.phone.replace(/\s/g, '')}`}
                     className="text-brand-600 hover:text-brand-800"
@@ -86,7 +88,7 @@ const Contact = () => {
                   <MapPin className="text-brand-600" size={24} />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-800 mb-1">Address</h3>
+                  <h3 className="font-semibold text-gray-800 mb-1">{t('address')}</h3>
                   <p className="text-gray-600" style={{ whiteSpace: 'pre-line' }}>
                     {contactInfo.address}
                   </p>
@@ -100,7 +102,7 @@ const Contact = () => {
                 to="/privacy-policy"
                 className="text-brand-600 hover:text-brand-800 text-sm underline"
               >
-                View Our Privacy Policy
+                {t('viewPrivacyPolicy')}
               </Link>
             </div>
           </div>

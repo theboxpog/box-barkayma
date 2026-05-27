@@ -1,6 +1,6 @@
 const express = require('express');
 const db = require('../database');
-const { authenticateToken, isAdmin } = require('../middleware/auth');
+const { authenticateToken, isAdminOrSubadmin } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -229,7 +229,7 @@ router.post('/:id/use', authenticateToken, (req, res) => {
 });
 
 // Admin: Get all coupons
-router.get('/admin/all', authenticateToken, isAdmin, (req, res) => {
+router.get('/admin/all', authenticateToken, isAdminOrSubadmin, (req, res) => {
   db.all(
     'SELECT * FROM coupons ORDER BY created_at DESC',
     [],
@@ -243,7 +243,7 @@ router.get('/admin/all', authenticateToken, isAdmin, (req, res) => {
 });
 
 // Admin: Create new coupon
-router.post('/admin', authenticateToken, isAdmin, (req, res) => {
+router.post('/admin', authenticateToken, isAdminOrSubadmin, (req, res) => {
   const {
     code,
     discount_type,
@@ -322,7 +322,7 @@ router.post('/admin', authenticateToken, isAdmin, (req, res) => {
 });
 
 // Admin: Update coupon
-router.put('/admin/:id', authenticateToken, isAdmin, (req, res) => {
+router.put('/admin/:id', authenticateToken, isAdminOrSubadmin, (req, res) => {
   const couponId = req.params.id;
   const {
     code,
@@ -411,7 +411,7 @@ router.put('/admin/:id', authenticateToken, isAdmin, (req, res) => {
 });
 
 // Admin: Delete coupon
-router.delete('/admin/:id', authenticateToken, isAdmin, (req, res) => {
+router.delete('/admin/:id', authenticateToken, isAdminOrSubadmin, (req, res) => {
   const couponId = req.params.id;
 
   db.run('DELETE FROM coupons WHERE id = ?', [couponId], function (err) {

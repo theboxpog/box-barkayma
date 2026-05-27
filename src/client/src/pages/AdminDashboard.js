@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toolsAPI, reservationsAPI, couponsAPI, SERVER_BASE_URL } from '../services/api';
+import { useLanguage } from '../context/LanguageContext';
 import { Package, Calendar, Plus, Edit, Trash2, X, List, Tag, Settings, Upload } from 'lucide-react';
 
 const AdminDashboard = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('tools');
   const [tools, setTools] = useState([]);
@@ -471,7 +473,7 @@ const AdminDashboard = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">Loading...</div>
+        <div className="text-xl">{t('loading')}</div>
       </div>
     );
   }
@@ -480,8 +482,8 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-brand-600 text-white py-8">
         <div className="container mx-auto px-4">
-          <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
-          <p className="text-brand-200">Manage tools and reservations</p>
+          <h1 className="text-4xl font-bold mb-2">{t('adminDashboard')}</h1>
+          <p className="text-brand-200">{t('manageToolsDesc')}</p>
         </div>
       </div>
 
@@ -498,7 +500,7 @@ const AdminDashboard = () => {
               }`}
             >
               <Package size={20} />
-              <span>Manage Tools</span>
+              <span>{t('manageTools')}</span>
             </button>
             <button
               onClick={() => setActiveTab('reservations')}
@@ -509,7 +511,7 @@ const AdminDashboard = () => {
               }`}
             >
               <Calendar size={20} />
-              <span>View Reservations</span>
+              <span>{t('viewReservations')}</span>
             </button>
             <button
               onClick={() => setActiveTab('archived')}
@@ -520,7 +522,7 @@ const AdminDashboard = () => {
               }`}
             >
               <Trash2 size={20} />
-              <span>Past Reservations</span>
+              <span>{t('pastReservations')}</span>
             </button>
             <button
               onClick={() => setActiveTab('coupons')}
@@ -531,14 +533,14 @@ const AdminDashboard = () => {
               }`}
             >
               <Tag size={20} />
-              <span>Coupons</span>
+              <span>{t('coupons')}</span>
             </button>
             <button
               onClick={() => navigate('/admin/settings')}
               className="flex items-center space-x-2 px-6 py-4 font-semibold text-gray-600 hover:text-gray-800"
             >
               <Settings size={20} />
-              <span>Settings</span>
+              <span>{t('settings')}</span>
             </button>
           </div>
         </div>
@@ -567,7 +569,7 @@ const AdminDashboard = () => {
                 className="flex items-center space-x-2 bg-brand-600 text-white px-4 py-2 rounded hover:bg-brand-700"
               >
                 <Plus size={20} />
-                <span>Add New Tool</span>
+                <span>{t('addNewTool')}</span>
               </button>
             </div>
 
@@ -577,7 +579,7 @@ const AdminDashboard = () => {
                 <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-2xl font-bold">
-                      {editingTool ? 'Edit Tool' : 'Add New Tool'}
+                      {editingTool ? t('editToolTitle') : t('addNewTool')}
                     </h2>
                     <button onClick={() => {
                       setShowToolForm(false);
@@ -590,7 +592,7 @@ const AdminDashboard = () => {
                   <form onSubmit={handleSubmitTool} className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Tool Name *
+                        {t('toolNameLabel')} *
                       </label>
                       <input
                         type="text"
@@ -604,7 +606,7 @@ const AdminDashboard = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Category *
+                        {t('categoryLabel')} *
                       </label>
                       <input
                         type="text"
@@ -619,7 +621,7 @@ const AdminDashboard = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Rental Type *
+                        {t('rentalType')} *
                       </label>
                       <div className="flex gap-4">
                         <label className="flex items-center gap-2 cursor-pointer">
@@ -631,7 +633,7 @@ const AdminDashboard = () => {
                             onChange={handleToolFormChange}
                             className="text-brand-600"
                           />
-                          <span className="text-sm">By Date (price per day)</span>
+                          <span className="text-sm">{t('byDateRental')}</span>
                         </label>
                         <label className="flex items-center gap-2 cursor-pointer">
                           <input
@@ -642,7 +644,7 @@ const AdminDashboard = () => {
                             onChange={handleToolFormChange}
                             className="text-brand-600"
                           />
-                          <span className="text-sm">Fixed Price (no dates)</span>
+                          <span className="text-sm">{t('fixedPriceRental')}</span>
                         </label>
                       </div>
                     </div>
@@ -650,7 +652,7 @@ const AdminDashboard = () => {
                     {toolForm.rental_type === 'by_date' && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Price per Day *
+                        {t('pricePerDay')} *
                       </label>
                       <input
                         type="number"
@@ -667,7 +669,7 @@ const AdminDashboard = () => {
                     {toolForm.rental_type === 'fixed_price' && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Fixed Price *
+                        {t('fixedPriceLabel')} *
                       </label>
                       <input
                         type="number"
@@ -679,13 +681,13 @@ const AdminDashboard = () => {
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                         placeholder="Total price for renting this item"
                       />
-                      <p className="text-xs text-gray-500 mt-1">One-time price — no date range needed</p>
+                      <p className="text-xs text-gray-500 mt-1">{t('oneTimePriceDesc')}</p>
                     </div>
                     )}
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Stock Quantity *
+                        {t('stockQuantity')} *
                       </label>
                       <input
                         type="number"
@@ -697,13 +699,13 @@ const AdminDashboard = () => {
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                       />
                       <p className="text-xs text-gray-500 mt-1">
-                        Total number of this tool available for rent
+                        {t('stockQuantityDesc')}
                       </p>
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Description
+                        {t('description')}
                       </label>
                       <textarea
                         name="description"
@@ -716,7 +718,7 @@ const AdminDashboard = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Tool Image
+                        {t('toolImage')}
                       </label>
 
                       {/* File Upload Option */}
@@ -724,7 +726,7 @@ const AdminDashboard = () => {
                         <label className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-brand-500 hover:bg-brand-50 transition-colors">
                           <Upload size={20} className="mr-2 text-gray-500" />
                           <span className="text-gray-600">
-                            {imageFile ? imageFile.name : 'Click to browse image from device'}
+                            {imageFile ? imageFile.name : t('clickToBrowseImg')}
                           </span>
                           <input
                             type="file"
@@ -735,13 +737,13 @@ const AdminDashboard = () => {
                         </label>
                         {imageFile && (
                           <div className="mt-2 flex items-center justify-between">
-                            <span className="text-sm text-green-600">File selected: {imageFile.name}</span>
+                            <span className="text-sm text-green-600">{t('fileSelectedLabel')} {imageFile.name}</span>
                             <button
                               type="button"
                               onClick={clearImageFile}
                               className="text-red-600 hover:text-red-800 text-sm"
                             >
-                              Remove
+                              {t('remove')}
                             </button>
                           </div>
                         )}
@@ -750,7 +752,7 @@ const AdminDashboard = () => {
                       {/* Image Preview */}
                       {(imagePreview || toolForm.image_url) && (
                         <div className="mb-3">
-                          <p className="text-sm text-gray-500 mb-1">Preview:</p>
+                          <p className="text-sm text-gray-500 mb-1">{t('previewLabel')}</p>
                           <img
                             src={imagePreview || toolForm.image_url}
                             alt="Tool preview"
@@ -766,7 +768,7 @@ const AdminDashboard = () => {
                           <div className="w-full border-t border-gray-300"></div>
                         </div>
                         <div className="relative flex justify-center text-sm">
-                          <span className="px-2 bg-white text-gray-500">Or enter URL</span>
+                          <span className="px-2 bg-white text-gray-500">{t('orEnterUrl')}</span>
                         </div>
                       </div>
                       <input
@@ -795,7 +797,7 @@ const AdminDashboard = () => {
                         className="h-4 w-4 text-brand-600 focus:ring-brand-500 border-gray-300 rounded"
                       />
                       <label className="ml-2 block text-sm text-gray-900">
-                        Tool is available (uncheck for maintenance)
+                        {t('toolAvailableLabel')}
                       </label>
                     </div>
 
@@ -805,7 +807,7 @@ const AdminDashboard = () => {
                         disabled={uploadingImage}
                         className="flex-1 bg-brand-600 text-white py-2 px-4 rounded hover:bg-brand-700 disabled:bg-brand-400 disabled:cursor-not-allowed"
                       >
-                        {uploadingImage ? 'Uploading image...' : (editingTool ? 'Update Tool' : 'Create Tool')}
+                        {uploadingImage ? t('uploadingImageText') : (editingTool ? t('updateTool') : t('createTool'))}
                       </button>
                       <button
                         type="button"
@@ -815,7 +817,7 @@ const AdminDashboard = () => {
                         }}
                         className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-400"
                       >
-                        Cancel
+                        {t('cancel')}
                       </button>
                     </div>
                   </form>
@@ -829,22 +831,22 @@ const AdminDashboard = () => {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Tool
+                      {t('toolHeader')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Category
+                      {t('categoryLabel')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Price
+                      {t('priceHeader')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Stock
+                      {t('stockHeader')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Status
+                      {t('statusHeader')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Actions
+                      {t('actionsHeader')}
                     </th>
                   </tr>
                 </thead>
@@ -859,7 +861,7 @@ const AdminDashboard = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {tool.rental_type === 'fixed_price'
-                          ? <><span className="text-xs bg-purple-100 text-purple-700 rounded px-1 mr-1">Fixed</span>₪{tool.fixed_price}</>
+                          ? <><span className="text-xs bg-purple-100 text-purple-700 rounded px-1 mr-1">{t('fixedBadge')}</span>₪{tool.fixed_price}</>
                           : <>₪{tool.price_per_day}<span className="text-gray-400">/day</span></>
                         }
                       </td>
@@ -870,15 +872,15 @@ const AdminDashboard = () => {
                         {tool.is_available ? (
                           <div className="flex flex-col">
                             <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 w-fit">
-                              Available
+                              {t('available')}
                             </span>
                             <span className="text-sm text-gray-600 mt-1">
-                              {getAvailableQuantity(tool.id, tool.stock)} / {tool.stock} in stock
+                              {getAvailableQuantity(tool.id, tool.stock)} / {tool.stock} {t('inStockShort')}
                             </span>
                           </div>
                         ) : (
                           <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                            Maintenance
+                            {t('maintenance')}
                           </span>
                         )}
                       </td>
@@ -888,21 +890,21 @@ const AdminDashboard = () => {
                           className="text-green-600 hover:text-green-900 inline-flex items-center"
                         >
                           <List size={16} className="mr-1" />
-                          Reservations
+                          {t('reservations')}
                         </button>
                         <button
                           onClick={() => handleEditTool(tool)}
                           className="text-brand-600 hover:text-brand-900 inline-flex items-center"
                         >
                           <Edit size={16} className="mr-1" />
-                          Edit
+                          {t('edit')}
                         </button>
                         <button
                           onClick={() => handleDeleteTool(tool.id)}
                           className="text-red-600 hover:text-red-900 inline-flex items-center"
                         >
                           <Trash2 size={16} className="mr-1" />
-                          Delete
+                          {t('delete')}
                         </button>
                       </td>
                     </tr>
@@ -920,11 +922,11 @@ const AdminDashboard = () => {
               /* User List View */
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-200">
-                  <h2 className="text-xl font-bold text-gray-800">Reservations by User</h2>
-                  <p className="text-sm text-gray-600">Click on a user to view their reservations</p>
+                  <h2 className="text-xl font-bold text-gray-800">{t('reservationsByUser')}</h2>
+                  <p className="text-sm text-gray-600">{t('clickUserViewReservations')}</p>
                   <div className="flex items-center space-x-2 mt-3 text-sm">
                     <label htmlFor="userListSearchDate" className="font-medium">
-                      Filter by Start Date:
+                      {t('filterByStartDate')}
                     </label>
                     <input
                       id="userListSearchDate"
@@ -938,7 +940,7 @@ const AdminDashboard = () => {
                         onClick={() => setUserListSearchDate('')}
                         className="text-xs text-red-600 hover:text-red-800 underline"
                       >
-                        Clear
+                        {t('clearBtn')}
                       </button>
                     )}
                   </div>
@@ -962,7 +964,7 @@ const AdminDashboard = () => {
                             {userGroup.reservations.length}
                           </div>
                           <div className="text-xs text-gray-500">
-                            {userGroup.reservations.length === 1 ? 'Reservation' : 'Reservations'}
+                            {userGroup.reservations.length === 1 ? t('reservationSingular') : t('reservationPlural')}
                           </div>
                         </div>
                       </div>
@@ -970,7 +972,7 @@ const AdminDashboard = () => {
                   ))}
                   {getUserGroups().length === 0 && (
                     <div className="px-6 py-12 text-center text-gray-500">
-                      No reservations found
+                      {t('noReservations')}
                     </div>
                   )}
                 </div>
@@ -982,7 +984,7 @@ const AdminDashboard = () => {
                   onClick={() => setSelectedUser(null)}
                   className="mb-4 text-brand-600 hover:text-brand-800 flex items-center"
                 >
-                  <span className="mr-2">←</span> Back to Users List
+                  <span className="mr-2">←</span> {t('backToUsersList')}
                 </button>
 
                 <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -990,7 +992,7 @@ const AdminDashboard = () => {
                     <h2 className="text-xl font-bold text-gray-800">{selectedUser.userName}</h2>
                     <p className="text-sm text-gray-600">{selectedUser.userEmail}</p>
                     <p className="text-sm text-gray-600 mt-2">
-                      Total Reservations: {selectedUser.reservations.length}
+                      {t('totalReservationsColon')} {selectedUser.reservations.length}
                     </p>
                   </div>
 
@@ -1004,7 +1006,7 @@ const AdminDashboard = () => {
                             : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                         }`}
                       >
-                        All ({selectedUser.reservations.length})
+                        {t('filterAll')} ({selectedUser.reservations.length})
                       </button>
                       <button
                         onClick={() => setFilterStatus('active')}
@@ -1014,7 +1016,7 @@ const AdminDashboard = () => {
                             : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                         }`}
                       >
-                        Active ({selectedUser.reservations.filter(r => r.status === 'active').length})
+                        {t('statusActive')} ({selectedUser.reservations.filter(r => r.status === 'active').length})
                       </button>
                       <button
                         onClick={() => setFilterStatus('overdue')}
@@ -1024,7 +1026,7 @@ const AdminDashboard = () => {
                             : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                         }`}
                       >
-                        Overdue ({selectedUser.reservations.filter(r => r.status === 'overdue').length})
+                        {t('statusOverdue')} ({selectedUser.reservations.filter(r => r.status === 'overdue').length})
                       </button>
                     </div>
                     <div className="flex flex-wrap items-center gap-4">
@@ -1035,11 +1037,11 @@ const AdminDashboard = () => {
                           onChange={(e) => setSortByDate(e.target.checked)}
                           className="rounded"
                         />
-                        <span>Sort by Start Date</span>
+                        <span>{t('sortByStartDate')}</span>
                       </label>
                       <div className="flex items-center space-x-2 text-sm">
                         <label htmlFor="searchDate" className="font-medium">
-                          Filter by Start Date:
+                          {t('filterByStartDate')}
                         </label>
                         <input
                           id="searchDate"
@@ -1053,7 +1055,7 @@ const AdminDashboard = () => {
                             onClick={() => setSearchDate('')}
                             className="text-xs text-red-600 hover:text-red-800 underline"
                           >
-                            Clear
+                            {t('clearBtn')}
                           </button>
                         )}
                       </div>
@@ -1064,25 +1066,25 @@ const AdminDashboard = () => {
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Tool
+                          {t('toolHeader')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Quantity
+                          {t('quantityHeader')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Available
+                          {t('availableHeader')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Dates
+                          {t('datesHeader')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Price
+                          {t('priceHeader')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Status
+                          {t('statusHeader')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Actions
+                          {t('actionsHeader')}
                         </th>
                       </tr>
                     </thead>
@@ -1117,11 +1119,11 @@ const AdminDashboard = () => {
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex flex-col">
                               <span className={`text-sm ${showWarning ? 'text-red-600 font-bold' : 'text-gray-600'}`}>
-                                {availableQty} / {toolStock} in stock
+                                {availableQty} / {toolStock} {t('inStockShort')}
                               </span>
                               {showWarning && (
                                 <span className="text-xs text-red-600 font-semibold mt-1">
-                                  ⚠ NO STOCK AVAILABLE TODAY!
+                                  {t('noStockToday')}
                                 </span>
                               )}
                             </div>
@@ -1146,13 +1148,13 @@ const AdminDashboard = () => {
                                     onClick={() => handleMarkAsDelivered(reservation.id)}
                                     className="text-green-600 hover:text-green-900 text-left"
                                   >
-                                    Mark Delivered
+                                    {t('markDelivered')}
                                   </button>
                                   <button
                                     onClick={() => handleArchiveReservation(reservation.id)}
                                     className="text-gray-600 hover:text-gray-900 text-left"
                                   >
-                                    Move to Past
+                                    {t('moveToPast')}
                                   </button>
                                 </>
                               )}
@@ -1162,13 +1164,13 @@ const AdminDashboard = () => {
                                     onClick={() => handleMarkAsReturned(reservation.id)}
                                     className="text-brand-600 hover:text-brand-900 text-left"
                                   >
-                                    Mark Returned
+                                    {t('markReturned')}
                                   </button>
                                   <button
                                     onClick={() => handleArchiveReservation(reservation.id)}
                                     className="text-gray-600 hover:text-gray-900 text-left"
                                   >
-                                    Move to Past
+                                    {t('moveToPast')}
                                   </button>
                                 </>
                               )}
@@ -1177,7 +1179,7 @@ const AdminDashboard = () => {
                                   onClick={() => handleArchiveReservation(reservation.id)}
                                   className="text-gray-600 hover:text-gray-900 text-left"
                                 >
-                                  Move to Past
+                                  {t('moveToPast')}
                                 </button>
                               )}
                               {reservation.status === 'returned' && (
@@ -1185,7 +1187,7 @@ const AdminDashboard = () => {
                                   onClick={() => handleArchiveReservation(reservation.id)}
                                   className="text-gray-600 hover:text-gray-900 text-left"
                                 >
-                                  Move to Past
+                                  {t('moveToPast')}
                                 </button>
                               )}
                             </div>
@@ -1205,15 +1207,15 @@ const AdminDashboard = () => {
         {activeTab === 'archived' && (
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-              <h2 className="text-xl font-bold text-gray-800">Past Reservations</h2>
-              <p className="text-sm text-gray-600">Archived reservations that have been removed from active view</p>
-              <p className="text-sm text-brand-600 mt-2">Total: {archivedReservations.length} archived reservation(s)</p>
+              <h2 className="text-xl font-bold text-gray-800">{t('pastReservations')}</h2>
+              <p className="text-sm text-gray-600">{t('pastReservationsDesc')}</p>
+              <p className="text-sm text-brand-600 mt-2">{t('totalReservationsLabel')} {archivedReservations.length}</p>
             </div>
 
             {archivedReservations.length === 0 ? (
               <div className="px-6 py-12 text-center text-gray-500">
                 <Trash2 className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-                <p className="text-xl">No archived reservations</p>
+                <p className="text-xl">{t('noArchivedReservations')}</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -1221,22 +1223,22 @@ const AdminDashboard = () => {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        User
+                        {t('userHeader')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Tool
+                        {t('toolHeader')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Quantity
+                        {t('quantityHeader')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Dates
+                        {t('datesHeader')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Price
+                        {t('priceHeader')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Actions
+                        {t('actionsHeader')}
                       </th>
                     </tr>
                   </thead>
@@ -1271,13 +1273,13 @@ const AdminDashboard = () => {
                               onClick={() => handleRestoreReservation(reservation.id)}
                               className="text-brand-600 hover:text-brand-900 text-left"
                             >
-                              Restore to Active
+                              {t('restoreToActive')}
                             </button>
                             <button
                               onClick={() => handleDeleteReservation(reservation.id)}
                               className="text-red-600 hover:text-red-900 text-left"
                             >
-                              Delete Permanently
+                              {t('deletePermanently')}
                             </button>
                           </div>
                         </td>
@@ -1313,7 +1315,7 @@ const AdminDashboard = () => {
                 className="flex items-center space-x-2 bg-brand-600 text-white px-4 py-2 rounded hover:bg-brand-700"
               >
                 <Plus size={20} />
-                <span>Add New Coupon</span>
+                <span>{t('addNewCoupon')}</span>
               </button>
             </div>
 
@@ -1323,7 +1325,7 @@ const AdminDashboard = () => {
                 <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-2xl font-bold">
-                      {editingCoupon ? 'Edit Coupon' : 'Add New Coupon'}
+                      {editingCoupon ? t('editCouponTitle') : t('addNewCoupon')}
                     </h2>
                     <button onClick={() => setShowCouponForm(false)}>
                       <X size={24} />
@@ -1333,7 +1335,7 @@ const AdminDashboard = () => {
                   <form onSubmit={handleSubmitCoupon} className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Coupon Code *
+                        {t('couponCodeLabel')} *
                       </label>
                       <input
                         type="text"
@@ -1348,7 +1350,7 @@ const AdminDashboard = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Discount Type *
+                        {t('discountTypeLabel')} *
                       </label>
                       <select
                         name="discount_type"
@@ -1357,14 +1359,14 @@ const AdminDashboard = () => {
                         required
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                       >
-                        <option value="percentage">Percentage</option>
-                        <option value="fixed">Fixed Amount</option>
+                        <option value="percentage">{t('percentageLabel')}</option>
+                        <option value="fixed">{t('fixedAmountLabel')}</option>
                       </select>
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Discount Value * {couponForm.discount_type === 'percentage' ? '(%)' : '(₪)'}
+                        {t('discountValueLabel')} * {couponForm.discount_type === 'percentage' ? '(%)' : '(₪)'}
                       </label>
                       <input
                         type="number"
@@ -1381,7 +1383,7 @@ const AdminDashboard = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Minimum Order Value (₪)
+                        {t('minOrderValueLabel')}
                       </label>
                       <input
                         type="number"
@@ -1396,7 +1398,7 @@ const AdminDashboard = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Max Uses (leave empty for unlimited)
+                        {t('maxUsesLabel')}
                       </label>
                       <input
                         type="number"
@@ -1410,7 +1412,7 @@ const AdminDashboard = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Expiry Date (leave empty for no expiry)
+                        {t('expiryDateLabel')}
                       </label>
                       <input
                         type="date"
@@ -1430,16 +1432,16 @@ const AdminDashboard = () => {
                         className="h-4 w-4 text-brand-600 focus:ring-brand-500 border-gray-300 rounded"
                       />
                       <label className="ml-2 block text-sm text-gray-900">
-                        Coupon is active
+                        {t('couponIsActiveLabel')}
                       </label>
                     </div>
 
                     <div className="border-t border-gray-200 pt-4">
-                      <h3 className="text-md font-semibold text-gray-700 mb-3">Restrictions (Optional)</h3>
+                      <h3 className="text-md font-semibold text-gray-700 mb-3">{t('restrictionsLabel')}</h3>
 
                       <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Limit to Categories (leave empty for all categories)
+                          {t('limitToCategories')}
                         </label>
                         <select
                           multiple
@@ -1476,13 +1478,13 @@ const AdminDashboard = () => {
                           ))}
                         </select>
                         <p className="text-xs text-gray-500 mt-1">
-                          Hold Ctrl (Cmd on Mac) to select multiple categories
+                          {t('holdCtrlCategories')}
                         </p>
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Limit to Specific Tools (leave empty for all tools)
+                          {t('limitToTools')}
                         </label>
                         <select
                           multiple
@@ -1515,11 +1517,8 @@ const AdminDashboard = () => {
                         </select>
                         <p className="text-xs text-gray-500 mt-1">
                           {couponForm.allowed_categories
-                            ? `Showing tools from selected categories only. ${tools.filter(tool => {
-                                const selectedCategories = couponForm.allowed_categories.split(',').map(c => c.trim());
-                                return selectedCategories.includes(tool.category);
-                              }).length} tool(s) available.`
-                            : 'Hold Ctrl (Cmd on Mac) to select multiple tools'
+                            ? t('holdCtrlTools')
+                            : t('holdCtrlTools')
                           }
                         </p>
                       </div>
@@ -1530,14 +1529,14 @@ const AdminDashboard = () => {
                         type="submit"
                         className="flex-1 bg-brand-600 text-white py-2 px-4 rounded hover:bg-brand-700"
                       >
-                        {editingCoupon ? 'Update Coupon' : 'Create Coupon'}
+                        {editingCoupon ? t('updateCoupon') : t('createCoupon')}
                       </button>
                       <button
                         type="button"
                         onClick={() => setShowCouponForm(false)}
                         className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-400"
                       >
-                        Cancel
+                        {t('cancel')}
                       </button>
                     </div>
                   </form>
@@ -1551,28 +1550,28 @@ const AdminDashboard = () => {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Code
+                      {t('codeHeader')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Discount
+                      {t('discountHeader')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Valid For
+                      {t('validForHeader')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Min. Order
+                      {t('minOrderHeader')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Usage
+                      {t('usageHeader')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Expiry
+                      {t('expiryHeader')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Status
+                      {t('statusHeader')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Actions
+                      {t('actionsHeader')}
                     </th>
                   </tr>
                 </thead>
@@ -1580,7 +1579,7 @@ const AdminDashboard = () => {
                   {coupons.map((coupon) => {
                     // Get restriction info
                     const hasRestrictions = coupon.allowed_categories || coupon.allowed_tools;
-                    let restrictionText = 'All Products';
+                    let restrictionText = t('allProducts');
 
                     if (hasRestrictions) {
                       const restrictions = [];
@@ -1624,7 +1623,7 @@ const AdminDashboard = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {coupon.expiry_date
                           ? new Date(coupon.expiry_date).toLocaleDateString('en-GB')
-                          : 'No expiry'}
+                          : t('noExpiry')}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
@@ -1634,7 +1633,7 @@ const AdminDashboard = () => {
                               : 'bg-red-100 text-red-800'
                           }`}
                         >
-                          {coupon.is_active ? 'Active' : 'Inactive'}
+                          {coupon.is_active ? t('activeLabel') : t('inactiveLabel')}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
@@ -1643,14 +1642,14 @@ const AdminDashboard = () => {
                           className="text-brand-600 hover:text-brand-900 inline-flex items-center"
                         >
                           <Edit size={16} className="mr-1" />
-                          Edit
+                          {t('edit')}
                         </button>
                         <button
                           onClick={() => handleDeleteCoupon(coupon.id)}
                           className="text-red-600 hover:text-red-900 inline-flex items-center"
                         >
                           <Trash2 size={16} className="mr-1" />
-                          Delete
+                          {t('delete')}
                         </button>
                       </td>
                     </tr>
@@ -1661,7 +1660,7 @@ const AdminDashboard = () => {
               {coupons.length === 0 && (
                 <div className="text-center py-12 text-gray-500">
                   <Tag className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                  <p>No coupons created yet</p>
+                  <p>{t('noCouponsYet')}</p>
                 </div>
               )}
             </div>

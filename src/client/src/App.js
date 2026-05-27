@@ -87,7 +87,7 @@ function App() {
               <Route
                 path="/admin/tools/:toolId/reservations"
                 element={
-                  <ProtectedRoute adminOnly={true}>
+                  <ProtectedRoute staffOnly={true}>
                     <ToolReservations />
                   </ProtectedRoute>
                 }
@@ -95,7 +95,7 @@ function App() {
               <Route
                 path="/admin/settings"
                 element={
-                  <ProtectedRoute adminOnly={true}>
+                  <ProtectedRoute staffOnly={true}>
                     <RentalSettings />
                   </ProtectedRoute>
                 }

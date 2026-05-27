@@ -1,6 +1,6 @@
 const express = require('express');
 const db = require('../database');
-const { authenticateToken, isAdmin, isAdminOrSubadmin } = require('../middleware/auth');
+const { authenticateToken, isAdminOrSubadmin } = require('../middleware/auth');
 const { sendReservationConfirmation, sendAdminReservationNotification } = require('../utils/emailService');
 
 const router = express.Router();
@@ -399,7 +399,7 @@ router.delete('/:id', authenticateToken, (req, res) => {
 });
 
 // Update reservation (admin only)
-router.put('/:id', authenticateToken, isAdmin, (req, res) => {
+router.put('/:id', authenticateToken, isAdminOrSubadmin, (req, res) => {
   const { status, start_date, end_date, total_price } = req.body;
   const reservationId = req.params.id;
 
@@ -445,7 +445,7 @@ router.put('/:id', authenticateToken, isAdmin, (req, res) => {
 });
 
 // Admin: Update reservation status (cancel, mark as delivered, etc.)
-router.patch('/:id/status', authenticateToken, isAdmin, (req, res) => {
+router.patch('/:id/status', authenticateToken, isAdminOrSubadmin, (req, res) => {
   const { status } = req.body;
   const reservationId = req.params.id;
 
@@ -476,7 +476,7 @@ router.patch('/:id/status', authenticateToken, isAdmin, (req, res) => {
 });
 
 // Admin: Cancel reservation
-router.post('/:id/cancel', authenticateToken, isAdmin, (req, res) => {
+router.post('/:id/cancel', authenticateToken, isAdminOrSubadmin, (req, res) => {
   const reservationId = req.params.id;
 
   db.run(
@@ -533,7 +533,7 @@ router.post('/:id/return', authenticateToken, isAdminOrSubadmin, (req, res) => {
 });
 
 // Admin: Permanently delete reservation
-router.delete('/:id/permanent', authenticateToken, isAdmin, (req, res) => {
+router.delete('/:id/permanent', authenticateToken, isAdminOrSubadmin, (req, res) => {
   const reservationId = req.params.id;
 
   // First, delete associated payments

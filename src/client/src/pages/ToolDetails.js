@@ -291,7 +291,13 @@ const ToolDetails = () => {
                       <input
                         type="number"
                         value={quantity}
-                        onChange={(e) => { const v = parseInt(e.target.value); if (v >= 1) { setQuantity(v); setAvailability(null); } }}
+                        onChange={(e) => {
+                          const raw = e.target.value;
+                          if (raw === '') { setQuantity(''); return; }
+                          const v = parseInt(raw);
+                          if (!isNaN(v) && v >= 1) { setQuantity(v); setAvailability(null); }
+                        }}
+                        onBlur={() => { if (!quantity || parseInt(quantity) < 1) setQuantity(1); }}
                         min="1"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                       />

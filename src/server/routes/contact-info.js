@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../database');
-const { authenticateToken, isAdmin } = require('../middleware/auth');
+const { authenticateToken, isAdminOrSubadmin } = require('../middleware/auth');
 
 // Get contact information (public route)
 router.get('/', (req, res) => {
@@ -30,7 +30,7 @@ router.get('/', (req, res) => {
 });
 
 // Update contact information (admin only)
-router.put('/', authenticateToken, isAdmin, (req, res) => {
+router.put('/', authenticateToken, isAdminOrSubadmin, (req, res) => {
   const { email, phone, address, signup_message, privacy_policy, email_important_message, checkout_success_message, checkout_success_message_he } = req.body;
 
   // Validation

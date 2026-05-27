@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { settingsAPI, contactInfoAPI } from '../services/api';
 import { Calendar, Check, Mail, Phone, MapPin } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const RentalSettings = () => {
+  const { t } = useLanguage();
   const [allowedDays, setAllowedDays] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -25,13 +27,13 @@ const RentalSettings = () => {
   const [savingContact, setSavingContact] = useState(false);
 
   const daysOfWeek = [
-    { value: 0, label: 'Sunday' },
-    { value: 1, label: 'Monday' },
-    { value: 2, label: 'Tuesday' },
-    { value: 3, label: 'Wednesday' },
-    { value: 4, label: 'Thursday' },
-    { value: 5, label: 'Friday' },
-    { value: 6, label: 'Saturday' }
+    { value: 0, labelKey: 'sunday' },
+    { value: 1, labelKey: 'monday' },
+    { value: 2, labelKey: 'tuesday' },
+    { value: 3, labelKey: 'wednesday' },
+    { value: 4, labelKey: 'thursday' },
+    { value: 5, labelKey: 'friday' },
+    { value: 6, labelKey: 'saturday' }
   ];
 
   useEffect(() => {
@@ -132,7 +134,7 @@ const RentalSettings = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading settings...</p>
+          <p className="mt-4 text-gray-600">{t('loadingSettings')}</p>
         </div>
       </div>
     );
@@ -143,10 +145,10 @@ const RentalSettings = () => {
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-4">
           <Calendar size={32} className="text-brand-600" />
-          <h1 className="text-3xl font-bold text-gray-800">Rental Day Settings</h1>
+          <h1 className="text-3xl font-bold text-gray-800">{t('rentalDaySettings')}</h1>
         </div>
         <p className="text-gray-600">
-          Configure which days of the week customers can start and end their rentals.
+          {t('configureDaysDesc')}
         </p>
       </div>
 
@@ -164,9 +166,9 @@ const RentalSettings = () => {
       )}
 
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Allowed Rental Days</h2>
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">{t('allowedRentalDays')}</h2>
         <p className="text-gray-600 mb-6">
-          Select the days when customers can pick up and return tools:
+          {t('selectDaysDesc')}
         </p>
 
         <div className="space-y-3 mb-6">
@@ -182,7 +184,7 @@ const RentalSettings = () => {
                 className="w-5 h-5 text-brand-600 rounded focus:ring-brand-500"
               />
               <span className="ml-3 text-lg text-gray-800 font-medium">
-                {day.label}
+                {t(day.labelKey)}
               </span>
               {allowedDays.includes(day.value) && (
                 <Check size={20} className="ml-auto text-green-600" />
@@ -193,14 +195,14 @@ const RentalSettings = () => {
 
         <div className="bg-brand-50 border border-brand-200 rounded-lg p-4 mb-6">
           <p className="text-sm text-brand-800">
-            <strong>Current selection:</strong> Rentals allowed on{' '}
+            <strong>{t('currentSelectionLabel')}</strong> {t('rentalsAllowedOn')}{' '}
             {allowedDays.length === 7 ? (
-              <span className="font-semibold">all days of the week</span>
+              <span className="font-semibold">{t('allDaysOfWeek')}</span>
             ) : allowedDays.length === 0 ? (
-              <span className="font-semibold text-orange-600">no days (rentals disabled)</span>
+              <span className="font-semibold text-orange-600">{t('noDaysDisabled')}</span>
             ) : (
               <span className="font-semibold">
-                {allowedDays.map(d => daysOfWeek.find(day => day.value === d)?.label).join(', ')}
+                {allowedDays.map(d => t(daysOfWeek.find(day => day.value === d)?.labelKey)).join(', ')}
               </span>
             )}
           </p>
@@ -211,13 +213,13 @@ const RentalSettings = () => {
           disabled={saving}
           className="w-full bg-brand-600 text-white px-6 py-3 rounded-lg hover:bg-brand-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold"
         >
-          {saving ? 'Saving...' : 'Save Settings'}
+          {saving ? t('savingText') : t('saveSettings')}
         </button>
       </div>
 
       <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
         <p className="text-sm text-yellow-800">
-          <strong>Note:</strong> Changes will affect new bookings immediately. Existing reservations will not be affected.
+          {t('settingsNoteText')}
         </p>
       </div>
 
@@ -225,10 +227,10 @@ const RentalSettings = () => {
       <div className="mt-8 bg-white rounded-lg shadow-md p-6">
         <div className="flex items-center gap-3 mb-6">
           <Mail size={24} className="text-brand-600" />
-          <h2 className="text-2xl font-bold text-gray-800">Contact Information</h2>
+          <h2 className="text-2xl font-bold text-gray-800">{t('contactInformation')}</h2>
         </div>
         <p className="text-gray-600 mb-6">
-          Update the contact information displayed on the Contact Us page.
+          {t('updateContactInfoDesc')}
         </p>
 
         {contactError && (
@@ -248,7 +250,7 @@ const RentalSettings = () => {
           <div>
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
               <Mail size={16} />
-              Email Address
+              {t('emailAddress')}
             </label>
             <input
               type="email"
@@ -263,7 +265,7 @@ const RentalSettings = () => {
           <div>
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
               <Phone size={16} />
-              Phone Number
+              {t('phoneNumber')}
             </label>
             <input
               type="text"
@@ -278,7 +280,7 @@ const RentalSettings = () => {
           <div>
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
               <MapPin size={16} />
-              Address
+              {t('address')}
             </label>
             <textarea
               name="address"
@@ -289,14 +291,14 @@ const RentalSettings = () => {
               placeholder="123 Tool Street, Tel Aviv, Israel"
             />
             <p className="text-sm text-gray-500 mt-1">
-              You can use line breaks for multi-line addresses
+              {t('multiLineAddressHint')}
             </p>
           </div>
 
           <div>
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
               <Mail size={16} />
-              Signup Welcome Message
+              {t('signupWelcomeMessage')}
             </label>
             <textarea
               name="signup_message"
@@ -307,14 +309,14 @@ const RentalSettings = () => {
               placeholder="Welcome to our Tool Rental service! We are excited to have you on board."
             />
             <p className="text-sm text-gray-500 mt-1">
-              This message will be displayed to users after they successfully sign up
+              {t('signupMessageHint')}
             </p>
           </div>
 
           <div>
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
               <Mail size={16} />
-              Privacy Policy Content (Markdown Supported)
+              {t('privacyPolicyContent')}
             </label>
             <textarea
               name="privacy_policy"
@@ -325,20 +327,20 @@ const RentalSettings = () => {
               placeholder="Enter privacy policy in Markdown format..."
             />
             <p className="text-sm text-gray-500 mt-1">
-              This content will be displayed on the Privacy Policy page. You can use Markdown formatting.
+              {t('privacyPolicyHint')}
             </p>
           </div>
 
           <div className="border-t border-gray-200 pt-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <Mail size={20} className="text-orange-500" />
-              Email Settings
+              {t('emailSettingsTitle')}
             </h3>
 
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                 <Mail size={16} />
-                Important Message for Confirmation Emails
+                {t('importantEmailMessage')}
               </label>
               <textarea
                 name="email_important_message"
@@ -349,11 +351,11 @@ const RentalSettings = () => {
                 placeholder="Enter an important message that will appear in reservation confirmation emails (e.g., special instructions, pickup hours, etc.)"
               />
               <p className="text-sm text-gray-500 mt-1">
-                This message will be highlighted in reservation confirmation emails. Leave empty to hide this section.
+                {t('importantEmailHint')}
               </p>
               <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                 <p className="text-sm text-yellow-800">
-                  <strong>Note:</strong> The contact details (email, phone, address) above will also be included in the confirmation emails automatically.
+                  {t('contactDetailsNote')}
                 </p>
               </div>
             </div>
@@ -362,15 +364,15 @@ const RentalSettings = () => {
           <div className="border-t border-gray-200 pt-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <Check size={20} className="text-green-500" />
-              Checkout Success Page
+              {t('checkoutSuccessPageTitle')}
             </h3>
             <p className="text-gray-600 mb-4">
-              Customize the message displayed on the checkout success page after a successful order.
+              {t('checkoutSuccessPageDesc')}
             </p>
 
             <div className="mb-4">
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                Custom Success Message (English)
+                {t('customSuccessEn')}
               </label>
               <textarea
                 name="checkout_success_message"
@@ -381,13 +383,13 @@ const RentalSettings = () => {
                 placeholder="Thank you for your order! We look forward to serving you..."
               />
               <p className="text-sm text-gray-500 mt-1">
-                Leave empty to use the default message
+                {t('leaveEmptyDefault')}
               </p>
             </div>
 
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                Custom Success Message (Hebrew / עברית)
+                {t('customSuccessHe')}
               </label>
               <textarea
                 name="checkout_success_message_he"
@@ -399,7 +401,7 @@ const RentalSettings = () => {
                 placeholder="תודה על הזמנתך! נשמח לשרת אותך..."
               />
               <p className="text-sm text-gray-500 mt-1">
-                Leave empty to use the default Hebrew message
+                {t('leaveEmptyDefaultHe')}
               </p>
             </div>
           </div>
@@ -409,7 +411,7 @@ const RentalSettings = () => {
             disabled={savingContact}
             className="w-full bg-brand-600 text-white px-6 py-3 rounded-lg hover:bg-brand-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold"
           >
-            {savingContact ? 'Saving...' : 'Save Contact Information'}
+            {savingContact ? t('savingText') : t('saveContactInfo')}
           </button>
         </div>
       </div>

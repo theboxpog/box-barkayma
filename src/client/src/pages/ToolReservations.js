@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { reservationsAPI, toolsAPI } from '../services/api';
 import { Package, User, Calendar, ArrowLeft, DollarSign } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const ToolReservations = () => {
+  const { t } = useLanguage();
   const { toolId } = useParams();
   const navigate = useNavigate();
   const [tool, setTool] = useState(null);
@@ -77,7 +79,7 @@ const ToolReservations = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading reservations...</p>
+          <p className="mt-4 text-gray-600">{t('loading')}</p>
         </div>
       </div>
     );
@@ -107,7 +109,7 @@ const ToolReservations = () => {
           className="flex items-center gap-2 text-brand-600 hover:text-brand-800 mb-4"
         >
           <ArrowLeft size={20} />
-          <span>Back to Admin Panel</span>
+          <span>{t('backToAdminPanel')}</span>
         </button>
 
         {tool && (
@@ -122,13 +124,13 @@ const ToolReservations = () => {
                 </h1>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-gray-600">
                   <div>
-                    <span className="font-semibold">Category:</span> {tool.category}
+                    <span className="font-semibold">{t('categoryColon')}</span> {tool.category}
                   </div>
                   <div>
-                    <span className="font-semibold">Price:</span> ${tool.price_per_day}/day
+                    <span className="font-semibold">{t('priceColon')}</span> ₪{tool.rental_type === 'fixed_price' ? tool.fixed_price : `${tool.price_per_day}/${t('day')}`}
                   </div>
                   <div>
-                    <span className="font-semibold">Stock:</span> {tool.stock} units
+                    <span className="font-semibold">{t('stockColon')}</span> {tool.stock} {t('units')}
                   </div>
                 </div>
               </div>
@@ -148,7 +150,7 @@ const ToolReservations = () => {
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
-            All ({statusCounts.all})
+            {t('filterAll')} ({statusCounts.all})
           </button>
           <button
             onClick={() => setFilterStatus('active')}
@@ -158,7 +160,7 @@ const ToolReservations = () => {
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
-            Active ({statusCounts.active})
+            {t('statusActive')} ({statusCounts.active})
           </button>
           <button
             onClick={() => setFilterStatus('delivered')}
@@ -168,7 +170,7 @@ const ToolReservations = () => {
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
-            Delivered ({statusCounts.delivered})
+            {t('statusDelivered')} ({statusCounts.delivered})
           </button>
           <button
             onClick={() => setFilterStatus('overdue')}
@@ -178,7 +180,7 @@ const ToolReservations = () => {
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
-            Overdue ({statusCounts.overdue})
+            {t('statusOverdue')} ({statusCounts.overdue})
           </button>
           <button
             onClick={() => setFilterStatus('returned')}
@@ -188,7 +190,7 @@ const ToolReservations = () => {
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
-            Returned ({statusCounts.returned})
+            {t('statusReturned')} ({statusCounts.returned})
           </button>
           <button
             onClick={() => setFilterStatus('completed')}
@@ -198,7 +200,7 @@ const ToolReservations = () => {
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
-            Completed ({statusCounts.completed})
+            {t('statusCompleted')} ({statusCounts.completed})
           </button>
           <button
             onClick={() => setFilterStatus('cancelled')}
@@ -208,7 +210,7 @@ const ToolReservations = () => {
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
-            Cancelled ({statusCounts.cancelled})
+            {t('statusCancelled')} ({statusCounts.cancelled})
           </button>
         </div>
       </div>
@@ -216,13 +218,13 @@ const ToolReservations = () => {
       {/* Reservations List */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-2xl font-bold text-gray-800 mb-4">
-          Reservation History ({filteredReservations.length})
+          {t('reservationHistory')} ({filteredReservations.length})
         </h2>
 
         {filteredReservations.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <Package size={48} className="mx-auto mb-4 text-gray-400" />
-            <p>No {filterStatus !== 'all' ? filterStatus : ''} reservations found for this tool.</p>
+            <p>{t('noReservationsFoundTool')}</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -254,7 +256,7 @@ const ToolReservations = () => {
                       </div>
                       <div className="flex items-center gap-2 text-gray-700">
                         <Package size={16} className="text-gray-500" />
-                        <span>Qty: {reservation.quantity || 1}</span>
+                        <span>{t('qtyShort')} {reservation.quantity || 1}</span>
                       </div>
                       <div className="flex items-center gap-2 text-gray-700">
                         <DollarSign size={16} className="text-gray-500" />
@@ -268,10 +270,10 @@ const ToolReservations = () => {
                       {reservation.status.toUpperCase()}
                     </span>
                     <span className="text-xs text-gray-500">
-                      Reservation #{reservation.id}
+                      {t('reservationNumLabel')} {reservation.id}
                     </span>
                     <span className="text-xs text-gray-500">
-                      Created: {new Date(reservation.created_at).toLocaleDateString('en-GB')}
+                      {t('createdLabel')} {new Date(reservation.created_at).toLocaleDateString('en-GB')}
                     </span>
                   </div>
                 </div>

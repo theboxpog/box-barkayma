@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../database');
-const { authenticateToken, isAdmin } = require('../middleware/auth');
+const { authenticateToken, isAdminOrSubadmin } = require('../middleware/auth');
 
 // Get allowed rental days (public endpoint - no authentication required)
 router.get('/rental-days', (req, res) => {
@@ -31,7 +31,7 @@ router.get('/rental-days', (req, res) => {
 });
 
 // Update allowed rental days (admin only)
-router.put('/rental-days', authenticateToken, isAdmin, (req, res) => {
+router.put('/rental-days', authenticateToken, isAdminOrSubadmin, (req, res) => {
   const { allowedDays } = req.body;
 
   // Validate input

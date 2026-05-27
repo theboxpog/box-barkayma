@@ -3,7 +3,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const db = require('../database');
-const { authenticateToken, isAdmin } = require('../middleware/auth');
+const { authenticateToken, isAdminOrSubadmin } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -44,7 +44,7 @@ const upload = multer({
 });
 
 // Upload tool image (admin only)
-router.post('/upload-image', authenticateToken, isAdmin, upload.single('image'), (req, res) => {
+router.post('/upload-image', authenticateToken, isAdminOrSubadmin, upload.single('image'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No image file provided' });
   }
@@ -92,7 +92,7 @@ router.get('/:id', (req, res) => {
 });
 
 // Create new tool (admin only)
-router.post('/', authenticateToken, isAdmin, (req, res) => {
+router.post('/', authenticateToken, isAdminOrSubadmin, (req, res) => {
   const { name, category, price_per_day, description, image_url, stock, is_available, rental_type, fixed_price } = req.body;
   const rType = rental_type || 'by_date';
 
@@ -125,7 +125,7 @@ router.post('/', authenticateToken, isAdmin, (req, res) => {
 });
 
 // Update tool (admin only)
-router.put('/:id', authenticateToken, isAdmin, (req, res) => {
+router.put('/:id', authenticateToken, isAdminOrSubadmin, (req, res) => {
   const { name, category, price_per_day, description, image_url, stock, is_available, rental_type, fixed_price } = req.body;
 
   const updates = [];
@@ -190,7 +190,7 @@ router.put('/:id', authenticateToken, isAdmin, (req, res) => {
 });
 
 // Delete tool (admin only)
-router.delete('/:id', authenticateToken, isAdmin, (req, res) => {
+router.delete('/:id', authenticateToken, isAdminOrSubadmin, (req, res) => {
   db.run('DELETE FROM tools WHERE id = ?', [req.params.id], function (err) {
     if (err) {
       return res.status(500).json({ error: 'Failed to delete tool' });
