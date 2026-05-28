@@ -26,6 +26,8 @@ import RentalSettings from './pages/RentalSettings';
 import ToolAvailability from './pages/ToolAvailability';
 import Contact from './pages/Contact';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import Packages from './pages/Packages';
+import PackageDetails from './pages/PackageDetails';
 
 function App() {
   const basename = window.location.hostname.includes('github.io') ? '/box-barkayma' : '/';
@@ -48,6 +50,8 @@ function App() {
               <Route path="/availability" element={<ToolAvailability />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/packages" element={<Packages />} />
+              <Route path="/packages/:id" element={<PackageDetails />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/checkout/success" element={<CheckoutSuccess />} />

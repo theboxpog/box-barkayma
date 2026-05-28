@@ -142,6 +142,41 @@ async function initializeDatabase() {
     `CREATE TABLE IF NOT EXISTS settings (
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS packages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      description TEXT,
+      category TEXT NOT NULL,
+      rental_type TEXT NOT NULL DEFAULT 'by_date',
+      price_per_day REAL,
+      fixed_price REAL,
+      image_url TEXT,
+      is_available INTEGER DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS package_tools (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      package_id INTEGER NOT NULL,
+      tool_id INTEGER NOT NULL,
+      quantity INTEGER NOT NULL DEFAULT 1,
+      FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE CASCADE,
+      FOREIGN KEY (tool_id) REFERENCES tools(id)
+    )`,
+    `CREATE TABLE IF NOT EXISTS package_reservations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      package_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      start_date DATE,
+      end_date DATE,
+      quantity INTEGER DEFAULT 1,
+      total_price REAL NOT NULL,
+      paid_amount REAL DEFAULT 0,
+      status TEXT DEFAULT 'active',
+      previous_status TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (package_id) REFERENCES packages(id),
+      FOREIGN KEY (user_id) REFERENCES users(id)
     )`
   ];
 

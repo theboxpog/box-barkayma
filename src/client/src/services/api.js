@@ -125,4 +125,28 @@ export const contactInfoAPI = {
   update: (data) => api.put('/contact-info', data)
 };
 
+// Packages API
+export const packagesAPI = {
+  getAll: () => api.get('/packages'),
+  getById: (id) => api.get(`/packages/${id}`),
+  checkAvailability: (id, start_date, end_date, quantity) =>
+    api.get(`/packages/${id}/availability`, { params: { start_date, end_date, quantity } }),
+  reserve: (id, data) => api.post(`/packages/${id}/reserve`, data),
+  getMyReservations: () => api.get('/packages/reservations/my'),
+  cancelReservation: (id) => api.delete(`/packages/reservations/${id}`),
+  // Admin
+  adminGetAll: () => api.get('/packages/admin/all'),
+  adminCreate: (data) => api.post('/packages/admin', data),
+  adminUpdate: (id, data) => api.put(`/packages/admin/${id}`, data),
+  adminDelete: (id) => api.delete(`/packages/admin/${id}`),
+  adminGetReservations: () => api.get('/packages/reservations/admin/all'),
+  adminGetReservationsByTool: (toolId) => api.get(`/packages/reservations/admin/by-tool/${toolId}`),
+  adminGetArchivedReservations: () => api.get('/packages/reservations/admin/archived'),
+  adminMarkDelivered: (id) => api.post(`/packages/reservations/${id}/deliver`),
+  adminMarkReturned: (id) => api.post(`/packages/reservations/${id}/return`),
+  adminArchive: (id) => api.post(`/packages/reservations/${id}/archive`),
+  adminRestore: (id) => api.post(`/packages/reservations/${id}/restore`),
+  adminDeleteReservation: (id) => api.delete(`/packages/reservations/${id}/permanent`)
+};
+
 export default api;

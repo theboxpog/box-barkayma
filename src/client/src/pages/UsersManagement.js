@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { authAPI, reservationsAPI, toolsAPI } from '../services/api';
+import { authAPI, reservationsAPI, toolsAPI, packagesAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { Users, Trash2, Calendar, Shield } from 'lucide-react';
+import { Users, Trash2, Calendar, Shield, Tag } from 'lucide-react';
 
 const UsersManagement = () => {
   const { t } = useLanguage();
@@ -10,6 +10,8 @@ const UsersManagement = () => {
   const [users, setUsers] = useState([]);
   const [reservations, setReservations] = useState([]);
   const [archivedReservations, setArchivedReservations] = useState([]);
+  const [packageReservations, setPackageReservations] = useState([]);
+  const [archivedPackageReservations, setArchivedPackageReservations] = useState([]);
   const [tools, setTools] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userSearchTerm, setUserSearchTerm] = useState('');
@@ -39,6 +41,21 @@ const UsersManagement = () => {
     } finally {
       setLoading(false);
     }
+
+    // Fetch package reservations separately so a failure here doesn't break the page
+    let pkgData = [], pkgArchivedData = [];
+    try {
+      const [pkgRes, pkgArchivedRes] = await Promise.all([
+        packagesAPI.adminGetReservations(),
+        packagesAPI.adminGetArchivedReservations(),
+      ]);
+      pkgData = pkgRes.data;
+      pkgArchivedData = pkgArchivedRes.data;
+    } catch (pkgErr) {
+      console.error('Failed to fetch package reservations:', pkgErr);
+    }
+    setPackageReservations(pkgData);
+    setArchivedPackageReservations(pkgArchivedData);
   };
 
   const handleDeleteUser = async (userId, userName) => {
@@ -70,12 +87,14 @@ const UsersManagement = () => {
     }
   };
 
-  const handleMarkAsDelivered = async (reservationId) => {
-    if (!window.confirm('Mark this reservation as delivered?')) {
-      return;
-    }
+  const handleMarkAsDelivered = async (reservationId, isPackage = false) => {
+    if (!window.confirm('Mark this reservation as delivered?')) return;
     try {
-      await reservationsAPI.markAsDelivered(reservationId);
+      if (isPackage) {
+        await packagesAPI.adminMarkDelivered(reservationId);
+      } else {
+        await reservationsAPI.markAsDelivered(reservationId);
+      }
       await fetchData();
       alert('Reservation marked as delivered successfully');
     } catch (error) {
@@ -83,12 +102,14 @@ const UsersManagement = () => {
     }
   };
 
-  const handleMarkAsReturned = async (reservationId) => {
-    if (!window.confirm('Mark this reservation as returned?')) {
-      return;
-    }
+  const handleMarkAsReturned = async (reservationId, isPackage = false) => {
+    if (!window.confirm('Mark this reservation as returned?')) return;
     try {
-      await reservationsAPI.markAsReturned(reservationId);
+      if (isPackage) {
+        await packagesAPI.adminMarkReturned(reservationId);
+      } else {
+        await reservationsAPI.markAsReturned(reservationId);
+      }
       await fetchData();
       alert('Reservation marked as returned successfully');
     } catch (error) {
@@ -96,12 +117,14 @@ const UsersManagement = () => {
     }
   };
 
-  const handleArchiveReservation = async (reservationId) => {
-    if (!window.confirm('Move this reservation to Past Reservations?')) {
-      return;
-    }
+  const handleArchiveReservation = async (reservationId, isPackage = false) => {
+    if (!window.confirm('Move this reservation to Past Reservations?')) return;
     try {
-      await reservationsAPI.archive(reservationId);
+      if (isPackage) {
+        await packagesAPI.adminArchive(reservationId);
+      } else {
+        await reservationsAPI.archive(reservationId);
+      }
       await fetchData();
       alert('Reservation moved to Past Reservations');
     } catch (error) {
@@ -109,25 +132,31 @@ const UsersManagement = () => {
     }
   };
 
-  const handleRestoreReservation = async (reservationId) => {
-    if (!window.confirm('Restore this reservation back to active view?')) {
-      return;
-    }
+  const handleRestoreReservation = async (reservationId, isPackage = false) => {
+    if (!window.confirm('Restore this reservation back to active view?')) return;
     try {
-      const response = await reservationsAPI.restore(reservationId);
-      await fetchData();
-      alert(`Reservation restored successfully as ${response.data.status}`);
+      if (isPackage) {
+        await packagesAPI.adminRestore(reservationId);
+        await fetchData();
+        alert('Reservation restored successfully');
+      } else {
+        const response = await reservationsAPI.restore(reservationId);
+        await fetchData();
+        alert(`Reservation restored successfully as ${response.data.status}`);
+      }
     } catch (error) {
       alert('Failed to restore reservation');
     }
   };
 
-  const handleDeleteReservation = async (reservationId) => {
-    if (!window.confirm('⚠️ WARNING: This will PERMANENTLY delete the reservation and cannot be undone!\n\nAre you sure you want to delete this reservation?')) {
-      return;
-    }
+  const handleDeleteReservation = async (reservationId, isPackage = false) => {
+    if (!window.confirm('⚠️ WARNING: This will PERMANENTLY delete the reservation and cannot be undone!\n\nAre you sure you want to delete this reservation?')) return;
     try {
-      await reservationsAPI.adminDelete(reservationId);
+      if (isPackage) {
+        await packagesAPI.adminDeleteReservation(reservationId);
+      } else {
+        await reservationsAPI.adminDelete(reservationId);
+      }
       await fetchData();
       alert('Reservation permanently deleted');
     } catch (error) {
@@ -135,11 +164,18 @@ const UsersManagement = () => {
     }
   };
 
-  // Get all reservations for a specific user (both active and archived)
+  const normalizePackageReservation = (pr) => ({
+    ...pr,
+    is_package: true,
+    tool_name: pr.package_name,
+    tool_id: null,
+  });
+
   const getAllUserReservations = (userId) => {
-    const activeReservations = reservations.filter(r => r.user_id === userId);
-    const archivedUserReservations = archivedReservations.filter(r => r.user_id === userId);
-    return [...activeReservations, ...archivedUserReservations];
+    const active = reservations.filter(r => r.user_id === userId);
+    const archived = archivedReservations.filter(r => r.user_id === userId);
+    const activePkg = packageReservations.filter(r => r.user_id === userId).map(normalizePackageReservation);
+    return [...active, ...archived, ...activePkg];
   };
 
   // Sort and filter user details reservations
@@ -151,14 +187,16 @@ const UsersManagement = () => {
       filtered = userReservations.filter(r => r.status === userDetailsFilterStatus);
     }
 
-    // Filter by search date if specified
+    // Filter by search date; null-date items (fixed-price packages) always pass through
     if (userDetailsSearchDate) {
-      filtered = filtered.filter(r => r.start_date === userDetailsSearchDate);
+      filtered = filtered.filter(r => !r.start_date || r.start_date === userDetailsSearchDate);
     }
 
-    // Sort by date if enabled
+    // Sort by date if enabled; null-date items go to end
     if (!userDetailsSortByDate) return filtered;
     return [...filtered].sort((a, b) => {
+      if (!a.start_date) return 1;
+      if (!b.start_date) return -1;
       return new Date(a.start_date) - new Date(b.start_date);
     });
   };
@@ -562,10 +600,15 @@ const UsersManagement = () => {
                     const toolStock = tool?.stock || 0;
                     const isArchived = reservation.status === 'archived';
                     return (
-                    <tr key={reservation.id} className={isArchived ? 'bg-gray-50' : ''}>
+                    <tr key={`${reservation.is_package ? 'pkg' : 'reg'}-${reservation.id}`} className={isArchived ? 'bg-gray-50' : ''}>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-gray-900 flex items-center gap-1">
                           {reservation.tool_name}
+                          {reservation.is_package && (
+                            <span className="text-xs bg-purple-100 text-purple-700 rounded px-1 font-semibold">
+                              <Tag size={10} className="inline mr-0.5" />Package
+                            </span>
+                          )}
                         </div>
                         <div className="text-sm text-gray-500">{reservation.category}</div>
                       </td>
@@ -573,13 +616,18 @@ const UsersManagement = () => {
                         {reservation.quantity || 1}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-600">
-                          {getAvailableQuantity(reservation.tool_id, toolStock)} / {toolStock} {t('inStockShort')}
-                        </span>
+                        {reservation.is_package ? (
+                          <span className="text-sm text-gray-400">—</span>
+                        ) : (
+                          <span className="text-sm text-gray-600">
+                            {getAvailableQuantity(reservation.tool_id, toolStock)} / {toolStock} {t('inStockShort')}
+                          </span>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(reservation.start_date).toLocaleDateString('en-GB')} -{' '}
-                        {new Date(reservation.end_date).toLocaleDateString('en-GB')}
+                        {reservation.start_date
+                          ? `${new Date(reservation.start_date).toLocaleDateString('en-GB')} - ${new Date(reservation.end_date).toLocaleDateString('en-GB')}`
+                          : '—'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
                         ₪{reservation.total_price}
@@ -612,13 +660,13 @@ const UsersManagement = () => {
                               {reservation.status === 'active' && (
                                 <>
                                   <button
-                                    onClick={() => handleMarkAsDelivered(reservation.id)}
+                                    onClick={() => handleMarkAsDelivered(reservation.id, reservation.is_package)}
                                     className="text-green-600 hover:text-green-900 text-left"
                                   >
                                     {t('markDelivered')}
                                   </button>
                                   <button
-                                    onClick={() => handleArchiveReservation(reservation.id)}
+                                    onClick={() => handleArchiveReservation(reservation.id, reservation.is_package)}
                                     className="text-gray-600 hover:text-gray-900 text-left"
                                   >
                                     {t('moveToPast')}
@@ -628,13 +676,13 @@ const UsersManagement = () => {
                               {reservation.status === 'delivered' && (
                                 <>
                                   <button
-                                    onClick={() => handleMarkAsReturned(reservation.id)}
+                                    onClick={() => handleMarkAsReturned(reservation.id, reservation.is_package)}
                                     className="text-brand-600 hover:text-brand-900 text-left"
                                   >
                                     {t('markReturned')}
                                   </button>
                                   <button
-                                    onClick={() => handleArchiveReservation(reservation.id)}
+                                    onClick={() => handleArchiveReservation(reservation.id, reservation.is_package)}
                                     className="text-gray-600 hover:text-gray-900 text-left"
                                   >
                                     {t('moveToPast')}
@@ -643,7 +691,7 @@ const UsersManagement = () => {
                               )}
                               {reservation.status === 'overdue' && (
                                 <button
-                                  onClick={() => handleArchiveReservation(reservation.id)}
+                                  onClick={() => handleArchiveReservation(reservation.id, reservation.is_package)}
                                   className="text-gray-600 hover:text-gray-900 text-left"
                                 >
                                   {t('moveToPast')}
@@ -651,7 +699,7 @@ const UsersManagement = () => {
                               )}
                               {reservation.status === 'returned' && (
                                 <button
-                                  onClick={() => handleArchiveReservation(reservation.id)}
+                                  onClick={() => handleArchiveReservation(reservation.id, reservation.is_package)}
                                   className="text-gray-600 hover:text-gray-900 text-left"
                                 >
                                   {t('moveToPast')}
@@ -662,13 +710,13 @@ const UsersManagement = () => {
                           {isArchived && (
                             <>
                               <button
-                                onClick={() => handleRestoreReservation(reservation.id)}
+                                onClick={() => handleRestoreReservation(reservation.id, reservation.is_package)}
                                 className="text-brand-600 hover:text-brand-900 text-left"
                               >
                                 {t('restoreToActive')}
                               </button>
                               <button
-                                onClick={() => handleDeleteReservation(reservation.id)}
+                                onClick={() => handleDeleteReservation(reservation.id, reservation.is_package)}
                                 className="text-red-600 hover:text-red-900 text-left"
                               >
                                 {t('deletePermanently')}

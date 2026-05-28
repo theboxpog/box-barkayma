@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { ShoppingCart, Trash2, Calendar, Package, ArrowRight } from 'lucide-react';
+import { ShoppingCart, Trash2, Calendar, Package, Tag, ArrowRight } from 'lucide-react';
 
 const Cart = () => {
   const { cartItems, removeFromCart, getCartTotal } = useCart();
@@ -102,8 +102,17 @@ const Cart = () => {
                               {item.toolName}
                             </h3>
                             <p className="text-sm text-gray-600 mb-3">
-                              <Package className="inline mr-1" size={16} />
-                              {item.toolCategory}
+                              {item.is_package ? (
+                                <>
+                                  <Tag className="inline mr-1" size={16} />
+                                  <span className="text-xs font-semibold text-purple-700 bg-purple-100 px-2 py-0.5 rounded">Package</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Package className="inline mr-1" size={16} />
+                                  {item.toolCategory}
+                                </>
+                              )}
                             </p>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3 text-sm">

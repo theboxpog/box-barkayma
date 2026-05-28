@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { toolsAPI } from '../services/api';
-import { Package, Search, Calendar } from 'lucide-react';
+import { toolsAPI, packagesAPI } from '../services/api';
+import { Package, Search, Calendar, Tag } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 const ToolsCatalog = () => {
@@ -18,8 +18,14 @@ const ToolsCatalog = () => {
   const fetchTools = async () => {
     try {
       setLoading(true);
-      const response = await toolsAPI.getAll(category);
-      setTools(response.data);
+      const [toolsRes, pkgsRes] = await Promise.all([
+        toolsAPI.getAll(category),
+        packagesAPI.getAll()
+      ]);
+      const normalizedPkgs = pkgsRes.data
+        .filter(pkg => !category || pkg.category === category)
+        .map(pkg => ({ ...pkg, is_package: true }));
+      setTools([...toolsRes.data, ...normalizedPkgs]);
     } catch (error) {
       console.error('Failed to fetch tools:', error);
     } finally {
@@ -27,11 +33,11 @@ const ToolsCatalog = () => {
     }
   };
 
-  const categories = [...new Set(tools.map(tool => tool.category))];
+  const categories = [...new Set(tools.map(item => item.category))];
 
-  const filteredTools = tools.filter(tool =>
-    tool.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    tool.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredTools = tools.filter(item =>
+    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) {
@@ -104,44 +110,48 @@ const ToolsCatalog = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredTools.map(tool => (
+            {filteredTools.map(item => (
               <Link
-                key={tool.id}
-                to={`/tools/${tool.id}`}
+                key={`${item.is_package ? 'pkg' : 'tool'}-${item.id}`}
+                to={item.is_package ? `/packages/${item.id}` : `/tools/${item.id}`}
                 className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition"
               >
                 <div className="h-48 bg-gray-200 flex items-center justify-center">
-                  {tool.image_url ? (
+                  {item.image_url ? (
                     <img
-                      src={tool.image_url}
-                      alt={tool.name}
+                      src={item.image_url}
+                      alt={item.name}
                       className="w-full h-full object-cover"
                     />
+                  ) : item.is_package ? (
+                    <Tag className="h-20 w-20 text-purple-300" />
                   ) : (
                     <Package className="h-20 w-20 text-gray-400" />
                   )}
                 </div>
                 <div className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-brand-600 bg-brand-100 px-2 py-1 rounded">
-                      {tool.category}
-                    </span>
-                    {!tool.is_available && (
+                  <div className="flex items-center justify-between mb-2 flex-wrap gap-1">
+                    {!item.is_package && (
+                      <span className="text-xs font-semibold text-brand-600 bg-brand-100 px-2 py-1 rounded">
+                        {item.category}
+                      </span>
+                    )}
+                    {!item.is_package && !item.is_available && (
                       <span className="text-xs font-semibold text-red-600 bg-red-100 px-2 py-1 rounded">
                         {t('maintenance')}
                       </span>
                     )}
                   </div>
-                  <h3 className="text-lg font-semibold mb-2">{tool.name}</h3>
+                  <h3 className="text-lg font-semibold mb-2">{item.name}</h3>
                   <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                    {tool.description || t('noDescription')}
+                    {item.description || t('noDescription')}
                   </p>
                   <div className="flex items-center justify-between">
                     <span className="text-2xl font-bold text-brand-600">
-                      {tool.rental_type === 'fixed_price' ? (
-                        <>₪{tool.fixed_price}</>
+                      {item.rental_type === 'fixed_price' ? (
+                        <>₪{item.fixed_price}</>
                       ) : (
-                        <>₪{tool.price_per_day}<span className="text-sm text-gray-600 font-normal">/{t('day')}</span></>
+                        <>₪{item.price_per_day}<span className="text-sm text-gray-600 font-normal">/{t('day')}</span></>
                       )}
                     </span>
                     <span className="text-brand-600 font-medium hover:text-brand-800">

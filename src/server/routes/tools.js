@@ -237,16 +237,14 @@ router.get('/:id/availability', (req, res) => {
           return res.status(500).json({ error: 'Server error' });
         }
 
-        let reservedQuantity;
+        let directReserved;
         if (tool.rental_type === 'fixed_price') {
-          // Fixed-price tools: count ALL active/delivered reservations regardless of date
-          reservedQuantity = allReservations.reduce((sum, r) => sum + (r.quantity || 1), 0);
+          directReserved = allReservations.reduce((sum, r) => sum + (r.quantity || 1), 0);
         } else {
-          // Date-based tools: only count overlapping reservations
           if (!start || !end) {
             return res.status(400).json({ error: 'Start and end dates required for date-based tools' });
           }
-          reservedQuantity = allReservations.reduce((sum, r) => {
+          directReserved = allReservations.reduce((sum, r) => {
             if (r.status === 'active') {
               if (r.start_date <= end && r.end_date >= start) return sum + (r.quantity || 1);
             } else if (r.status === 'delivered') {
@@ -258,19 +256,41 @@ router.get('/:id/availability', (req, res) => {
           }, 0);
         }
 
-        const availableStock = tool.stock - reservedQuantity - alreadyInCart;
+        // Also count stock committed via package reservations
+        const isFixed = tool.rental_type === 'fixed_price';
+        db.all(
+          `SELECT pr.quantity as pr_qty, pr.status, pr.start_date, pr.end_date, pt.quantity as pt_qty
+           FROM package_reservations pr
+           JOIN package_tools pt ON pr.package_id = pt.package_id
+           WHERE pt.tool_id = ? AND pr.status IN ('active','delivered','overdue')`,
+          [toolId],
+          (err2, pkgRows) => {
+            const pkgReserved = (pkgRows || []).reduce((sum, r) => {
+              if (isFixed) return sum + (r.pr_qty || 1) * (r.pt_qty || 1);
+              if (r.status === 'active' || r.status === 'delivered') {
+                if (r.start_date <= end && r.end_date >= start) return sum + (r.pr_qty || 1) * (r.pt_qty || 1);
+              } else if (r.status === 'overdue') {
+                if (r.start_date <= end && today >= start) return sum + (r.pr_qty || 1) * (r.pt_qty || 1);
+              }
+              return sum;
+            }, 0);
 
-        res.json({
-          available: availableStock >= requestedQuantity,
-          availableStock: availableStock,
-          totalStock: tool.stock,
-          reservedStock: reservedQuantity,
-          cartQuantity: alreadyInCart,
-          requestedQuantity: requestedQuantity,
-          reason: availableStock >= requestedQuantity
-            ? null
-            : `Only ${availableStock} unit(s) available (${reservedQuantity} rented out${alreadyInCart > 0 ? `, ${alreadyInCart} in cart` : ''})`
-        });
+            const reservedQuantity = directReserved + pkgReserved;
+            const availableStock = tool.stock - reservedQuantity - alreadyInCart;
+
+            res.json({
+              available: availableStock >= requestedQuantity,
+              availableStock: availableStock,
+              totalStock: tool.stock,
+              reservedStock: reservedQuantity,
+              cartQuantity: alreadyInCart,
+              requestedQuantity: requestedQuantity,
+              reason: availableStock >= requestedQuantity
+                ? null
+                : `Only ${availableStock} unit(s) available (${reservedQuantity} rented out${alreadyInCart > 0 ? `, ${alreadyInCart} in cart` : ''})`
+            });
+          }
+        );
       }
     );
   });

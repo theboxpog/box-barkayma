@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { paymentsAPI, reservationsAPI, couponsAPI, authAPI } from '../services/api';
+import { paymentsAPI, reservationsAPI, packagesAPI, couponsAPI, authAPI } from '../services/api';
 import { CreditCard, Package, Calendar, CheckCircle, Loader, Tag, X, Phone, Lock } from 'lucide-react';
 
 const Checkout = () => {
@@ -299,16 +299,32 @@ const Checkout = () => {
     setError('');
     try {
       const today = new Date().toISOString().split('T')[0];
-      const reservationsToCreate = cartItems.map(item => ({
-        tool_id: item.toolId,
-        start_date: item.isFixedPrice ? today : item.startDate,
-        end_date: item.isFixedPrice ? today : item.endDate,
-        quantity: item.quantity,
-        total_price: item.totalPrice,
-        is_fixed_price: item.isFixedPrice || false
-      }));
-      const batchResponse = await reservationsAPI.createBatch(reservationsToCreate);
-      const createdReservations = batchResponse.data.reservations;
+      const regularItems = cartItems.filter(item => !item.is_package);
+      const packageItems = cartItems.filter(item => item.is_package);
+      let createdReservations = [];
+
+      if (regularItems.length > 0) {
+        const reservationsToCreate = regularItems.map(item => ({
+          tool_id: item.toolId,
+          start_date: item.isFixedPrice ? today : item.startDate,
+          end_date: item.isFixedPrice ? today : item.endDate,
+          quantity: item.quantity,
+          total_price: item.totalPrice,
+          is_fixed_price: item.isFixedPrice || false
+        }));
+        const batchResponse = await reservationsAPI.createBatch(reservationsToCreate);
+        createdReservations = [...createdReservations, ...batchResponse.data.reservations];
+      }
+
+      for (const item of packageItems) {
+        const res = await packagesAPI.reserve(item.packageId, {
+          start_date: item.isFixedPrice ? null : item.startDate,
+          end_date: item.isFixedPrice ? null : item.endDate,
+          quantity: item.quantity
+        });
+        createdReservations.push(res.data.reservation);
+      }
+
       clearCart();
       navigate('/checkout/success', {
         state: {

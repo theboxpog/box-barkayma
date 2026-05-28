@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { reservationsAPI } from '../services/api';
-import { Calendar, DollarSign, Package } from 'lucide-react';
+import { reservationsAPI, packagesAPI } from '../services/api';
+import { Calendar, DollarSign, Package, Tag } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 const UserDashboard = () => {
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const locale = language === 'he' ? 'he-IL' : 'en-GB';
 
   useEffect(() => {
@@ -15,8 +15,18 @@ const UserDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const reservationsRes = await reservationsAPI.getMy();
-      setReservations(reservationsRes.data);
+      const [reservationsRes, pkgRes] = await Promise.all([
+        reservationsAPI.getMy(),
+        packagesAPI.getMyReservations()
+      ]);
+      const normalizedPkg = pkgRes.data.map(pr => ({
+        ...pr,
+        is_package: true,
+        tool_name: pr.package_name,
+      }));
+      const all = [...reservationsRes.data, ...normalizedPkg]
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      setReservations(all);
     } catch (error) {
       console.error('Failed to fetch data:', error);
     } finally {
@@ -62,7 +72,7 @@ const UserDashboard = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">Loading...</div>
+        <div className="text-xl">{t('loading')}</div>
       </div>
     );
   }
@@ -71,8 +81,8 @@ const UserDashboard = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-brand-600 text-white py-8">
         <div className="container mx-auto px-4">
-          <h1 className="text-4xl font-bold mb-2">My Dashboard</h1>
-          <p className="text-brand-200">Manage your rentals and view payment history</p>
+          <h1 className="text-4xl font-bold mb-2">{t('myRentals')}</h1>
+          <p className="text-brand-200">{t('manageToolsDesc')}</p>
         </div>
       </div>
 
@@ -81,14 +91,14 @@ const UserDashboard = () => {
             {reservations.length === 0 ? (
               <div className="bg-white rounded-lg shadow-md p-12 text-center">
                 <Calendar className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-                <p className="text-xl text-gray-600">No reservations yet</p>
+                <p className="text-xl text-gray-600">{t('noReservations')}</p>
                 <a href="/tools" className="text-brand-600 hover:text-brand-800 mt-2 inline-block">
-                  Browse tools to get started
+                  {t('browseAndRent')}
                 </a>
               </div>
             ) : (
               reservations.map((reservation) => (
-                <div key={reservation.id} className="bg-white rounded-lg shadow-md p-6">
+                <div key={`${reservation.is_package ? 'pkg' : 'reg'}-${reservation.id}`} className="bg-white rounded-lg shadow-md p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start space-x-4 flex-1">
                       <div className="h-20 w-20 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
@@ -98,34 +108,45 @@ const UserDashboard = () => {
                             alt={reservation.tool_name}
                             className="h-full w-full object-cover rounded"
                           />
+                        ) : reservation.is_package ? (
+                          <Tag className="text-purple-400" size={32} />
                         ) : (
                           <Package className="text-gray-400" size={32} />
                         )}
                       </div>
 
                       <div className="flex-1">
-                        <div className="flex items-center space-x-3 mb-2">
+                        <div className="flex items-center space-x-3 mb-2 flex-wrap gap-1">
                           <h3 className="text-xl font-semibold">{reservation.tool_name}</h3>
+                          {reservation.is_package && (
+                            <span className="text-xs font-semibold px-2 py-1 rounded bg-purple-100 text-purple-700">
+                              {t('packages')}
+                            </span>
+                          )}
                           <span className={`text-xs font-semibold px-2 py-1 rounded ${getStatusColor(reservation.status)}`}>
                             {reservation.status}
                           </span>
                         </div>
 
                         <div className="text-gray-600 space-y-1">
-                          <p className="flex items-center">
-                            <Calendar size={16} className="mr-2" />
-                            <span className="font-medium">From:</span>
-                            <span className="ml-2">{new Date(reservation.start_date).toLocaleDateString(locale)}</span>
-                          </p>
-                          <p className="flex items-center">
-                            <Calendar size={16} className="mr-2" />
-                            <span className="font-medium">To:</span>
-                            <span className="ml-2">{new Date(reservation.end_date).toLocaleDateString(locale)}</span>
-                          </p>
+                          {reservation.start_date && (
+                            <>
+                              <p className="flex items-center">
+                                <Calendar size={16} className="mr-2" />
+                                <span className="font-medium">{t('startDate')}:</span>
+                                <span className="ml-2">{new Date(reservation.start_date).toLocaleDateString(locale)}</span>
+                              </p>
+                              <p className="flex items-center">
+                                <Calendar size={16} className="mr-2" />
+                                <span className="font-medium">{t('endDate')}:</span>
+                                <span className="ml-2">{new Date(reservation.end_date).toLocaleDateString(locale)}</span>
+                              </p>
+                            </>
+                          )}
                           <p className="flex items-center">
                             <Package size={16} className="mr-2" />
-                            <span className="font-medium">Quantity:</span>
-                            <span className="ml-2">{reservation.quantity || 1} tool(s)</span>
+                            <span className="font-medium">{t('quantity')}:</span>
+                            <span className="ml-2">{reservation.quantity || 1}</span>
                           </p>
                           <div className="flex items-start">
                             <DollarSign size={16} className="mr-2 mt-1 flex-shrink-0" />

@@ -62,6 +62,36 @@ export const CartProvider = ({ children }) => {
     }
   }, [cartItems, user, loading]);
 
+  const addPackageToCart = (pkg, startDate, endDate, quantity) => {
+    const isFixedPrice = pkg.rental_type === 'fixed_price';
+    const days = isFixedPrice
+      ? 0
+      : Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24));
+
+    const cartItem = {
+      id: Date.now(),
+      is_package: true,
+      packageId: pkg.id,
+      toolId: null,
+      toolName: pkg.name,
+      toolCategory: null,
+      pricePerDay: pkg.price_per_day,
+      fixedPrice: pkg.fixed_price || null,
+      imageUrl: pkg.image_url,
+      startDate,
+      endDate,
+      quantity,
+      isFixedPrice,
+      days,
+      totalPrice: isFixedPrice
+        ? (pkg.fixed_price || 0) * quantity
+        : days * (pkg.price_per_day || 0) * quantity
+    };
+
+    setCartItems([...cartItems, cartItem]);
+    return true;
+  };
+
   const addToCart = (tool, startDate, endDate, quantity) => {
     const isFixedPrice = tool.rental_type === 'fixed_price';
     const days = isFixedPrice
@@ -135,6 +165,7 @@ export const CartProvider = ({ children }) => {
       value={{
         cartItems,
         addToCart,
+        addPackageToCart,
         removeFromCart,
         updateCartItem,
         clearCart,

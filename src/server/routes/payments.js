@@ -420,42 +420,76 @@ router.post('/complete', authenticateToken, async (req, res) => {
     const reservationDetails = [];
     for (const item of cartItems) {
       const itemPaidAmount = parseFloat((item.totalPrice * paidFraction).toFixed(2));
-      const startDate = item.isFixedPrice ? today : item.startDate;
-      const endDate = item.isFixedPrice ? today : item.endDate;
-      const reservationId = await new Promise((resolve, reject) => {
-        db.run(
-          'INSERT INTO reservations (user_id, tool_id, start_date, end_date, quantity, total_price, paid_amount, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-          [user_id, item.toolId, startDate, endDate, item.quantity || 1, item.totalPrice, itemPaidAmount, 'active'],
-          function (err) { if (err) reject(err); else resolve(this.lastID); }
-        );
-      });
 
-      const tool = await new Promise((resolve, reject) => {
-        db.get('SELECT name FROM tools WHERE id = ?', [item.toolId], (err, row) => {
-          if (err) reject(err); else resolve(row);
+      if (item.is_package) {
+        // Package reservation → insert into package_reservations
+        const startDate = item.isFixedPrice ? null : (item.startDate || null);
+        const endDate = item.isFixedPrice ? null : (item.endDate || null);
+        const reservationId = await new Promise((resolve, reject) => {
+          db.run(
+            'INSERT INTO package_reservations (package_id, user_id, start_date, end_date, quantity, total_price, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [item.packageId, user_id, startDate, endDate, item.quantity || 1, item.totalPrice, 'active'],
+            function (err) { if (err) reject(err); else resolve(this.lastID); }
+          );
         });
-      });
+        createdReservations.push({
+          id: reservationId,
+          user_id,
+          package_id: item.packageId,
+          is_package: true,
+          start_date: startDate,
+          end_date: endDate,
+          quantity: item.quantity || 1,
+          total_price: item.totalPrice,
+          status: 'active'
+        });
+        reservationDetails.push({
+          toolName: item.toolName || 'Package',
+          quantity: item.quantity || 1,
+          startDate,
+          endDate,
+          totalPrice: item.totalPrice,
+          isFixedPrice: item.isFixedPrice || false
+        });
+      } else {
+        // Regular tool reservation
+        const startDate = item.isFixedPrice ? today : item.startDate;
+        const endDate = item.isFixedPrice ? today : item.endDate;
+        const reservationId = await new Promise((resolve, reject) => {
+          db.run(
+            'INSERT INTO reservations (user_id, tool_id, start_date, end_date, quantity, total_price, paid_amount, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [user_id, item.toolId, startDate, endDate, item.quantity || 1, item.totalPrice, itemPaidAmount, 'active'],
+            function (err) { if (err) reject(err); else resolve(this.lastID); }
+          );
+        });
 
-      createdReservations.push({
-        id: reservationId,
-        user_id,
-        tool_id: item.toolId,
-        start_date: startDate,
-        end_date: endDate,
-        quantity: item.quantity || 1,
-        total_price: item.totalPrice,
-        paid_amount: itemPaidAmount,
-        status: 'active'
-      });
+        const tool = await new Promise((resolve, reject) => {
+          db.get('SELECT name FROM tools WHERE id = ?', [item.toolId], (err, row) => {
+            if (err) reject(err); else resolve(row);
+          });
+        });
 
-      reservationDetails.push({
-        toolName: tool?.name || 'Tool',
-        quantity: item.quantity || 1,
-        startDate,
-        endDate,
-        totalPrice: item.totalPrice,
-        isFixedPrice: item.isFixedPrice || false
-      });
+        createdReservations.push({
+          id: reservationId,
+          user_id,
+          tool_id: item.toolId,
+          start_date: startDate,
+          end_date: endDate,
+          quantity: item.quantity || 1,
+          total_price: item.totalPrice,
+          paid_amount: itemPaidAmount,
+          status: 'active'
+        });
+
+        reservationDetails.push({
+          toolName: tool?.name || 'Tool',
+          quantity: item.quantity || 1,
+          startDate,
+          endDate,
+          totalPrice: item.totalPrice,
+          isFixedPrice: item.isFixedPrice || false
+        });
+      }
     }
 
     // Send confirmation email to user and notification to admins

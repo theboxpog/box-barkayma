@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { reservationsAPI, toolsAPI } from '../services/api';
-import { Package, User, Calendar, ArrowLeft, DollarSign } from 'lucide-react';
+import { reservationsAPI, toolsAPI, packagesAPI } from '../services/api';
+import { Package, User, Calendar, ArrowLeft, DollarSign, Tag } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 const ToolReservations = () => {
@@ -22,18 +22,21 @@ const ToolReservations = () => {
     try {
       setLoading(true);
 
-      // Fetch tool details
       const toolResponse = await toolsAPI.getById(toolId);
       setTool(toolResponse.data);
 
-      // Fetch reservations for this tool
-      const params = { tool_id: toolId };
-      if (filterStatus !== 'all') {
-        params.status = filterStatus;
-      }
-      const reservationsResponse = await reservationsAPI.getAll(params);
-      setReservations(reservationsResponse.data);
+      const reservationsResponse = await reservationsAPI.getAll({ tool_id: toolId });
+      const regular = reservationsResponse.data.map(r => ({ ...r, is_package: false }));
 
+      let pkgReservations = [];
+      try {
+        const pkgResponse = await packagesAPI.adminGetReservationsByTool(toolId);
+        pkgReservations = pkgResponse.data.map(r => ({ ...r, is_package: true }));
+      } catch (pkgErr) {
+        console.error('Failed to fetch package reservations for tool:', pkgErr);
+      }
+
+      setReservations([...regular, ...pkgReservations]);
       setError(null);
     } catch (err) {
       console.error('Failed to fetch data:', err);
@@ -230,7 +233,7 @@ const ToolReservations = () => {
           <div className="space-y-4">
             {filteredReservations.map((reservation) => (
               <div
-                key={reservation.id}
+                key={`${reservation.is_package ? 'pkg' : 'reg'}-${reservation.id}`}
                 className="border rounded-lg p-4 hover:shadow-md transition-shadow"
               >
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -245,13 +248,21 @@ const ToolReservations = () => {
                           ({reservation.user_email})
                         </span>
                       </div>
+                      {reservation.is_package && (
+                        <span className="flex items-center gap-1 text-xs font-semibold text-purple-700 bg-purple-100 px-2 py-0.5 rounded">
+                          <Tag size={12} />
+                          {reservation.package_name}
+                        </span>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
                       <div className="flex items-center gap-2 text-gray-700">
                         <Calendar size={16} className="text-gray-500" />
                         <span>
-                          {new Date(reservation.start_date).toLocaleDateString('en-GB')} - {new Date(reservation.end_date).toLocaleDateString('en-GB')}
+                          {reservation.start_date
+                            ? `${new Date(reservation.start_date).toLocaleDateString('en-GB')} - ${new Date(reservation.end_date).toLocaleDateString('en-GB')}`
+                            : '—'}
                         </span>
                       </div>
                       <div className="flex items-center gap-2 text-gray-700">
